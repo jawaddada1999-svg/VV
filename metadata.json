@@ -1,0 +1,6 @@
+{
+  "name": "IMMO-METRICS - B2B Real Estate Funnel & Meta Ads Dashboard",
+  "description": "Dashboard de suivi et d'optimisation de conversion pour services B2B agences immobilières. Suivi du funnel de Meta Ads aux RDV et ventes, diagnostic des goulets d'étranglement et CRM leads.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

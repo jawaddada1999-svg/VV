@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#083036" />
+      <stop offset="100%" stop-color="#03171A" />
+    </radialGradient>
+
+    <!-- Orange Gradient for 'i' -->
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7D3B" />
+      <stop offset="60%" stop-color="#FF5A00" />
+      <stop offset="100%" stop-color="#E03800" />
+    </linearGradient>
+
+    <!-- Teal Gradient for 'B' -->
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#26D6B9" />
+      <stop offset="50%" stop-color="#14B09B" />
+      <stop offset="100%" stop-color="#077A70" />
+    </linearGradient>
+
+    <!-- Teal Shadow for Ribbon overlapping -->
+    <linearGradient id="ribbonOrange" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF5A00" />
+      <stop offset="100%" stop-color="#FF8E4D" />
+    </linearGradient>
+
+    <!-- Filter for subtle 3D drop shadow -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="3" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded plate -->
+  <rect width="500" height="500" rx="40" fill="url(#bgGrad)" />
+
+  <g transform="translate(10, 0)" filter="url(#dropShadow)">
+    <!-- 1. The Orange Dot of 'i' -->
+    <circle cx="165" cy="120" r="32" fill="url(#orangeGrad)" />
+
+    <!-- 2. The Orange Vertical Stem of 'i' -->
+    <path d="M 135 165 C 135 165 195 165 195 165 C 195 240 195 290 195 385 C 175 385 155 350 142 320 C 135 285 135 210 135 165 Z" fill="url(#orangeGrad)" />
+
+    <!-- 3. The Teal 'B' shape (Main upper and lower loops) -->
+    <!-- Top horizontal arm of 'B' into the upper loop -->
+    <path d="M 205 142 L 305 142 C 365 142 390 172 390 205 C 390 238 360 268 305 272 C 265 275 235 292 205 315 L 205 285 C 235 260 268 248 300 245 C 330 242 345 228 345 205 C 345 185 330 172 295 172 L 205 172 Z" fill="url(#tealGrad)" />
+
+    <!-- Lower loop of 'B' -->
+    <path d="M 205 275 C 235 255 275 245 320 248 C 385 252 415 290 415 335 C 415 385 370 425 290 425 C 220 425 180 395 165 385 L 180 365 C 195 375 230 395 285 395 C 340 395 370 368 370 335 C 370 302 342 278 290 278 C 255 278 225 295 195 325 Z" fill="url(#tealGrad)" />
+
+    <!-- 4. Dynamic Crossing Ribbon: intertwining the 'i' and the 'B' spine -->
+    <path d="M 135 385 C 150 330 185 275 260 230 C 290 212 325 202 340 198 L 335 185 C 310 190 275 205 240 225 C 170 265 140 325 135 385 Z" fill="url(#ribbonOrange)" />
+
+    <!-- Diagonal fold shadow beneath the ribbon -->
+    <path d="M 165 385 L 285 305 L 295 320 L 165 385 Z" fill="#021A1D" opacity="0.4" />
+  </g>
+</svg>
