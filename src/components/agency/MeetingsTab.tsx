@@ -25,6 +25,9 @@ import {
   Timer,
   ExternalLink,
   ChevronRight,
+  ChevronLeft,
+  MapPin,
+  Eye,
   ShieldCheck,
   Activity,
   CheckSquare,
@@ -56,6 +59,8 @@ import {
 } from 'recharts';
 import { MeetingItem, PackageTier, AgencyTask } from '../../types/agency';
 import { translations } from '../../translations';
+import { BookingSettingsTab } from './BookingSettingsTab';
+import { DAY_ORDER, generateTimeOptions } from '../../utils/bookingSlots';
 
 export const MeetingsTab: React.FC = () => {
   const {
@@ -74,17 +79,19 @@ export const MeetingsTab: React.FC = () => {
     deleteTask,
     start7DayTrial,
     setSelectedClientId,
+    bookingSettings,
     language,
     direction,
   } = useAgency();
 
   const t = translations[language];
 
-  // Active Sub-Tab: 'agenda' | 'performance' | 'tasks' | 'all_meetings'
-  const [activeSubTab, setActiveSubTab] = useState<'agenda' | 'performance' | 'tasks' | 'all_meetings'>('agenda');
+  // Active Sub-Tab: 'agenda' | 'performance' | 'tasks' | 'all_meetings' | 'booking_hours'
+  const [activeSubTab, setActiveSubTab] = useState<'agenda' | 'performance' | 'tasks' | 'all_meetings' | 'booking_hours'>('agenda');
 
   // Agenda Date Selector (defaults to today's date YYYY-MM-DD)
   const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const timeOptions = useMemo(() => generateTimeOptions(6, 23, 15), []);
   const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>(todayStr);
 
   // Modals state
@@ -133,6 +140,74 @@ export const MeetingsTab: React.FC = () => {
     d.setDate(d.getDate() + 1);
     return d.toISOString().slice(0, 10);
   }, []);
+
+  // Weekly Agenda Navigation & View Modes
+  const [weekOffset, setWeekOffset] = useState<number>(0);
+  const [agendaViewMode, setAgendaViewMode] = useState<'weekly_grid' | 'daily_timeline'>('weekly_grid');
+
+  // Calculate the 7 Days of the Active Week (Monday to Sunday)
+  const currentWeekDays = useMemo(() => {
+    const today = new Date();
+    const baseDate = new Date(today);
+    baseDate.setDate(today.getDate() + weekOffset * 7);
+
+    // Get Monday of that week
+    const day = baseDate.getDay();
+    const diffToMonday = baseDate.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(baseDate.setDate(diffToMonday));
+
+    const dayNamesAr = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
+    const dayNamesFr = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    const dayNamesEn = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+    const days = [];
+    const todayISO = new Date().toISOString().slice(0, 10);
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const isToday = dateStr === todayISO;
+
+      const dayName =
+        language === 'ar'
+          ? dayNamesAr[i]
+          : language === 'fr'
+          ? dayNamesFr[i]
+          : dayNamesEn[i];
+
+      const formattedDate = d.toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', {
+        day: 'numeric',
+        month: 'short',
+      });
+
+      const dayNumber = d.getDate();
+
+      const dayMeetings = meetings
+        .filter((m) => m.scheduledTime.slice(0, 10) === dateStr)
+        .sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime));
+
+      days.push({
+        date: dateStr,
+        dayName,
+        formattedDate,
+        dayNumber,
+        isToday,
+        meetings: dayMeetings,
+      });
+    }
+
+    return days;
+  }, [weekOffset, meetings, language]);
+
+  const weekRangeLabel = useMemo(() => {
+    if (currentWeekDays.length === 0) return '';
+    return `${currentWeekDays[0].formattedDate} — ${currentWeekDays[6].formattedDate}`;
+  }, [currentWeekDays]);
+
+  const weekTotalMeetings = useMemo(() => {
+    return currentWeekDays.reduce((sum, d) => sum + d.meetings.length, 0);
+  }, [currentWeekDays]);
 
   // Meetings filtered by the selected agenda date
   const agendaMeetings = useMemo(() => {
@@ -378,7 +453,13 @@ export const MeetingsTab: React.FC = () => {
       packageInterest,
       teamSize,
       dailyInquiries,
-      mainProblem: mainProblem || (language === 'ar' ? 'تأخر الرد على استفسارات العقارات عبر واتساب' : 'Retard de réponse aux prospects immobiliers'),
+      mainProblem:
+        mainProblem ||
+        (language === 'ar'
+          ? 'تأخر الرد على استفسارات العقارات عبر واتساب'
+          : language === 'fr'
+          ? 'Retard de réponse aux prospects immobiliers'
+          : 'Slow WhatsApp response to real estate inquiries'),
       setupPaymentStatus: 'pending',
       meetingNotes,
     });
@@ -594,279 +675,674 @@ export const MeetingsTab: React.FC = () => {
             {meetings.length}
           </span>
         </button>
+
+        {/* Subtab 5: Working Hours & Booking Form Settings */}
+        <button
+          onClick={() => setActiveSubTab('booking_hours')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
+            activeSubTab === 'booking_hours'
+              ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          <Clock className={`w-4 h-4 ${activeSubTab === 'booking_hours' ? 'text-orange-600' : 'text-slate-400'}`} />
+          <span>{t.subtabBookingHours}</span>
+          <span className={`text-[11px] font-mono font-extrabold px-2 py-0.5 rounded-full ${
+            activeSubTab === 'booking_hours' ? 'bg-orange-100 text-orange-900' : 'bg-slate-200 text-slate-700'
+          }`}>
+            {DAY_ORDER.filter((d) => bookingSettings.schedule[d]?.enabled).length}/7
+          </span>
+        </button>
       </div>
 
       {/* ======================================================== */}
-      {/* VIEW 1: DAILY AGENDA & REMINDERS & CONFIRMATION HUB      */}
+      {/* VIEW 1: WEEKLY & DAILY VISUAL AGENDA HUB                */}
       {/* ======================================================== */}
       {activeSubTab === 'agenda' && (
-        <div className="space-y-6">
-          {/* Date Picker Bar & Quick Day Switchers */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-orange-500" />
-                <span>{language === 'ar' ? 'اختر اليوم:' : language === 'fr' ? 'Choisir la date:' : 'Select Day:'}</span>
-              </span>
+        <div className="space-y-6 animate-fade-in">
+          {/* Top Week Navigation & Control Bar */}
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border-2 border-slate-200 shadow-2xs space-y-4">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              {/* Week Navigation */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setWeekOffset((prev) => prev - 1)}
+                    className="p-1.5 hover:bg-white text-slate-700 rounded-lg transition-colors cursor-pointer"
+                    title={language === 'ar' ? 'الأسبوع السابق' : language === 'fr' ? 'Semaine précédente' : 'Previous Week'}
+                  >
+                    {direction === 'rtl' ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                  </button>
 
-              {/* Quick Select Buttons without English leaks */}
-              <button
-                type="button"
-                onClick={() => setSelectedAgendaDate(yesterdayStr)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                  selectedAgendaDate === yesterdayStr
-                    ? 'bg-orange-500 text-white shadow-2xs'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                {t.yesterday}
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => setWeekOffset(0)}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                      weekOffset === 0
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                    }`}
+                  >
+                    {language === 'ar' ? 'هذا الأسبوع (الحالي)' : language === 'fr' ? 'Cette semaine' : 'Current Week'}
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => setSelectedAgendaDate(todayStr)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  selectedAgendaDate === todayStr
-                    ? 'bg-orange-500 text-white shadow-2xs'
-                    : 'bg-orange-100 text-orange-950 hover:bg-orange-200'
-                }`}
-              >
-                <span>{t.today}</span>
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => setWeekOffset((prev) => prev + 1)}
+                    className="p-1.5 hover:bg-white text-slate-700 rounded-lg transition-colors cursor-pointer"
+                    title={language === 'ar' ? 'الأسبوع القادم' : language === 'fr' ? 'Semaine suivante' : 'Next Week'}
+                  >
+                    {direction === 'rtl' ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  </button>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => setSelectedAgendaDate(tomorrowStr)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                  selectedAgendaDate === tomorrowStr
-                    ? 'bg-orange-500 text-white shadow-2xs'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                {t.tomorrow}
-              </button>
+                <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-950 px-3.5 py-1.5 rounded-xl text-xs font-bold">
+                  <CalendarDays className="w-4 h-4 text-orange-600 shrink-0" />
+                  <span className="font-mono">{weekRangeLabel}</span>
+                </div>
+              </div>
 
-              {/* Date Input */}
-              <input
-                type="date"
-                value={selectedAgendaDate}
-                onChange={(e) => setSelectedAgendaDate(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-orange-500"
-              />
+              {/* View Mode Switcher & Quick Add */}
+              <div className="flex items-center gap-2.5 flex-wrap w-full lg:w-auto justify-between lg:justify-end">
+                <div className="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setAgendaViewMode('weekly_grid')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                      agendaViewMode === 'weekly_grid'
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{language === 'ar' ? 'الأجندة الأسبوعية (7 أيام)' : language === 'fr' ? 'Agenda Hebdomadaire' : 'Weekly Agenda'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAgendaViewMode('daily_timeline')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                      agendaViewMode === 'daily_timeline'
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{language === 'ar' ? 'تفاصيل اليوم' : language === 'fr' ? 'Vue Journalière' : 'Daily View'}</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setScheduledDate(todayStr);
+                    setShowAddMeetingModal(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-orange-500 to-[#FF5500] hover:from-orange-600 hover:to-[#D93800] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>{t.btnAddMeeting}</span>
+                </button>
+              </div>
             </div>
 
-            {/* Day Summary Pill */}
-            <div className="flex items-center gap-3 text-xs bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 flex-wrap">
+            {/* Week Summary Stats Bar */}
+            <div className="flex items-center gap-3 pt-3 border-t border-slate-100 text-xs flex-wrap">
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 font-medium">{language === 'ar' ? 'مواعيد هذا اليوم:' : language === 'fr' ? 'RDV du jour:' : 'Meetings:'}</span>
-                <span className="font-mono font-extrabold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
-                  {agendaMeetings.length}
+                <span className="text-slate-500 font-medium">
+                  {language === 'ar' ? 'إجمالي مواعيد الأسبوع:' : language === 'fr' ? 'Total RDV de la semaine :' : 'Total Week Meetings:'}
+                </span>
+                <span className="font-mono font-extrabold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                  {weekTotalMeetings}
                 </span>
               </div>
               <span className="text-slate-300">•</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 font-medium">{language === 'ar' ? 'مؤكدة:' : language === 'fr' ? 'Confirmés:' : 'Confirmed:'}</span>
-                <span className="font-mono font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200">
-                  {agendaMeetings.filter((m) => m.reminderConfirmed).length}
+                <span className="text-slate-500 font-medium">
+                  {language === 'ar' ? 'مواعيد اليوم:' : language === 'fr' ? 'RDV d’aujourd’hui :' : 'Today’s Meetings:'}
                 </span>
-              </div>
-              <span className="text-slate-300">•</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 font-medium">{language === 'ar' ? 'تم التحويل:' : language === 'fr' ? 'Convertis:' : 'Converted:'}</span>
                 <span className="font-mono font-extrabold text-orange-800 bg-orange-100 px-2 py-0.5 rounded border border-orange-200">
-                  {agendaMeetings.filter((m) => m.convertedToDeal || m.trialResult === 'accepted').length}
+                  {dailyPerformance.totalScheduled}
+                </span>
+              </div>
+              <span className="text-slate-300">•</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 font-medium">
+                  {language === 'ar' ? 'مؤكدة من العملاء:' : language === 'fr' ? 'Confirmés :' : 'Confirmed:'}
+                </span>
+                <span className="font-mono font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200">
+                  {currentWeekDays.reduce((sum, d) => sum + d.meetings.filter((m) => m.reminderConfirmed).length, 0)}
+                </span>
+              </div>
+              <span className="text-slate-300">•</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 font-medium">
+                  {language === 'ar' ? 'تم تحويلها لصفقات:' : language === 'fr' ? 'Convertis en deals :' : 'Converted:'}
+                </span>
+                <span className="font-mono font-extrabold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded border border-indigo-200">
+                  {currentWeekDays.reduce((sum, d) => sum + d.meetings.filter((m) => m.convertedToDeal || m.trialResult === 'accepted').length, 0)}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Agenda Meetings Cards / Timeline */}
-          {agendaMeetings.length === 0 ? (
-            <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center">
-              <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-slate-700">
-                {language === 'ar' ? `لا توجد مواعيد مسجلة لتاريخ ${selectedAgendaDate}` : language === 'fr' ? `Aucun rendez-vous pour le ${selectedAgendaDate}` : `No meetings scheduled for ${selectedAgendaDate}`}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-                {language === 'ar' ? 'يمكنك حجز موعد جديد لهذا التاريخ أو التنقل إلى يوم آخر لمعاينة المواعيد الحالية.' : language === 'fr' ? 'Planifiez un nouveau rendez-vous pour cette date ou changez de jour.' : 'Schedule a new consultation for this date or navigate to another day.'}
-              </p>
-              <button
-                onClick={() => {
-                  setScheduledDate(selectedAgendaDate);
-                  setShowAddMeetingModal(true);
-                }}
-                className="mt-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>+ {t.btnAddMeeting}</span>
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {agendaMeetings.map((meet) => {
-                const timeOnly = meet.scheduledTime.includes('T')
-                  ? meet.scheduledTime.split('T')[1].slice(0, 5)
-                  : meet.scheduledTime;
-                const isConverted = Boolean(meet.convertedToDeal || meet.trialResult === 'accepted');
-
+          {/* ======================================================== */}
+          {/* SUB-MODE A: 7-DAY VISUAL WEEKLY COLUMNS GRID            */}
+          {/* ======================================================== */}
+          {agendaViewMode === 'weekly_grid' && (
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 lg:grid lg:grid-cols-7 lg:gap-3.5 lg:overflow-visible lg:pb-0 items-stretch no-scrollbar">
+              {currentWeekDays.map((day) => {
                 return (
                   <div
-                    key={meet.id}
-                    className={`bg-white rounded-2xl border-2 transition-all p-5 shadow-2xs hover:shadow-md ${
-                      isConverted
-                        ? 'border-emerald-300 bg-gradient-to-r from-emerald-50/20 to-white'
-                        : meet.reminderConfirmed
-                        ? 'border-blue-200'
-                        : 'border-slate-200'
+                    key={day.date}
+                    className={`min-w-[272px] sm:min-w-[290px] lg:min-w-0 snap-center shrink-0 rounded-2xl border flex flex-col transition-all min-h-[340px] ${
+                      day.isToday
+                        ? 'bg-orange-50/20 border-orange-400 ring-1 ring-orange-300'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}
                   >
-                    <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-                      {/* Left: Time & Agency Info */}
-                      <div className="flex items-start gap-4">
-                        {/* Time Slot Badge */}
-                        <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-900 text-white min-w-[76px] text-center shadow-xs">
-                          <Clock className="w-4 h-4 text-orange-400 mb-1" />
-                          <span className="font-mono text-base font-extrabold tracking-tight">{timeOnly}</span>
+                    {/* Day Column Header */}
+                    <div
+                      className={`p-3 rounded-t-2xl border-b flex items-center justify-between ${
+                        day.isToday
+                          ? 'bg-gradient-to-r from-orange-500 to-[#FF5500] text-white border-orange-500'
+                          : 'bg-slate-50 text-slate-900 border-slate-200'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-extrabold text-xs">{day.dayName}</span>
+                          {day.isToday && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-white text-orange-600 shadow-2xs">
+                              {t.today}
+                            </span>
+                          )}
                         </div>
-
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-base font-extrabold text-slate-900">
-                              {meet.agencyName}
-                            </h4>
-                            <span className="text-xs text-slate-500 font-bold">• {meet.city}</span>
-                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-800">
-                              {getPackageName(meet.packageSelected || meet.packageInterest)}
-                            </span>
-                            {isConverted && (
-                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
-                                <Zap className="w-3 h-3 text-emerald-600 fill-emerald-600" />
-                                <span>{language === 'ar' ? 'تم التحويل بنجاح!' : language === 'fr' ? 'Converti avec succès !' : 'Successfully Converted!'}</span>
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-3 text-xs text-slate-600 mt-1.5 flex-wrap">
-                            <span className="font-semibold text-slate-800 flex items-center gap-1">
-                              <Users className="w-3.5 h-3.5 text-slate-400" />
-                              <span>{meet.clientName} ({meet.teamSize || 5} {t.clientsUnit})</span>
-                            </span>
-                            <span className="text-slate-300">|</span>
-                            <span className="font-mono" dir="ltr">{meet.phone}</span>
-                            <span className="text-slate-300">|</span>
-                            <span className="text-slate-500">{meet.dailyInquiries || 25} {t.leads}/{t.days}</span>
-                          </div>
-
-                          {/* Problem description */}
-                          <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70 max-w-2xl leading-relaxed">
-                            <span className="font-bold text-amber-700">
-                              {language === 'ar' ? 'المشكل الرئيسي: ' : language === 'fr' ? 'Problème identifié: ' : 'Main problem: '}
-                            </span>
-                            <span>{meet.mainProblem || (language === 'ar' ? 'تأخر الرد على استفسارات العقارات في المساء وضياع الزبائن' : 'Retard dans les réponses')}</span>
-                          </div>
-                        </div>
+                        <span className={`text-[10px] font-mono block ${day.isToday ? 'text-orange-100' : 'text-slate-400'}`}>
+                          {day.formattedDate}
+                        </span>
                       </div>
 
-                      {/* Right: Reminder, Confirmation & Conversion Controls */}
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
-                        {/* 1. Reminder Sent Toggle / Trigger */}
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                            {t.reminderStatus}
+                      <div className="flex items-center gap-1">
+                        <span
+                          className={`font-mono text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                            day.isToday
+                              ? 'bg-white/20 text-white'
+                              : day.meetings.length > 0
+                              ? 'bg-slate-200 text-slate-800'
+                              : 'bg-slate-100 text-slate-400'
+                          }`}
+                        >
+                          {day.meetings.length}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setScheduledDate(day.date);
+                            setShowAddMeetingModal(true);
+                          }}
+                          className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                            day.isToday
+                              ? 'hover:bg-white/20 text-white'
+                              : 'hover:bg-slate-200 text-slate-500'
+                          }`}
+                          title={language === 'ar' ? `حجز موعد جديد ليوم ${day.dayName}` : 'Add meeting'}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Day Column Meeting Cards */}
+                    <div className="p-2.5 flex-1 space-y-2.5">
+                      {day.meetings.length === 0 ? (
+                        <div className="h-full min-h-[140px] flex flex-col items-center justify-center p-3 text-center border border-dashed border-slate-200 rounded-xl text-slate-400">
+                          <Calendar className="w-5 h-5 text-slate-300 mb-1" />
+                          <span className="text-[11px] font-medium text-slate-400">
+                            {language === 'ar' ? 'لا توجد مواعيد' : language === 'fr' ? 'Aucun RDV' : 'No meetings'}
                           </span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => toggleMeetingReminder(meet.id)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                                meet.reminderSent
-                                  ? 'bg-emerald-100 text-emerald-950 border border-emerald-300'
-                                  : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setScheduledDate(day.date);
+                              setShowAddMeetingModal(true);
+                            }}
+                            className="mt-2 text-[10px] font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>{language === 'ar' ? 'حجز موعد' : language === 'fr' ? 'Ajouter' : 'Schedule'}</span>
+                          </button>
+                        </div>
+                      ) : (
+                        day.meetings.map((meet) => {
+                          const timeOnly = meet.scheduledTime.includes('T')
+                            ? meet.scheduledTime.split('T')[1].slice(0, 5)
+                            : meet.scheduledTime;
+                          const isConverted = Boolean(meet.convertedToDeal || meet.trialResult === 'accepted');
+
+                          return (
+                            <div
+                              key={meet.id}
+                              className={`p-3 rounded-xl border transition-all text-xs flex flex-col justify-between gap-2.5 ${
+                                isConverted
+                                  ? 'bg-emerald-50/40 border-emerald-300 shadow-2xs'
+                                  : meet.reminderConfirmed
+                                  ? 'bg-blue-50/30 border-blue-200 hover:border-blue-300 shadow-2xs'
+                                  : 'bg-white border-slate-200 hover:border-orange-300 shadow-2xs'
                               }`}
                             >
-                              {meet.reminderSent ? (
-                                <CheckCheck className="w-3.5 h-3.5 text-emerald-700" />
-                              ) : (
-                                <Bell className="w-3.5 h-3.5 text-slate-400" />
-                              )}
-                              <span>{meet.reminderSent ? t.reminderSent : t.reminderNotSent}</span>
-                            </button>
+                              {/* Exact Highlighted Time Badge & Status */}
+                              <div className="flex items-center justify-between gap-1.5 border-b border-slate-100 pb-2">
+                                <div
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-mono font-black text-xs shadow-2xs ${
+                                    isConverted
+                                      ? 'bg-emerald-600 text-white'
+                                      : meet.reminderConfirmed
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-slate-900 text-white'
+                                  }`}
+                                >
+                                  <Clock className="w-3 h-3 text-orange-400 shrink-0" />
+                                  <span>{timeOnly}</span>
+                                </div>
 
-                            {/* Direct WhatsApp Reminder Trigger */}
-                            <button
-                              type="button"
-                              onClick={() => handleTriggerAction(meet, 'reminder')}
-                              className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-2xs transition-colors cursor-pointer"
-                              title={language === 'ar' ? 'إرسال تذكير الموعد المباشر عبر واتساب' : 'Envoyer rappel WhatsApp'}
-                            >
-                              <Send className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
+                                <span
+                                  className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded font-mono ${
+                                    meet.packageInterest === 'enterprise'
+                                      ? 'bg-purple-100 text-purple-900'
+                                      : meet.packageInterest === 'growth'
+                                      ? 'bg-blue-100 text-blue-900'
+                                      : 'bg-orange-100 text-orange-900'
+                                  }`}
+                                >
+                                  {getPackageName(meet.packageSelected || meet.packageInterest)}
+                                </span>
+                              </div>
 
-                        {/* 2. Client Confirmation Toggle */}
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                            {t.confirmationStatus}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => toggleMeetingConfirmation(meet.id)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                              meet.reminderConfirmed
-                                ? 'bg-blue-100 text-blue-950 border border-blue-300 shadow-2xs'
-                                : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100'
-                            }`}
-                          >
-                            <UserCheck className={`w-3.5 h-3.5 ${meet.reminderConfirmed ? 'text-blue-700' : 'text-amber-600'}`} />
-                            <span>{meet.reminderConfirmed ? t.confirmedByClient : t.notConfirmedYet}</span>
-                          </button>
-                        </div>
+                              {/* Agency & Client Details */}
+                              <div className="space-y-1">
+                                <h5 className="font-bold text-slate-900 text-xs leading-snug line-clamp-1" title={meet.agencyName}>
+                                  {meet.agencyName}
+                                </h5>
 
-                        {/* 3. Deal / 7-Day Trial Conversion Toggle */}
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                            {t.convertedStatus}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => toggleMeetingConverted(meet.id)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                              isConverted
-                                ? 'bg-emerald-600 text-white shadow-xs hover:bg-emerald-700'
-                                : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-xs hover:from-orange-600 hover:to-amber-600'
-                            }`}
-                          >
-                            <Zap className="w-3.5 h-3.5" />
-                            <span>{isConverted ? t.convertedToDeal : (language === 'ar' ? 'تحويل لتجربة ⚡' : language === 'fr' ? 'Convertir en Essai ⚡' : 'Convert to Trial ⚡')}</span>
-                          </button>
-                        </div>
+                                <div className="text-[11px] text-slate-600 font-medium flex items-center justify-between">
+                                  <span>{meet.clientName}</span>
+                                  <span className="text-[10px] text-slate-400 flex items-center gap-0.5">
+                                    <MapPin className="w-2.5 h-2.5 text-orange-500" />
+                                    <span>{meet.city}</span>
+                                  </span>
+                                </div>
 
-                        {/* 4. Communication Buttons */}
-                        <div className="flex items-center gap-1.5 self-end sm:self-center mt-2 sm:mt-0">
-                          <button
-                            type="button"
-                            onClick={() => handleTriggerAction(meet, 'call')}
-                            className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
-                            title={t.btnDirectCall}
-                          >
-                            <PhoneCall className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleTriggerAction(meet, 'whatsapp')}
-                            className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
-                            title={t.btnWhatsAppChat}
-                          >
-                            <MessageSquare className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
+                                <div className="font-mono text-[10px] text-slate-500" dir="ltr">
+                                  {meet.phone}
+                                </div>
+                              </div>
+
+                              {/* Action Controls & Status Buttons */}
+                              <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                                {/* Reminder & Confirmation Row */}
+                                <div className="grid grid-cols-2 gap-1 text-[10px]">
+                                  {/* Reminder Toggle */}
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleMeetingReminder(meet.id)}
+                                    className={`py-1 px-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                                      meet.reminderSent
+                                        ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    }`}
+                                    title={t.reminderStatus}
+                                  >
+                                    <Bell className="w-2.5 h-2.5" />
+                                    <span className="truncate">{meet.reminderSent ? t.reminderSent : t.reminderNotSent}</span>
+                                  </button>
+
+                                  {/* Confirmation Toggle */}
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleMeetingConfirmation(meet.id)}
+                                    className={`py-1 px-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                                      meet.reminderConfirmed
+                                        ? 'bg-blue-100 text-blue-900 border border-blue-300'
+                                        : 'bg-amber-100 text-amber-900 hover:bg-amber-200'
+                                    }`}
+                                    title={t.confirmationStatus}
+                                  >
+                                    <UserCheck className="w-2.5 h-2.5" />
+                                    <span className="truncate">{meet.reminderConfirmed ? t.confirmedByClient : t.notConfirmedYet}</span>
+                                  </button>
+                                </div>
+
+                                {/* Status Switch & Conversion */}
+                                <div className="flex items-center justify-between gap-1">
+                                  <select
+                                    value={meet.status}
+                                    onChange={(e) => updateMeetingStatus(meet.id, e.target.value as MeetingItem['status'])}
+                                    className="bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-[10px] font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer flex-1"
+                                  >
+                                    <option value="scheduled">{t.statusScheduled}</option>
+                                    <option value="completed">{t.statusCompleted}</option>
+                                    <option value="no_show">{t.statusNoShow}</option>
+                                  </select>
+
+                                  {/* Deal Conversion Toggle */}
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleMeetingConverted(meet.id)}
+                                    className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                                      isConverted
+                                        ? 'bg-emerald-600 text-white'
+                                        : 'bg-slate-100 hover:bg-orange-500 hover:text-white text-slate-700'
+                                    }`}
+                                    title={isConverted ? t.convertedToDeal : (language === 'ar' ? 'تحويل لصفقة 7 أيام' : 'Convert to Deal')}
+                                  >
+                                    <Zap className="w-3 h-3" />
+                                  </button>
+                                </div>
+
+                                {/* Quick Inspect Client Details & Direct Comm Links */}
+                                <div className="flex items-center justify-between pt-1 text-[10px]">
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedClientId(meet.clientId)}
+                                    className="text-orange-600 hover:text-orange-700 font-bold inline-flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Eye className="w-3 h-3" />
+                                    <span>{language === 'ar' ? 'فحص الملف' : language === 'fr' ? 'Détails client' : 'Client Profile'}</span>
+                                  </button>
+
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleTriggerAction(meet, 'reminder')}
+                                      className="p-1 text-emerald-600 hover:bg-emerald-50 rounded cursor-pointer"
+                                      title={language === 'ar' ? 'إرسال تذكير واتساب' : 'WhatsApp'}
+                                    >
+                                      <Send className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleTriggerAction(meet, 'call')}
+                                      className="p-1 text-blue-600 hover:bg-blue-50 rounded cursor-pointer"
+                                      title={language === 'ar' ? 'اتصال هاتفي' : 'Call'}
+                                    >
+                                      <PhoneCall className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* SUB-MODE B: FOCUSED DAILY AGENDA & TIMELINE             */}
+          {/* ======================================================== */}
+          {agendaViewMode === 'daily_timeline' && (
+            <div className="space-y-4">
+              {/* Day Selector Bar */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-orange-500" />
+                    <span>{language === 'ar' ? 'اختر اليوم المحدد:' : language === 'fr' ? 'Choisir la date :' : 'Select Date:'}</span>
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAgendaDate(yesterdayStr)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                      selectedAgendaDate === yesterdayStr
+                        ? 'bg-orange-500 text-white shadow-2xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {t.yesterday}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAgendaDate(todayStr)}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      selectedAgendaDate === todayStr
+                        ? 'bg-orange-500 text-white shadow-2xs'
+                        : 'bg-orange-100 text-orange-950 hover:bg-orange-200'
+                    }`}
+                  >
+                    <span>{t.today}</span>
+                    <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAgendaDate(tomorrowStr)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                      selectedAgendaDate === tomorrowStr
+                        ? 'bg-orange-500 text-white shadow-2xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {t.tomorrow}
+                  </button>
+
+                  <input
+                    type="date"
+                    value={selectedAgendaDate}
+                    onChange={(e) => setSelectedAgendaDate(e.target.value)}
+                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-orange-500"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 text-xs bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-200">
+                  <span className="text-slate-500 font-medium">
+                    {language === 'ar' ? 'مواعيد هذا اليوم:' : language === 'fr' ? 'RDV du jour :' : 'Meetings:'}
+                  </span>
+                  <span className="font-mono font-extrabold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                    {agendaMeetings.length}
+                  </span>
+                </div>
+              </div>
+
+              {/* Day Cards List */}
+              {agendaMeetings.length === 0 ? (
+                <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center">
+                  <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <h3 className="text-base font-bold text-slate-700">
+                    {language === 'ar' ? `لا توجد مواعيد مسجلة لتاريخ ${selectedAgendaDate}` : language === 'fr' ? `Aucun rendez-vous pour le ${selectedAgendaDate}` : `No meetings scheduled for ${selectedAgendaDate}`}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setScheduledDate(selectedAgendaDate);
+                      setShowAddMeetingModal(true);
+                    }}
+                    className="mt-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ {t.btnAddMeeting}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4">
+                  {agendaMeetings.map((meet) => {
+                    const timeOnly = meet.scheduledTime.includes('T')
+                      ? meet.scheduledTime.split('T')[1].slice(0, 5)
+                      : meet.scheduledTime;
+                    const isConverted = Boolean(meet.convertedToDeal || meet.trialResult === 'accepted');
+
+                    return (
+                      <div
+                        key={meet.id}
+                        className={`bg-white rounded-2xl border-2 transition-all p-5 shadow-2xs hover:shadow-md ${
+                          isConverted
+                            ? 'border-emerald-300 bg-gradient-to-r from-emerald-50/20 to-white'
+                            : meet.reminderConfirmed
+                            ? 'border-blue-200'
+                            : 'border-slate-200'
+                        }`}
+                      >
+                        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                          <div className="flex items-start gap-4">
+                            <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-900 text-white min-w-[76px] text-center shadow-xs">
+                              <Clock className="w-4 h-4 text-orange-400 mb-1" />
+                              <span className="font-mono text-base font-extrabold tracking-tight">{timeOnly}</span>
+                            </div>
+
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="text-base font-extrabold text-slate-900">
+                                  {meet.agencyName}
+                                </h4>
+                                <span className="text-xs text-slate-500 font-bold">• {meet.city}</span>
+                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-800">
+                                  {getPackageName(meet.packageSelected || meet.packageInterest)}
+                                </span>
+                                {isConverted && (
+                                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
+                                    <Zap className="w-3 h-3 text-emerald-600 fill-emerald-600" />
+                                    <span>{language === 'ar' ? 'تم التحويل بنجاح!' : language === 'fr' ? 'Converti avec succès !' : 'Successfully Converted!'}</span>
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-3 text-xs text-slate-600 mt-1.5 flex-wrap">
+                                <span className="font-semibold text-slate-800 flex items-center gap-1">
+                                  <Users className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>{meet.clientName} ({meet.teamSize || 5} {t.clientsUnit})</span>
+                                </span>
+                                <span className="text-slate-300">|</span>
+                                <span className="font-mono" dir="ltr">{meet.phone}</span>
+                                <span className="text-slate-300">|</span>
+                                <span className="text-slate-500">{meet.dailyInquiries || 25} {t.leads}/{t.days}</span>
+                              </div>
+
+                              {meet.mainProblem && (
+                                <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70 max-w-2xl leading-relaxed">
+                                  <span className="font-bold text-amber-700">
+                                    {language === 'ar' ? 'المشكل الرئيسي: ' : language === 'fr' ? 'Problème identifié : ' : 'Main problem: '}
+                                  </span>
+                                  <span>{meet.mainProblem}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Controls */}
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                            {/* Reminder Sent Toggle */}
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                                {t.reminderStatus}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleMeetingReminder(meet.id)}
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                                    meet.reminderSent
+                                      ? 'bg-emerald-100 text-emerald-950 border border-emerald-300'
+                                      : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
+                                  }`}
+                                >
+                                  {meet.reminderSent ? (
+                                    <CheckCheck className="w-3.5 h-3.5 text-emerald-700" />
+                                  ) : (
+                                    <Bell className="w-3.5 h-3.5 text-slate-400" />
+                                  )}
+                                  <span>{meet.reminderSent ? t.reminderSent : t.reminderNotSent}</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleTriggerAction(meet, 'reminder')}
+                                  className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-2xs transition-colors cursor-pointer"
+                                  title={language === 'ar' ? 'إرسال تذكير الموعد المباشر عبر واتساب' : 'Envoyer rappel WhatsApp'}
+                                >
+                                  <Send className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Confirmation Toggle */}
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                                {t.confirmationStatus}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => toggleMeetingConfirmation(meet.id)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                                  meet.reminderConfirmed
+                                    ? 'bg-blue-100 text-blue-950 border border-blue-300 shadow-2xs'
+                                    : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100'
+                                }`}
+                              >
+                                <UserCheck className={`w-3.5 h-3.5 ${meet.reminderConfirmed ? 'text-blue-700' : 'text-amber-600'}`} />
+                                <span>{meet.reminderConfirmed ? t.confirmedByClient : t.notConfirmedYet}</span>
+                              </button>
+                            </div>
+
+                            {/* Deal Conversion Toggle */}
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                                {t.convertedStatus}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => toggleMeetingConverted(meet.id)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                                  isConverted
+                                    ? 'bg-emerald-600 text-white shadow-xs hover:bg-emerald-700'
+                                    : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-xs hover:from-orange-600 hover:to-amber-600'
+                                }`}
+                              >
+                                <Zap className="w-3.5 h-3.5" />
+                                <span>{isConverted ? t.convertedToDeal : (language === 'ar' ? 'تحويل لتجربة ⚡' : language === 'fr' ? 'Convertir en Essai ⚡' : 'Convert to Trial ⚡')}</span>
+                              </button>
+                            </div>
+
+                            {/* View Profile */}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedClientId(meet.clientId)}
+                              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors cursor-pointer self-end sm:self-center"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* Communication Buttons */}
+                            <div className="flex items-center gap-1.5 self-end sm:self-center">
+                              <button
+                                type="button"
+                                onClick={() => handleTriggerAction(meet, 'call')}
+                                className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
+                                title={t.btnDirectCall}
+                              >
+                                <PhoneCall className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleTriggerAction(meet, 'whatsapp')}
+                                className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
+                                title={t.btnWhatsAppChat}
+                              >
+                                <MessageSquare className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -986,7 +1462,7 @@ export const MeetingsTab: React.FC = () => {
             </div>
 
             {/* Daily KPI Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <span className="text-xs font-bold text-slate-600 block">{language === 'ar' ? 'مواعيد اليوم المجدولة' : language === 'fr' ? 'RDV prévus aujourd’hui' : 'Scheduled Today'}</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -1062,7 +1538,7 @@ export const MeetingsTab: React.FC = () => {
             </div>
 
             {/* Weekly KPI Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <span className="text-xs font-bold text-slate-600 block">{t.weeklyTotalMeetings}</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -1111,7 +1587,11 @@ export const MeetingsTab: React.FC = () => {
                   <span className="text-xs text-rose-700 font-bold">{t.statusNoShow}</span>
                 </div>
                 <div className="mt-2 text-[11px] text-rose-800 font-medium">
-                  {language === 'ar' ? 'إعادة استهداف عبر واتساب' : 'Relance WhatsApp'}
+                  {language === 'ar'
+                    ? 'إعادة استهداف عبر واتساب'
+                    : language === 'fr'
+                    ? 'Relance WhatsApp'
+                    : 'WhatsApp Follow-up'}
                 </div>
               </div>
             </div>
@@ -1758,7 +2238,14 @@ export const MeetingsTab: React.FC = () => {
                           <td className="p-3.5 text-slate-700 max-w-xs whitespace-normal text-[11px] leading-relaxed">
                             <div className="flex items-start gap-1">
                               <span className="text-amber-600 font-bold shrink-0">⚠️</span>
-                              <span>{meet.mainProblem || (language === 'ar' ? 'تأخر الرد على استفسارات العقارات في المساء وضياع الزبائن' : 'Retard de réponse')}</span>
+                              <span>
+                                {meet.mainProblem ||
+                                  (language === 'ar'
+                                    ? 'تأخر الرد على استفسارات العقارات في المساء وضياع الزبائن'
+                                    : language === 'fr'
+                                    ? 'Retard de réponse'
+                                    : 'Slow lead response')}
+                              </span>
                             </div>
                           </td>
 
@@ -1879,32 +2366,41 @@ export const MeetingsTab: React.FC = () => {
       )}
 
       {/* ======================================================== */}
+      {/* VIEW 5: WORKING HOURS & LANDING PAGE BOOKING SETTINGS    */}
+      {/* ======================================================== */}
+      {activeSubTab === 'booking_hours' && (
+        <div className="animate-fade-in">
+          <BookingSettingsTab compact />
+        </div>
+      )}
+
+      {/* ======================================================== */}
       {/* MODAL 1: ADD MEETING                                     */}
       {/* ======================================================== */}
       {showAddMeetingModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3">
-          <div className={`bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden animate-fade-in ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-3 overflow-y-auto">
+          <div className={`bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 animate-fade-in ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+            <div className="p-4 bg-slate-900 text-white flex items-center justify-between sticky top-0 z-10">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Plus className="w-4 h-4 text-orange-400" />
                 <span>{t.btnAddMeeting}</span>
               </h3>
               <button
                 onClick={() => setShowAddMeetingModal(false)}
-                className="text-slate-400 hover:text-white cursor-pointer text-base"
+                className="text-slate-400 hover:text-white cursor-pointer text-base p-1"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateMeeting} className="p-5 space-y-3.5 text-xs">
+            <form onSubmit={handleCreateMeeting} className="p-4 sm:p-5 space-y-3.5 text-xs">
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">{t.colAgencyClient} *</label>
                 <select
                   required
                   value={selectedClientForMeeting}
                   onChange={(e) => setSelectedClientForMeeting(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-bold"
+                  className="w-full px-3 min-h-[44px] bg-slate-50 border border-slate-200 rounded-xl font-bold"
                 >
                   {clients.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1914,7 +2410,7 @@ export const MeetingsTab: React.FC = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">{t.colDateTime} *</label>
                   <input
@@ -1922,18 +2418,27 @@ export const MeetingsTab: React.FC = () => {
                     required
                     value={scheduledDate}
                     onChange={(e) => setScheduledDate(e.target.value)}
-                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono font-bold"
+                    className="w-full px-3 min-h-[44px] bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-orange-500"
                   />
                 </div>
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">{language === 'ar' ? 'التوقيت *' : language === 'fr' ? 'Heure *' : 'Time *'}</label>
-                  <input
-                    type="time"
-                    required
-                    value={scheduledTime}
-                    onChange={(e) => setScheduledTime(e.target.value)}
-                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono font-bold"
-                  />
+                  <div className="relative flex items-center bg-slate-50 border border-slate-200 focus-within:border-orange-500 rounded-xl px-3 min-h-[44px]">
+                    <Clock className="w-4 h-4 text-orange-500 shrink-0" />
+                    <select
+                      required
+                      value={scheduledTime}
+                      onChange={(e) => setScheduledTime(e.target.value)}
+                      dir="ltr"
+                      className="w-full bg-transparent font-mono tabular-nums font-extrabold text-sm text-slate-900 focus:outline-none px-2 py-2 cursor-pointer"
+                    >
+                      {timeOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -2018,8 +2523,8 @@ export const MeetingsTab: React.FC = () => {
       {/* MODAL 2: ADD AGENCY TASK                                 */}
       {/* ======================================================== */}
       {showAddTaskModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3">
-          <div className={`bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden animate-fade-in ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-3 overflow-y-auto">
+          <div className={`bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 animate-fade-in ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
             <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <ListTodo className="w-4 h-4 text-emerald-400" />

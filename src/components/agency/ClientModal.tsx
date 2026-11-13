@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAgency } from '../../context/AgencyContext';
-import { X, Building2, User, Phone, Mail, MapPin, DollarSign } from 'lucide-react';
+import { X } from 'lucide-react';
 import { PackageTier, ClientStage } from '../../types/agency';
 import { translations } from '../../translations';
 
@@ -23,8 +23,25 @@ export const ClientModal: React.FC = () => {
   const [email, setEmail] = useState('');
   const [packageTier, setPackageTier] = useState<PackageTier>('growth');
   const [stage, setStage] = useState<ClientStage>('ad_lead');
-  const [adSource, setAdSource] = useState(language === 'ar' ? 'إعلانات ميتا' : language === 'fr' ? 'Meta Ads' : 'Meta Ads');
+  const [adSource, setAdSource] = useState(
+    language === 'ar' ? 'إعلانات ميتا' : 'Meta Ads'
+  );
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    setCity((prev) => {
+      if (prev === 'الدار البيضاء' || prev === 'Casablanca') {
+        return language === 'ar' ? 'الدار البيضاء' : 'Casablanca';
+      }
+      return prev;
+    });
+    setAdSource((prev) => {
+      if (prev === 'إعلانات ميتا' || prev === 'Meta Ads') {
+        return language === 'ar' ? 'إعلانات ميتا' : 'Meta Ads';
+      }
+      return prev;
+    });
+  }, [language]);
 
   if (!showAddClientModal) return null;
 
@@ -47,67 +64,110 @@ export const ClientModal: React.FC = () => {
       monthlyRetainer,
       stage,
       adSource,
-      notes: notes || (language === 'ar' ? 'تم تسجيل العميل في المنظومة' : 'Client enregistré dans le système'),
+      notes:
+        notes ||
+        (language === 'ar'
+          ? 'تم تسجيل العميل في المنظومة'
+          : language === 'fr'
+          ? 'Client enregistré dans le système'
+          : 'Client registered in the system'),
       trialStartDate: stage === 'trial_7_days' ? new Date().toISOString() : undefined,
-      trialEndDate: stage === 'trial_7_days' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
+      trialEndDate:
+        stage === 'trial_7_days'
+          ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          : undefined,
     });
 
     setShowAddClientModal(false);
     setAgencyName('');
     setContactPerson('');
     setPhone('+212 6');
+    setEmail('');
     setNotes('');
   };
 
   return (
-    <div className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
-      <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden animate-fade-in">
+    <div
+      className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 ${
+        direction === 'rtl' ? 'text-right' : 'text-left'
+      }`}
+    >
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200">
         {/* Header */}
-        <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div className="sticky top-0 z-10 p-4 sm:p-5 bg-[#082E35] text-white flex items-center justify-between border-b border-slate-800">
           <div>
             <h3 className="text-base font-bold text-white">
-              {language === 'ar' ? '+ إضافة وكالة عقارية أو صفقة جديدة' : language === 'fr' ? '+ Nouveau Client Agence' : '+ Add Real Estate Agency'}
+              {language === 'ar'
+                ? '+ إضافة وكالة عقارية أو صفقة جديدة'
+                : language === 'fr'
+                ? '+ Nouveau Client Agence'
+                : '+ Add Real Estate Agency'}
             </h3>
             <p className="text-xs text-slate-300 mt-0.5">
-              {language === 'ar' ? 'تسجيل عميل جديد واختيار الباقة وتحديد المرحلة' : language === 'fr' ? 'Enregistrez un nouveau prospect et choisissez son forfait' : 'Register new agency lead, select tier and initial stage'}
+              {language === 'ar'
+                ? 'تسجيل عميل جديد واختيار الباقة وتحديد المرحلة'
+                : language === 'fr'
+                ? 'Enregistrez un nouveau prospect et choisissez son forfait'
+                : 'Register new agency lead, select tier and initial stage'}
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setShowAddClientModal(false)}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center text-slate-300 hover:text-white rounded-xl cursor-pointer hover:bg-white/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-3.5 text-xs">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-3.5 text-xs">
           <div>
             <label className="block font-semibold text-slate-700 mb-1">
-              {language === 'ar' ? 'اسم الوكالة العقارية *' : language === 'fr' ? 'Nom de l’Agence *' : 'Agency Name *'}
+              {language === 'ar'
+                ? 'اسم الوكالة العقارية *'
+                : language === 'fr'
+                ? 'Nom de l’Agence *'
+                : 'Agency Name *'}
             </label>
             <input
               type="text"
               required
               value={agencyName}
               onChange={(e) => setAgencyName(e.target.value)}
-              placeholder={language === 'ar' ? 'مثال: أطلس العقارية بريميوم، المنارة إيمو...' : 'Atlas Immo...'}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500"
+              placeholder={
+                language === 'ar'
+                  ? 'مثال: أطلس العقارية بريميوم، المنارة إيمو...'
+                  : language === 'fr'
+                  ? 'Ex : Atlas Immo...'
+                  : 'e.g. Atlas Real Estate...'
+              }
+              className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold text-slate-700 mb-1">
-                {language === 'ar' ? 'اسم المسؤول أو المدير *' : language === 'fr' ? 'Responsable / Dirigeant *' : 'Decision Maker *'}
+                {language === 'ar'
+                  ? 'اسم المسؤول أو المدير *'
+                  : language === 'fr'
+                  ? 'Responsable / Dirigeant *'
+                  : 'Decision Maker *'}
               </label>
               <input
                 type="text"
                 required
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
-                placeholder={language === 'ar' ? 'عمر، ياسين، سارة...' : 'Nom...'}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500"
+                placeholder={
+                  language === 'ar'
+                    ? 'عمر، ياسين، سارة...'
+                    : language === 'fr'
+                    ? 'Nom du dirigeant...'
+                    : 'Contact name...'
+                }
+                className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs"
               />
             </div>
             <div>
@@ -120,63 +180,85 @@ export const ClientModal: React.FC = () => {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder={language === 'ar' ? 'الدار البيضاء، مراكش، طنجة...' : 'Casablanca...'}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500"
+                className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold text-slate-700 mb-1">
-                {language === 'ar' ? 'الهاتف (واتساب) *' : language === 'fr' ? 'Téléphone WhatsApp *' : 'WhatsApp Phone *'}
+                {language === 'ar'
+                  ? 'الهاتف (واتساب) *'
+                  : language === 'fr'
+                  ? 'Téléphone WhatsApp *'
+                  : 'WhatsApp Phone *'}
               </label>
               <input
                 type="text"
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-mono focus:outline-none focus:border-orange-500"
+                className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs"
                 dir="ltr"
               />
             </div>
             <div>
               <label className="block font-semibold text-slate-700 mb-1">
-                {language === 'ar' ? 'البريد الإلكتروني' : language === 'fr' ? 'Email' : 'Email Address'}
+                {language === 'ar'
+                  ? 'البريد الإلكتروني'
+                  : language === 'fr'
+                  ? 'Email'
+                  : 'Email Address'}
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="contact@agency.ma"
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-mono focus:outline-none focus:border-orange-500"
+                className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs"
                 dir="ltr"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold text-slate-700 mb-1">
-                {language === 'ar' ? 'باقة الأوتوميشن والصيانة' : language === 'fr' ? 'Offre d’automatisation' : 'Package Tier'}
+                {language === 'ar'
+                  ? 'باقة الأوتوميشن والصيانة'
+                  : language === 'fr'
+                  ? 'Offre d’automatisation'
+                  : 'Package Tier'}
               </label>
               <select
                 value={packageTier}
                 onChange={(e) => setPackageTier(e.target.value as PackageTier)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-bold focus:outline-none focus:border-orange-500"
+                className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs cursor-pointer"
               >
-                <option value="growth">{t.growthPackage} (8,500 {t.mad} + 2,500 {t.perMonth})</option>
-                <option value="enterprise">{t.enterprisePackage} (16,000 {t.mad} + 4,500 {t.perMonth})</option>
-                <option value="starter">{t.starterPackage} (4,000 {t.mad} + 1,200 {t.perMonth})</option>
+                <option value="growth">
+                  {t.growthPackage} (8,500 {t.mad} + 2,500 {t.perMonth})
+                </option>
+                <option value="enterprise">
+                  {t.enterprisePackage} (16,000 {t.mad} + 4,500 {t.perMonth})
+                </option>
+                <option value="starter">
+                  {t.starterPackage} (4,000 {t.mad} + 1,200 {t.perMonth})
+                </option>
               </select>
             </div>
             <div>
               <label className="block font-semibold text-slate-700 mb-1">
-                {language === 'ar' ? 'المرحلة في المسار' : language === 'fr' ? 'Étape Pipeline' : 'Initial Stage'}
+                {language === 'ar'
+                  ? 'المرحلة في المسار'
+                  : language === 'fr'
+                  ? 'Étape Pipeline'
+                  : 'Initial Stage'}
               </label>
               <select
                 value={stage}
                 onChange={(e) => setStage(e.target.value as ClientStage)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-bold focus:outline-none focus:border-orange-500"
+                className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs cursor-pointer"
               >
                 <option value="ad_lead">{t.colAdLeadsTitle}</option>
                 <option value="meeting_scheduled">{t.colMeetingsTitle}</option>
@@ -189,43 +271,67 @@ export const ClientModal: React.FC = () => {
 
           <div>
             <label className="block font-semibold text-slate-700 mb-1">
-              {language === 'ar' ? 'مصدر الاستفسار أو الإعلان' : language === 'fr' ? 'Source d’acquisition' : 'Ad Source'}
+              {language === 'ar'
+                ? 'مصدر الاستفسار أو الإعلان'
+                : language === 'fr'
+                ? 'Source d’acquisition'
+                : 'Ad Source'}
             </label>
             <input
               type="text"
               value={adSource}
               onChange={(e) => setAdSource(e.target.value)}
-              placeholder={language === 'ar' ? 'إعلانات ميتا، بحث جوجل، توصية...' : 'Meta Ads, Google...'}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg"
+              placeholder={
+                language === 'ar'
+                  ? 'إعلانات ميتا، بحث جوجل، توصية...'
+                  : language === 'fr'
+                  ? 'Meta Ads, Google, Recommandation...'
+                  : 'Meta Ads, Google, Referral...'
+              }
+              className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs"
             />
           </div>
 
           <div>
             <label className="block font-semibold text-slate-700 mb-1">
-              {language === 'ar' ? 'ملاحظات تفصيلية' : language === 'fr' ? 'Notes internes' : 'Internal Notes'}
+              {language === 'ar'
+                ? 'ملاحظات تفصيلية'
+                : language === 'fr'
+                ? 'Notes internes'
+                : 'Internal Notes'}
             </label>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={language === 'ar' ? 'حجم فريق الوكالة، العقارات التي يسوقونها، المشاكل المطروحة...' : 'Notes...'}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg"
-            ></textarea>
+              placeholder={
+                language === 'ar'
+                  ? 'حجم فريق الوكالة، العقارات التي يسوقونها، المشاكل المطروحة...'
+                  : language === 'fr'
+                  ? 'Taille d’équipe, type de biens, besoins...'
+                  : 'Team size, property portfolio, pain points...'
+              }
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs"
+            />
           </div>
 
           <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => setShowAddClientModal(false)}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg cursor-pointer"
+              className="min-h-[44px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer transition-colors"
             >
               {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg cursor-pointer shadow-sm transition-colors"
+              className="min-h-[44px] px-5 py-2 bg-[#FF6600] hover:bg-[#E65500] text-white font-bold rounded-xl cursor-pointer shadow-sm transition-colors"
             >
-              {language === 'ar' ? 'حفظ وإضافة الوكالة' : language === 'fr' ? 'Enregistrer le client' : 'Save Client'}
+              {language === 'ar'
+                ? 'حفظ وإضافة الوكالة'
+                : language === 'fr'
+                ? 'Enregistrer le client'
+                : 'Save Client'}
             </button>
           </div>
         </form>

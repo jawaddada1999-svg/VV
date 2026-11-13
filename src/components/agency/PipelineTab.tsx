@@ -172,19 +172,19 @@ export const PipelineTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* 1. Header Banner */}
-      <div className="bg-white p-6 rounded-2xl border-2 border-slate-200/90 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-3 py-1 text-[11px] font-extrabold rounded-full bg-orange-100 text-orange-950 border border-orange-300">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span className="px-3 py-1 text-[11px] font-extrabold rounded-full bg-orange-100 text-orange-950 border border-orange-200">
               {t.pipelineHeaderTag}
             </span>
             <span className="text-xs font-mono font-extrabold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-md">
               {clients.length} {t.clientsUnit}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+          <h2 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">
             {t.pipelineHeaderTitle}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -192,10 +192,10 @@ export const PipelineTab: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 self-end md:self-center shrink-0">
+        <div className="flex items-center gap-2.5 self-stretch md:self-center shrink-0">
           <button
             onClick={() => setShowAddClientModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-[#FF5500] hover:from-orange-600 hover:to-[#D93800] text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+            className="w-full md:w-auto min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#FF6600] to-[#E65500] hover:from-[#E65500] hover:to-[#CC4A00] text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>{t.addClientBtn}</span>
@@ -204,7 +204,7 @@ export const PipelineTab: React.FC = () => {
       </div>
 
       {/* 2. Filter Toolbar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
         <div className="relative w-full sm:w-80">
           <Search className={`w-4 h-4 absolute ${direction === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-slate-400`} />
           <input
@@ -212,16 +212,16 @@ export const PipelineTab: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t.searchPlaceholder}
-            className={`w-full ${direction === 'rtl' ? 'pr-9 pl-3' : 'pl-9 pr-3'} py-2 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 font-medium focus:outline-none focus:border-orange-500`}
+            className={`w-full min-h-[44px] ${direction === 'rtl' ? 'pr-9 pl-3' : 'pl-9 pr-3'} py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 font-medium focus:outline-none focus:border-[#FF6600]`}
           />
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-center">
-          <span className="text-slate-500 font-bold">{t.filterByTier}</span>
+        <div className="flex items-center justify-between sm:justify-end gap-2">
+          <span className="text-slate-500 font-bold shrink-0">{t.filterByTier}</span>
           <select
             value={filterTier}
             onChange={(e) => setFilterTier(e.target.value)}
-            className="bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
+            className="flex-1 sm:flex-initial min-h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 focus:outline-none focus:border-[#FF6600] cursor-pointer"
           >
             <option value="all">{t.allTiers}</option>
             <option value="starter">{t.starterPackage} (1,200 {t.perMonth})</option>
@@ -231,8 +231,8 @@ export const PipelineTab: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Drag & Drop Kanban Columns (CRITICAL USER REQUIREMENT: Title completely separated on its own line, and Lead Count in distinct pill below it with ZERO overlap/scrambling) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3.5 items-start overflow-x-auto pb-4">
+      {/* 3. Drag & Drop Kanban Columns (Snappy horizontal swipe on mobile, 6-col board on desktop) */}
+      <div className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-4 lg:grid lg:grid-cols-6 items-start no-scrollbar">
         {columns.map((col) => {
           const columnClients = filteredClients.filter((c) => c.stage === col.id);
           const isOver = dragOverColId === col.id;
@@ -245,10 +245,10 @@ export const PipelineTab: React.FC = () => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`rounded-2xl p-3 border-2 transition-all flex flex-col min-h-[580px] ${
+              className={`snap-start shrink-0 w-[84vw] sm:w-[320px] lg:w-auto rounded-2xl p-3 border transition-all flex flex-col min-h-[460px] lg:min-h-[580px] ${
                 isOver
-                  ? 'border-orange-500 bg-orange-50/50 shadow-lg ring-2 ring-orange-400/30'
-                  : `border-slate-200/90 bg-slate-50/90 hover:border-slate-300`
+                  ? 'border-[#FF6600] bg-orange-50/50 shadow-lg ring-2 ring-orange-400/30'
+                  : 'border-slate-200/90 bg-slate-50/90 hover:border-slate-300'
               }`}
             >
               {/* Column Header: Distinct Title on top line, and Lead count pill on separate clear line (العنوان بوحدو والعدد بوحدو ما مخلطينش) */}
@@ -339,7 +339,7 @@ export const PipelineTab: React.FC = () => {
                         {/* Financial Snapshot */}
                         <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono font-bold">
                           <span className="text-slate-500 text-[10px]">
-                            {language === 'ar' ? 'الإعداد: ' : 'Setup: '}
+                            {language === 'ar' ? 'الإعداد: ' : language === 'fr' ? 'Installation : ' : 'Setup: '}
                             {client.setupFee.toLocaleString()} {t.mad}
                           </span>
                           <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">

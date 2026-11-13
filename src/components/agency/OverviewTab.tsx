@@ -26,11 +26,16 @@ import {
   Video,
   UserCheck,
   ExternalLink,
+  BarChart3,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
+  Cell,
+  ReferenceLine,
   XAxis,
   YAxis,
   Tooltip,
@@ -60,6 +65,11 @@ export const OverviewTab: React.FC = () => {
 
   // Time filter for charts: Monthly vs Weekly
   const [chartView, setChartView] = useState<'monthly' | 'weekly'>('weekly');
+
+  // Financial Performance chart controls: 1M (weekly) / 3M / 6M / 12M, chart view mode, and cost scope
+  const [financialRange, setFinancialRange] = useState<'1m' | '3m' | '6m' | '12m'>('1m');
+  const [financialChartMode, setFinancialChartMode] = useState<'amounts' | 'margin'>('amounts');
+  const [includeClientTools, setIncludeClientTools] = useState<boolean>(true);
 
   // 1. Attendance Rate Calculation (نسبة حضور المواعيد)
   const completedMeetings = meetings.filter((m) => m.status === 'completed').length;
@@ -98,27 +108,221 @@ export const OverviewTab: React.FC = () => {
 
   const currentChartData = chartView === 'weekly' ? weeklyData : monthlyData;
 
+  // 3B. Financial Performance Dataset (1M weekly breakdown + 3M / 6M / 12M monthly trajectory)
+  const raw12Months = [
+    { period: language === 'ar' ? 'دجنبر' : language === 'fr' ? 'Déc' : 'Dec', retainerRevenue: 1200, adSpend: 2200, toolCosts: 280 },
+    { period: language === 'ar' ? 'يناير' : language === 'fr' ? 'Jan' : 'Jan', retainerRevenue: 1800, adSpend: 2500, toolCosts: 340 },
+    { period: language === 'ar' ? 'فبراير' : language === 'fr' ? 'Fév' : 'Feb', retainerRevenue: 2500, adSpend: 2700, toolCosts: 420 },
+    { period: language === 'ar' ? 'مارس' : language === 'fr' ? 'Mar' : 'Mar', retainerRevenue: 3100, adSpend: 2900, toolCosts: 480 },
+    { period: language === 'ar' ? 'أبريل' : language === 'fr' ? 'Avr' : 'Apr', retainerRevenue: 3700, adSpend: 3100, toolCosts: 540 },
+    { period: language === 'ar' ? 'مايو' : language === 'fr' ? 'Mai' : 'May', retainerRevenue: 4100, adSpend: 3250, toolCosts: 600 },
+    { period: language === 'ar' ? 'يونيو' : language === 'fr' ? 'Juin' : 'Jun', retainerRevenue: 4500, adSpend: 3400, toolCosts: 650 },
+    { period: language === 'ar' ? 'يوليوز' : language === 'fr' ? 'Juil' : 'Jul', retainerRevenue: 6500, adSpend: 3900, toolCosts: 920 },
+    { period: language === 'ar' ? 'غشت' : language === 'fr' ? 'Août' : 'Aug', retainerRevenue: 9500, adSpend: 4250, toolCosts: 1350 },
+    { period: language === 'ar' ? 'شتنبر' : language === 'fr' ? 'Sept' : 'Sep', retainerRevenue: 12500, adSpend: 4600, toolCosts: 1720 },
+    { period: language === 'ar' ? 'أكتوبر' : language === 'fr' ? 'Oct' : 'Oct', retainerRevenue: 15500, adSpend: 4950, toolCosts: 2050 },
+    {
+      period: language === 'ar' ? 'نونبر' : 'Nov',
+      retainerRevenue: metrics.currentMRR,
+      adSpend: metrics.totalAdSpendThisMonth,
+      toolCosts: metrics.totalMonthlyClientExpenses,
+    },
+  ];
+
+  // Current month split cleanly across 4 weeks so "1 Month" shows clear weekly cashflow
+  const w1Retainer = Math.round(metrics.currentMRR * 0.21);
+  const w2Retainer = Math.round(metrics.currentMRR * 0.24);
+  const w3Retainer = Math.round(metrics.currentMRR * 0.26);
+  const w4Retainer = Math.max(0, metrics.currentMRR - (w1Retainer + w2Retainer + w3Retainer));
+
+  const w1Ad = Math.round(metrics.totalAdSpendThisMonth * 0.24);
+  const w2Ad = Math.round(metrics.totalAdSpendThisMonth * 0.26);
+  const w3Ad = Math.round(metrics.totalAdSpendThisMonth * 0.25);
+  const w4Ad = Math.max(0, metrics.totalAdSpendThisMonth - (w1Ad + w2Ad + w3Ad));
+
+  const w1Tool = Math.round(metrics.totalMonthlyClientExpenses * 0.25);
+  const w2Tool = Math.round(metrics.totalMonthlyClientExpenses * 0.25);
+  const w3Tool = Math.round(metrics.totalMonthlyClientExpenses * 0.25);
+  const w4Tool = Math.max(0, metrics.totalMonthlyClientExpenses - (w1Tool + w2Tool + w3Tool));
+
+  const rawCurrentMonthWeeks = [
+    {
+      period: language === 'ar' ? 'الأسبوع 1' : language === 'fr' ? 'Semaine 1' : 'Week 1',
+      retainerRevenue: w1Retainer,
+      adSpend: w1Ad,
+      toolCosts: w1Tool,
+    },
+    {
+      period: language === 'ar' ? 'الأسبوع 2' : language === 'fr' ? 'Semaine 2' : 'Week 2',
+      retainerRevenue: w2Retainer,
+      adSpend: w2Ad,
+      toolCosts: w2Tool,
+    },
+    {
+      period: language === 'ar' ? 'الأسبوع 3' : language === 'fr' ? 'Semaine 3' : 'Week 3',
+      retainerRevenue: w3Retainer,
+      adSpend: w3Ad,
+      toolCosts: w3Tool,
+    },
+    {
+      period: language === 'ar' ? 'الأسبوع 4' : language === 'fr' ? 'Semaine 4' : 'Week 4',
+      retainerRevenue: w4Retainer,
+      adSpend: w4Ad,
+      toolCosts: w4Tool,
+    },
+  ];
+
+  const selectedRawFinancial =
+    financialRange === '1m'
+      ? rawCurrentMonthWeeks
+      : financialRange === '3m'
+      ? raw12Months.slice(-3)
+      : financialRange === '6m'
+      ? raw12Months.slice(-6)
+      : raw12Months;
+
+  const financialSeries = selectedRawFinancial.map((item) => {
+    const totalSpend = includeClientTools ? item.adSpend + item.toolCosts : item.adSpend;
+    const netProfit = item.retainerRevenue - totalSpend;
+    const profitMarginPct =
+      item.retainerRevenue > 0 ? Math.round((netProfit / item.retainerRevenue) * 100) : 0;
+    return {
+      ...item,
+      totalSpend,
+      netProfit,
+      profitMarginPct,
+    };
+  });
+
+  // Summary headline KPIs represent the current full month (even when viewing 1M weekly bars)
+  const headlineTotalSpend = includeClientTools
+    ? metrics.totalAdSpendThisMonth + metrics.totalMonthlyClientExpenses
+    : metrics.totalAdSpendThisMonth;
+  const headlineNetProfit = metrics.currentMRR - headlineTotalSpend;
+  const headlineMarginPct =
+    metrics.currentMRR > 0 ? Math.round((headlineNetProfit / metrics.currentMRR) * 100) : 0;
+
+  const firstPeriodMargin = financialSeries[0]?.profitMarginPct ?? 0;
+  const lastPeriodMargin = financialSeries[financialSeries.length - 1]?.profitMarginPct ?? 0;
+  const marginDeltaPts = lastPeriodMargin - firstPeriodMargin;
+
+  const fpCopy = {
+    ar: {
+      title: 'الأداء المالي: مقارنة المداخيل، المصاريف وصافي الربح',
+      subtitle:
+        financialRange === '1m'
+          ? 'تفصيل هذا الشهر أسبوعاً بأسبوع: كم دخل من الصيانة، كم صُرف في الإعلانات والأدوات، وكم بقي لك كربح صافي'
+          : 'مقارنة واضحة بالدرهم بين عوائد الصيانة الشهرية، مصاريف الإعلانات والأدوات، وصافي الربح الفعلي المتبقي',
+      range1m: 'شهر 1',
+      range3m: '3 أشهر',
+      range6m: '6 أشهر',
+      range12m: '12 شهر',
+      modeAmounts: 'المبالغ (درهم)',
+      modeMargin: 'هامش الربح (%)',
+      scopeAll: 'إعلانات + اشتراكات',
+      scopeAdsOnly: 'إعلانات فقط',
+      statRetainer: 'عوائد الصيانة (الشهر الحالي)',
+      statAdSpend: includeClientTools ? 'مصاريف الإعلانات والاشتراكات' : 'الإنفاق الإعلاني الشهري',
+      statNetProfit: 'صافي الربح الفعلي المتبقي',
+      statMargin: 'نسبة هامش الربح',
+      legendRetainer: 'مداخيل الصيانة',
+      legendSpend: includeClientTools ? 'الإعلانات + الاشتراكات' : 'الإنفاق الإعلاني',
+      legendNetProfit: 'صافي الربح المتبقي',
+      legendMargin: 'نسبة الربح الصافي (%)',
+      tooltipAds: 'مصاريف الإعلانات',
+      tooltipTools: 'اشتراكات أدوات العملاء',
+      tooltipNet: 'صافي الربح المتبقي',
+      tooltipMargin: 'هامش الربح',
+      breakdownTitle: financialRange === '1m' ? 'ملخص أسابيع هذا الشهر:' : 'ملخص صافي الربح لكل شهر:',
+      madShort: 'د.م',
+    },
+    fr: {
+      title: 'Performance Financière : Revenus, Dépenses & Bénéfice Net',
+      subtitle:
+        financialRange === '1m'
+          ? 'Détail hebdomadaire du mois en cours : revenus de maintenance, dépenses pubs/outils et bénéfice net réel'
+          : 'Comparaison claire en MAD entre revenus mensuels de maintenance, dépenses publicitaires et profit net restant',
+      range1m: '1 mois',
+      range3m: '3 mois',
+      range6m: '6 mois',
+      range12m: '12 mois',
+      modeAmounts: 'Montants (MAD)',
+      modeMargin: 'Marge (%)',
+      scopeAll: 'Pubs + Abonnements',
+      scopeAdsOnly: 'Pubs uniquement',
+      statRetainer: 'Revenus Maintenance (Mois)',
+      statAdSpend: includeClientTools ? 'Dépenses Pubs & Outils' : 'Dépenses Pubs (Mois)',
+      statNetProfit: 'Bénéfice Net Restant',
+      statMargin: 'Marge Bénéficiaire',
+      legendRetainer: 'Revenus Maintenance',
+      legendSpend: includeClientTools ? 'Pubs + Abonnements' : 'Dépenses Pubs',
+      legendNetProfit: 'Bénéfice Net',
+      legendMargin: 'Marge Nette (%)',
+      tooltipAds: 'Dépenses Pubs',
+      tooltipTools: 'Abonnements Outils Clients',
+      tooltipNet: 'Bénéfice Net Restant',
+      tooltipMargin: 'Marge Nette',
+      breakdownTitle: financialRange === '1m' ? 'Détail par semaine (mois actuel) :' : 'Marge nette par mois :',
+      madShort: 'MAD',
+    },
+    en: {
+      title: 'Financial Performance: Revenue, Spend & Net Profit',
+      subtitle:
+        financialRange === '1m'
+          ? 'Current month broken down week by week: retainer cash in, ad & tool costs out, and net profit remaining'
+          : 'Clear side-by-side MAD comparison of monthly retainer revenue, total ad/tool spend, and actual net profit',
+      range1m: '1 Month',
+      range3m: '3 Months',
+      range6m: '6 Months',
+      range12m: '12 Months',
+      modeAmounts: 'Amounts (MAD)',
+      modeMargin: 'Margin (%)',
+      scopeAll: 'Ads + Subscriptions',
+      scopeAdsOnly: 'Ad Spend Only',
+      statRetainer: 'Retainer Revenue (Month)',
+      statAdSpend: includeClientTools ? 'Ads + Tools Spend' : 'Monthly Ad Spend',
+      statNetProfit: 'Actual Net Profit',
+      statMargin: 'Current Profit Margin',
+      legendRetainer: 'Retainer Revenue',
+      legendSpend: includeClientTools ? 'Ads + Tool Costs' : 'Ad Spend',
+      legendNetProfit: 'Net Profit',
+      legendMargin: 'Profit Margin (%)',
+      tooltipAds: 'Ad Spend',
+      tooltipTools: 'Client Subscriptions',
+      tooltipNet: 'Actual Net Profit',
+      tooltipMargin: 'Profit Margin',
+      breakdownTitle: financialRange === '1m' ? 'Weekly breakdown (this month):' : 'Net profit & margin by month:',
+      madShort: 'MAD',
+    },
+  }[language];
+
+  const badgeLabels = {
+    cash: language === 'ar' ? 'تحصيل' : language === 'fr' ? 'Cash' : 'Cash',
+    showUp: language === 'ar' ? 'الحضور' : language === 'fr' ? 'Présence' : 'Show-Up',
+    channels: language === 'ar' ? 'ميتا وجوجل' : language === 'fr' ? 'Meta & Google' : 'Meta & Google',
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* 1. Header Hero Banner with Quick Contract Action */}
-      <div className="bg-gradient-to-l from-[#06262B] via-[#0B3A42] to-[#082E35] text-white p-5 sm:p-7 rounded-3xl shadow-sm border border-slate-700/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
+      <div className="bg-gradient-to-l from-[#06262B] via-[#0B3A42] to-[#082E35] text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-700/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
         <div className="absolute -top-12 -left-12 w-48 h-48 bg-orange-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-        <div className="relative z-10 flex items-start gap-4">
+        <div className="relative z-10 flex items-start gap-3 sm:gap-4">
           <div className="hidden sm:block shrink-0">
             <IbondaLogo size="xl" variant="dark" showText={false} />
           </div>
           <div>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-xs">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-extrabold bg-gradient-to-r from-[#FF6600] to-amber-500 text-white shadow-xs">
                 {t.brandTitle}
               </span>
-              <span className="text-[11px] font-semibold text-emerald-300 flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-300 flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 {t.statusRunningLive}
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white leading-tight">
+            <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight text-white leading-tight">
               {t.overviewTitle}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
@@ -127,49 +331,59 @@ export const OverviewTab: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Action: + إضافة عقد جديد */}
-        <div className="flex items-center gap-3 self-end md:self-center shrink-0 relative z-10 flex-wrap">
+        {/* Quick Action: + New Deal + MRR Summary */}
+        <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full md:w-auto shrink-0 relative z-10 flex-wrap">
           <button
             onClick={() => setShowAddClientModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-[#FF5500] hover:from-orange-600 hover:to-[#E04B00] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-orange-500/30 transition-all cursor-pointer transform hover:scale-[1.02] active:scale-[0.98]"
+            className="min-h-[44px] flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FF6600] to-[#E65500] hover:from-[#E65500] hover:to-[#CC4A00] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-orange-500/25 transition-all cursor-pointer active:scale-[0.98]"
           >
             <FileCheck2 className="w-4 h-4 stroke-[2.5]" />
             <span>{t.btnNewContract}</span>
           </button>
 
-          <div className="bg-white/10 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/20 font-mono shadow-inner text-center">
+          <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl sm:rounded-2xl border border-white/20 font-mono shadow-inner text-center">
             <span className="text-[10px] text-orange-200 block font-sans font-bold">{t.kpiRetainerMRR}</span>
-            <span className="text-xl sm:text-2xl font-extrabold text-orange-400">
+            <span className="text-base sm:text-xl font-extrabold text-orange-400">
               {metrics.currentMRR.toLocaleString()} {t.perMonth}
             </span>
           </div>
         </div>
       </div>
 
-      {/* 2. Key Operational Metrics Grid (5 Vivid Metrics) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+      {/* 2. Key Operational Metrics Grid (Uniform 2-Column Mobile Grid -> 5-Column Desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-3.5">
         {/* Metric 1: Monthly Maintenance MRR */}
-        <div className="bg-gradient-to-br from-white to-orange-50/60 p-4.5 rounded-2xl border-2 border-orange-300 shadow-xs hover:border-orange-500 hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="p-2 rounded-xl bg-orange-600 text-white shadow-xs">
-              <Zap className="w-4 h-4 stroke-[2.5]" />
-            </span>
-            <span className="text-[10px] font-bold text-orange-900 bg-orange-100 px-2 py-0.5 rounded-full font-mono">
-              {metrics.activeRetainerClients} {t.clientsUnit}
-            </span>
+        <div className="bg-gradient-to-br from-white to-orange-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-orange-200 shadow-2xs hover:border-orange-400 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-1.5 mb-2">
+              <span className="p-2 rounded-xl bg-[#FF6600] text-white shadow-xs shrink-0">
+                <Zap className="w-4 h-4 stroke-[2.5]" />
+              </span>
+              <span className="text-[10px] font-bold text-orange-900 bg-orange-100 px-2 py-0.5 rounded-full font-mono truncate">
+                {metrics.activeRetainerClients} {t.clientsUnit}
+              </span>
+            </div>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-600 block truncate">{t.kpiRetainerMRR}</span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-lg sm:text-2xl font-extrabold font-mono tabular-nums text-orange-950">
+                {metrics.currentMRR.toLocaleString()}
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500">{t.perMonth}</span>
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-[11px] font-mono tabular-nums font-bold text-emerald-700">
+              <span>
+                {language === 'ar' ? 'الصافي المتبقي:' : language === 'fr' ? 'Net restant :' : 'Net profit:'}{' '}
+                {metrics.netRetainerProfit.toLocaleString()} {t.mad}
+              </span>
+            </div>
           </div>
-          <span className="text-xs font-bold text-slate-600 block">{t.kpiRetainerMRR}</span>
-          <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-xl sm:text-2xl font-extrabold font-mono text-orange-950">
-              {metrics.currentMRR.toLocaleString()}
+          <div className="mt-2.5 pt-2 border-t border-orange-200/60 text-[10px] text-slate-600 flex items-center justify-between gap-1">
+            <span className="truncate hidden sm:inline font-mono tabular-nums text-orange-800 font-semibold">
+              -{metrics.totalMonthlyClientExpenses.toLocaleString()} {language === 'ar' ? 'مصاريف' : language === 'fr' ? 'outils' : 'tools'}
             </span>
-            <span className="text-[11px] font-bold text-slate-500">{t.perMonth}</span>
-          </div>
-          <div className="mt-2.5 pt-2 border-t border-orange-200/60 text-[10px] text-slate-600 flex items-center justify-between">
-            <span>{t.kpiRetainerMRRSub}</span>
             <button
               onClick={() => setActiveTab('retainers')}
-              className="text-orange-600 font-extrabold hover:underline cursor-pointer"
+              className="text-[#FF6600] font-extrabold hover:underline cursor-pointer truncate"
             >
               {t.navRetainers} →
             </button>
@@ -177,27 +391,29 @@ export const OverviewTab: React.FC = () => {
         </div>
 
         {/* Metric 2: 7-Day Free Trials */}
-        <div className="bg-gradient-to-br from-white to-amber-50/60 p-4.5 rounded-2xl border-2 border-amber-300 shadow-xs hover:border-amber-500 hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="p-2 rounded-xl bg-amber-500 text-white shadow-xs">
-              <Clock className="w-4 h-4 stroke-[2.5]" />
-            </span>
-            <span className="text-[10px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full font-mono animate-pulse">
-              {metrics.trialsInProgress} {t.active}
-            </span>
+        <div className="bg-gradient-to-br from-white to-amber-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-amber-200 shadow-2xs hover:border-amber-400 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-1.5 mb-2">
+              <span className="p-2 rounded-xl bg-amber-500 text-white shadow-xs shrink-0">
+                <Clock className="w-4 h-4 stroke-[2.5]" />
+              </span>
+              <span className="text-[10px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full font-mono truncate">
+                {metrics.trialsInProgress} {t.active}
+              </span>
+            </div>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-600 block truncate">{t.kpiActiveTrials}</span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-lg sm:text-2xl font-extrabold font-mono text-amber-700">
+                {metrics.trialsInProgress}
+              </span>
+              <span className="text-[11px] font-bold text-slate-500">{t.clientsUnit}</span>
+            </div>
           </div>
-          <span className="text-xs font-bold text-slate-600 block">{t.kpiActiveTrials}</span>
-          <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-xl sm:text-2xl font-extrabold font-mono text-amber-700">
-              {metrics.trialsInProgress}
-            </span>
-            <span className="text-xs font-bold text-slate-500">{t.clientsUnit}</span>
-          </div>
-          <div className="mt-2.5 pt-2 border-t border-amber-200/60 text-[10px] text-slate-600 flex items-center justify-between">
-            <span>{t.kpiActiveTrialsSub}</span>
+          <div className="mt-2.5 pt-2 border-t border-amber-200/60 text-[10px] text-slate-600 flex items-center justify-between gap-1">
+            <span className="truncate hidden sm:inline">{t.kpiActiveTrialsSub}</span>
             <button
               onClick={() => setActiveTab('pipeline')}
-              className="text-amber-800 font-extrabold hover:underline cursor-pointer"
+              className="text-amber-800 font-extrabold hover:underline cursor-pointer truncate"
             >
               {t.navPipeline} →
             </button>
@@ -205,27 +421,29 @@ export const OverviewTab: React.FC = () => {
         </div>
 
         {/* Metric 3: Active Builds */}
-        <div className="bg-gradient-to-br from-white to-purple-50/60 p-4.5 rounded-2xl border-2 border-purple-300 shadow-xs hover:border-purple-500 hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="p-2 rounded-xl bg-purple-600 text-white shadow-xs">
-              <Layers className="w-4 h-4 stroke-[2.5]" />
-            </span>
-            <span className="text-[10px] font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded-full font-mono">
-              {t.pending}
-            </span>
+        <div className="bg-gradient-to-br from-white to-purple-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-purple-200 shadow-2xs hover:border-purple-400 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-1.5 mb-2">
+              <span className="p-2 rounded-xl bg-purple-600 text-white shadow-xs shrink-0">
+                <Layers className="w-4 h-4 stroke-[2.5]" />
+              </span>
+              <span className="text-[10px] font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded-full font-mono truncate">
+                {t.pending}
+              </span>
+            </div>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-600 block truncate">{t.cardInBuildTitle}</span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-lg sm:text-2xl font-extrabold font-mono text-purple-950">
+                {metrics.buildProjectsActive}
+              </span>
+              <span className="text-[11px] font-bold text-slate-500">{t.projectsUnit}</span>
+            </div>
           </div>
-          <span className="text-xs font-bold text-slate-600 block">{t.cardInBuildTitle}</span>
-          <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-xl sm:text-2xl font-extrabold font-mono text-purple-950">
-              {metrics.buildProjectsActive}
-            </span>
-            <span className="text-xs font-bold text-slate-500">{t.projectsUnit}</span>
-          </div>
-          <div className="mt-2.5 pt-2 border-t border-purple-200/60 text-[10px] text-slate-600 flex items-center justify-between">
-            <span>{t.cardInBuildSub}</span>
+          <div className="mt-2.5 pt-2 border-t border-purple-200/60 text-[10px] text-slate-600 flex items-center justify-between gap-1">
+            <span className="truncate hidden sm:inline">{t.cardInBuildSub}</span>
             <button
               onClick={() => setActiveTab('delivery')}
-              className="text-purple-700 font-extrabold hover:underline cursor-pointer"
+              className="text-purple-700 font-extrabold hover:underline cursor-pointer truncate"
             >
               {t.navDelivery} →
             </button>
@@ -233,27 +451,29 @@ export const OverviewTab: React.FC = () => {
         </div>
 
         {/* Metric 4: Total Cash Collected */}
-        <div className="bg-gradient-to-br from-white to-emerald-50/60 p-4.5 rounded-2xl border-2 border-emerald-300 shadow-xs hover:border-emerald-500 hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="p-2 rounded-xl bg-emerald-600 text-white shadow-xs">
-              <DollarSign className="w-4 h-4 stroke-[2.5]" />
-            </span>
-            <span className="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full font-mono">
-              Cash
-            </span>
+        <div className="bg-gradient-to-br from-white to-emerald-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-emerald-200 shadow-2xs hover:border-emerald-400 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-1.5 mb-2">
+              <span className="p-2 rounded-xl bg-emerald-600 text-white shadow-xs shrink-0">
+                <DollarSign className="w-4 h-4 stroke-[2.5]" />
+              </span>
+              <span className="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full truncate">
+                {badgeLabels.cash}
+              </span>
+            </div>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-600 block truncate">{t.kpiSetupCash}</span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-lg sm:text-2xl font-extrabold font-mono text-emerald-800">
+                {metrics.totalRevenueCash.toLocaleString()}
+              </span>
+              <span className="text-[11px] font-bold text-slate-500">{t.mad}</span>
+            </div>
           </div>
-          <span className="text-xs font-bold text-slate-600 block">{t.kpiSetupCash}</span>
-          <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-xl sm:text-2xl font-extrabold font-mono text-emerald-800">
-              {metrics.totalRevenueCash.toLocaleString()}
-            </span>
-            <span className="text-xs font-bold text-slate-500">{t.mad}</span>
-          </div>
-          <div className="mt-2.5 pt-2 border-t border-emerald-200/60 text-[10px] text-slate-600 flex items-center justify-between">
-            <span>{t.kpiSetupCashSub}</span>
+          <div className="mt-2.5 pt-2 border-t border-emerald-200/60 text-[10px] text-slate-600 flex items-center justify-between gap-1">
+            <span className="truncate hidden sm:inline">{t.kpiSetupCashSub}</span>
             <button
               onClick={() => setActiveTab('retainers')}
-              className="text-emerald-700 font-extrabold hover:underline cursor-pointer"
+              className="text-emerald-700 font-extrabold hover:underline cursor-pointer truncate"
             >
               {t.subtabInvoices} →
             </button>
@@ -261,27 +481,29 @@ export const OverviewTab: React.FC = () => {
         </div>
 
         {/* Metric 5: Meeting Attendance Rate */}
-        <div className="bg-gradient-to-br from-white to-blue-50/60 p-4.5 rounded-2xl border-2 border-blue-300 shadow-xs hover:border-blue-500 hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="p-2 rounded-xl bg-blue-600 text-white shadow-xs">
-              <UserCheck className="w-4 h-4 stroke-[2.5]" />
-            </span>
-            <span className="text-[10px] font-bold text-blue-900 bg-blue-100 px-2 py-0.5 rounded-full font-mono">
-              Show-Up
-            </span>
+        <div className="col-span-2 lg:col-span-1 bg-gradient-to-br from-white to-blue-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-blue-200 shadow-2xs hover:border-blue-400 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-1.5 mb-2">
+              <span className="p-2 rounded-xl bg-blue-600 text-white shadow-xs shrink-0">
+                <UserCheck className="w-4 h-4 stroke-[2.5]" />
+              </span>
+              <span className="text-[10px] font-bold text-blue-900 bg-blue-100 px-2 py-0.5 rounded-full truncate">
+                {badgeLabels.showUp}
+              </span>
+            </div>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-600 block truncate">{t.kpiAttendanceRate}</span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-lg sm:text-2xl font-extrabold font-mono text-blue-900">
+                {attendanceRate}%
+              </span>
+              <span className="text-[11px] font-bold text-slate-500">{t.attended}</span>
+            </div>
           </div>
-          <span className="text-xs font-bold text-slate-600 block">{t.kpiAttendanceRate}</span>
-          <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-xl sm:text-2xl font-extrabold font-mono text-blue-900">
-              {attendanceRate}%
-            </span>
-            <span className="text-[11px] font-bold text-slate-500">{t.attended}</span>
-          </div>
-          <div className="mt-2.5 pt-2 border-t border-blue-200/60 text-[10px] text-slate-600 flex items-center justify-between">
+          <div className="mt-2.5 pt-2 border-t border-blue-200/60 text-[10px] text-slate-600 flex items-center justify-between gap-1">
             <span>{completedMeetings} / {totalMeetingsCount} {t.meetingsUnit}</span>
             <button
               onClick={() => setActiveTab('meetings')}
-              className="text-blue-700 font-extrabold hover:underline cursor-pointer"
+              className="text-blue-700 font-extrabold hover:underline cursor-pointer truncate"
             >
               {t.navMeetings} →
             </button>
@@ -550,9 +772,390 @@ export const OverviewTab: React.FC = () => {
         </div>
       </div>
 
+      {/* 4B. FINANCIAL PERFORMANCE: CLEAR 3-BAR REVENUE VS SPEND VS NET PROFIT (+ MARGIN % VIEW & 1M/3M/6M/12M) */}
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 space-y-5">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <BarChart3 className="w-5 h-5" />
+              </span>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                {fpCopy.title}
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+              {fpCopy.subtitle}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 self-start xl:self-center">
+            {/* View Mode Toggle: Clear MAD Bars vs Margin % Trend */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setFinancialChartMode('amounts')}
+                className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                  financialChartMode === 'amounts'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {fpCopy.modeAmounts}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFinancialChartMode('margin')}
+                className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                  financialChartMode === 'margin'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {fpCopy.modeMargin}
+              </button>
+            </div>
+
+            {/* Cost Scope Toggle */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setIncludeClientTools(true)}
+                className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                  includeClientTools
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {fpCopy.scopeAll}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIncludeClientTools(false)}
+                className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                  !includeClientTools
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {fpCopy.scopeAdsOnly}
+              </button>
+            </div>
+
+            {/* Full Timeframe Selector: 1M · 3M · 6M · 12M */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+              {(
+                [
+                  { key: '1m', label: fpCopy.range1m },
+                  { key: '3m', label: fpCopy.range3m },
+                  { key: '6m', label: fpCopy.range6m },
+                  { key: '12m', label: fpCopy.range12m },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setFinancialRange(opt.key)}
+                  className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                    financialRange === opt.key
+                      ? 'bg-[#082E35] text-white'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Clean Tabular KPI Summary Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <span className="text-[11px] font-semibold text-slate-500 block">{fpCopy.statRetainer}</span>
+            <span className="text-base sm:text-xl font-extrabold font-mono tabular-nums text-[#082E35] mt-0.5 block">
+              {metrics.currentMRR.toLocaleString()} {t.mad}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[11px] font-semibold text-slate-500 block">{fpCopy.statAdSpend}</span>
+            <span
+              dir="ltr"
+              className="text-base sm:text-xl font-extrabold font-mono tabular-nums text-[#FF6600] mt-0.5 inline-block"
+            >
+              -{headlineTotalSpend.toLocaleString()} {t.mad}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[11px] font-semibold text-slate-500 block">{fpCopy.statNetProfit}</span>
+            <span
+              dir="ltr"
+              className={`text-base sm:text-xl font-extrabold font-mono tabular-nums mt-0.5 inline-block ${
+                headlineNetProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'
+              }`}
+            >
+              {headlineNetProfit >= 0 ? '+' : ''}
+              {headlineNetProfit.toLocaleString()} {t.mad}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[11px] font-semibold text-slate-500 block">{fpCopy.statMargin}</span>
+            <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
+              <span
+                dir="ltr"
+                className={`text-base sm:text-xl font-extrabold font-mono tabular-nums ${
+                  headlineMarginPct >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                }`}
+              >
+                {headlineMarginPct}%
+              </span>
+              {financialRange !== '1m' && (
+                <span dir="ltr" className="text-[11px] font-mono tabular-nums font-semibold text-slate-500">
+                  ({marginDeltaPts >= 0 ? `+${marginDeltaPts}` : marginDeltaPts} pts)
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Crystal-Clear Chart Viewport */}
+        <div className="h-80 w-full" dir="ltr">
+          <ResponsiveContainer width="100%" height="100%">
+            {financialChartMode === 'amounts' ? (
+              <BarChart data={financialSeries} margin={{ top: 12, right: 12, left: 4, bottom: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+                <XAxis
+                  dataKey="period"
+                  tick={{ fontSize: 11, fill: '#334155', fontWeight: 700 }}
+                  tickLine={false}
+                  axisLine={{ stroke: '#E2E8F0' }}
+                  interval={0}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#64748B', fontWeight: 600 }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => `${Number(v).toLocaleString()} ${fpCopy.madShort}`}
+                  width={76}
+                />
+                <ReferenceLine y={0} stroke="#CBD5E1" strokeWidth={1.5} />
+                <Tooltip
+                  cursor={{ fill: '#F8FAFC' }}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload || payload.length === 0) return null;
+                    const row = payload[0]?.payload as (typeof financialSeries)[number] | undefined;
+                    if (!row) return null;
+                    return (
+                      <div
+                        dir={direction}
+                        className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-lg text-xs space-y-1.5 min-w-[230px]"
+                      >
+                        <div className="font-bold text-slate-900 border-b border-slate-100 pb-1.5">
+                          {label}
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-slate-600">{fpCopy.legendRetainer}</span>
+                          <span className="font-mono tabular-nums font-bold text-[#082E35]">
+                            {row.retainerRevenue.toLocaleString()} {t.mad}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-slate-600">{fpCopy.tooltipAds}</span>
+                          <span className="font-mono tabular-nums font-bold text-[#FF6600]">
+                            -{row.adSpend.toLocaleString()} {t.mad}
+                          </span>
+                        </div>
+                        {includeClientTools && (
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-slate-600">{fpCopy.tooltipTools}</span>
+                            <span className="font-mono tabular-nums font-semibold text-slate-700">
+                              -{row.toolCosts.toLocaleString()} {t.mad}
+                            </span>
+                          </div>
+                        )}
+                        <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between gap-4 font-bold">
+                          <span className="text-slate-900">{fpCopy.tooltipNet}</span>
+                          <span
+                            className={`font-mono tabular-nums ${
+                              row.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                            }`}
+                          >
+                            {row.netProfit >= 0 ? '+' : ''}
+                            {row.netProfit.toLocaleString()} {t.mad}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 font-bold">
+                          <span className="text-slate-900">{fpCopy.tooltipMargin}</span>
+                          <span
+                            className={`font-mono tabular-nums ${
+                              row.profitMarginPct >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                            }`}
+                          >
+                            {row.profitMarginPct}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+                <Legend
+                  verticalAlign="top"
+                  align="right"
+                  wrapperStyle={{ paddingBottom: '12px', fontSize: '12px', fontWeight: 700 }}
+                />
+                <Bar
+                  dataKey="retainerRevenue"
+                  name={fpCopy.legendRetainer}
+                  fill="#082E35"
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={24}
+                />
+                <Bar
+                  dataKey="totalSpend"
+                  name={fpCopy.legendSpend}
+                  fill="#FF6600"
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={24}
+                />
+                <Bar
+                  dataKey="netProfit"
+                  name={fpCopy.legendNetProfit}
+                  fill="#16A34A"
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={24}
+                >
+                  {financialSeries.map((entry, idx) => (
+                    <Cell
+                      key={`net-cell-${idx}`}
+                      fill={entry.netProfit >= 0 ? '#16A34A' : '#DC2626'}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            ) : (
+              <AreaChart data={financialSeries} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
+                <defs>
+                  <linearGradient id="marginAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#16A34A" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#16A34A" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+                <XAxis
+                  dataKey="period"
+                  tick={{ fontSize: 11, fill: '#334155', fontWeight: 700 }}
+                  tickLine={false}
+                  axisLine={{ stroke: '#E2E8F0' }}
+                  interval={0}
+                />
+                <YAxis
+                  domain={[(dataMin: number) => Math.min(0, Math.floor(dataMin / 10) * 10), 100]}
+                  tick={{ fontSize: 11, fill: '#16A34A', fontWeight: 700 }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => `${v}%`}
+                  width={52}
+                />
+                <ReferenceLine y={0} stroke="#CBD5E1" strokeDasharray="3 3" />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload || payload.length === 0) return null;
+                    const row = payload[0]?.payload as (typeof financialSeries)[number] | undefined;
+                    if (!row) return null;
+                    return (
+                      <div
+                        dir={direction}
+                        className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-lg text-xs space-y-1.5 min-w-[210px]"
+                      >
+                        <div className="font-bold text-slate-900 border-b border-slate-100 pb-1.5">
+                          {label}
+                        </div>
+                        <div className="flex items-center justify-between gap-4 font-bold">
+                          <span className="text-slate-700">{fpCopy.tooltipMargin}</span>
+                          <span
+                            className={`font-mono tabular-nums ${
+                              row.profitMarginPct >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                            }`}
+                          >
+                            {row.profitMarginPct}%
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-slate-600">{fpCopy.tooltipNet}</span>
+                          <span
+                            className={`font-mono tabular-nums font-bold ${
+                              row.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                            }`}
+                          >
+                            {row.netProfit >= 0 ? '+' : ''}
+                            {row.netProfit.toLocaleString()} {t.mad}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+                <Legend
+                  verticalAlign="top"
+                  align="right"
+                  wrapperStyle={{ paddingBottom: '12px', fontSize: '12px', fontWeight: 700 }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="profitMarginPct"
+                  name={fpCopy.legendMargin}
+                  stroke="#16A34A"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#marginAreaGrad)"
+                  dot={{ r: 5, fill: '#16A34A', strokeWidth: 2, stroke: '#FFFFFF' }}
+                  activeDot={{ r: 7 }}
+                />
+              </AreaChart>
+            )}
+          </ResponsiveContainer>
+        </div>
+
+        {/* Flat Scannable Period-by-Period Margin Strip */}
+        <div className="pt-4 border-t border-slate-100 space-y-2">
+          <span className="text-xs font-bold text-slate-600 block">{fpCopy.breakdownTitle}</span>
+          <div className="flex items-stretch gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {financialSeries.map((row, idx) => (
+              <div
+                key={idx}
+                className="min-w-[120px] flex-1 p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between gap-1"
+              >
+                <div className="flex items-center justify-between gap-2 text-[11px]">
+                  <span className="font-bold text-slate-800 truncate">{row.period}</span>
+                  <span
+                    className={`font-mono tabular-nums font-extrabold ${
+                      row.profitMarginPct >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                    }`}
+                  >
+                    {row.profitMarginPct}%
+                  </span>
+                </div>
+                <div className="font-mono tabular-nums text-xs font-bold">
+                  <span
+                    dir="ltr"
+                    className={`inline-block ${row.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}
+                  >
+                    {row.netProfit >= 0 ? '+' : ''}
+                    {row.netProfit.toLocaleString()} {fpCopy.madShort}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* 5. Visual End-to-End Pipeline Overview */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3.5">
           <div>
             <h3 className="text-sm font-bold text-slate-900">
               {t.dealsFunnelTitle}
@@ -563,52 +1166,52 @@ export const OverviewTab: React.FC = () => {
           </div>
           <button
             onClick={() => setActiveTab('pipeline')}
-            className="text-xs font-bold text-orange-600 hover:underline flex items-center gap-1 cursor-pointer"
+            className="text-xs font-bold text-[#FF6600] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
           >
             <span>{t.navPipeline}</span>
             {direction === 'rtl' ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
           {/* Step 1: Ads */}
-          <div className={`p-3.5 rounded-xl border border-blue-200 bg-blue-50/60 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <span className="text-[10px] font-bold text-blue-700 block font-mono">{t.colAdLeadsTitle}</span>
-            <span className="text-lg font-extrabold font-mono text-blue-950 mt-1 block">75 {t.leads}</span>
-            <span className="text-[11px] text-blue-800 font-medium">Meta & Google</span>
+          <div className={`p-3 sm:p-3.5 rounded-xl border border-blue-200 bg-blue-50/60 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+            <span className="text-[10px] font-bold text-blue-700 block truncate">{t.colAdLeadsTitle}</span>
+            <span className="text-base sm:text-lg font-extrabold font-mono text-blue-950 mt-1 block">75 {t.leads}</span>
+            <span className="text-[11px] text-blue-800 font-medium">{badgeLabels.channels}</span>
           </div>
 
           {/* Step 2: Meetings */}
-          <div className={`p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/60 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <span className="text-[10px] font-bold text-indigo-700 block font-mono">{t.colMeetingsTitle}</span>
-            <span className="text-lg font-extrabold font-mono text-indigo-950 mt-1 block">
+          <div className={`p-3 sm:p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/60 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+            <span className="text-[10px] font-bold text-indigo-700 block truncate">{t.colMeetingsTitle}</span>
+            <span className="text-base sm:text-lg font-extrabold font-mono text-indigo-950 mt-1 block">
               {meetings.length} {t.meetingsUnit}
             </span>
             <span className="text-[11px] text-indigo-800 font-medium">{t.metricAttendedRate}: {attendanceRate}%</span>
           </div>
 
           {/* Step 3: 7-Day Trial */}
-          <div className={`p-3.5 rounded-xl border border-amber-200 bg-amber-50/70 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <span className="text-[10px] font-bold text-amber-800 block font-mono">{t.colTrialTitle}</span>
-            <span className="text-lg font-extrabold font-mono text-amber-900 mt-1 block">
+          <div className={`p-3 sm:p-3.5 rounded-xl border border-amber-200 bg-amber-50/70 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+            <span className="text-[10px] font-bold text-amber-800 block truncate">{t.colTrialTitle}</span>
+            <span className="text-base sm:text-lg font-extrabold font-mono text-amber-900 mt-1 block">
               {metrics.trialsInProgress} {t.clientsUnit}
             </span>
             <span className="text-[11px] text-amber-800 font-medium">7 {t.days}</span>
           </div>
 
           {/* Step 4: Build & Delivery */}
-          <div className={`p-3.5 rounded-xl border border-purple-200 bg-purple-50/70 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <span className="text-[10px] font-bold text-purple-800 block font-mono">{t.colDeliveryTitle}</span>
-            <span className="text-lg font-extrabold font-mono text-purple-950 mt-1 block">
+          <div className={`p-3 sm:p-3.5 rounded-xl border border-purple-200 bg-purple-50/70 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+            <span className="text-[10px] font-bold text-purple-800 block truncate">{t.colDeliveryTitle}</span>
+            <span className="text-base sm:text-lg font-extrabold font-mono text-purple-950 mt-1 block">
               {metrics.buildProjectsActive} {t.projectsUnit}
             </span>
             <span className="text-[11px] text-purple-800 font-medium">{t.kpiSetupCash}</span>
           </div>
 
           {/* Step 5: Active Retainers */}
-          <div className={`p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/70 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <span className="text-[10px] font-bold text-emerald-800 block font-mono">{t.colRetainerTitle}</span>
-            <span className="text-lg font-extrabold font-mono text-emerald-950 mt-1 block">
+          <div className={`col-span-2 sm:col-span-1 p-3 sm:p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/70 ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+            <span className="text-[10px] font-bold text-emerald-800 block truncate">{t.colRetainerTitle}</span>
+            <span className="text-base sm:text-lg font-extrabold font-mono text-emerald-950 mt-1 block">
               {metrics.activeRetainerClients} {t.clientsUnit}
             </span>
             <span className="text-[11px] text-emerald-800 font-medium">

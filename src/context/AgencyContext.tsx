@@ -11,6 +11,11 @@ import {
   AgencyMetricsSummary,
   AutomationWorkflowType,
   AgencyTask,
+  ClientNoteEntry,
+  ClientExpenseItem,
+  BookingAvailabilitySettings,
+  DayOfWeekKey,
+  DayScheduleConfig,
 } from '../types/agency';
 import {
   initialPackages,
@@ -21,6 +26,16 @@ import {
   initialTickets,
   initialTasks,
 } from '../data/agencyData';
+import {
+  localizeClient,
+  localizeMeeting,
+  localizeTask,
+  localizePackage,
+  localizeCampaign,
+  localizeInvoice,
+  localizeTicket,
+} from '../utils/entityLocalization';
+import { DAY_ORDER } from '../utils/bookingSlots';
 
 interface AgencyContextType {
   // Navigation
@@ -70,6 +85,17 @@ interface AgencyContextType {
   activateMonthlyRetainer: (id: string) => void;
   replaceClientsFromSheet: (newClients: AgencyClient[]) => void;
 
+  // Notes & Follow-up History
+  addClientNote: (clientId: string, note: Omit<ClientNoteEntry, 'id' | 'createdAt'>) => void;
+  deleteClientNote: (clientId: string, noteId: string) => void;
+  togglePinNote: (clientId: string, noteId: string) => void;
+
+  // Client Subscriptions & Tool Expenses (Deducted from Maintenance)
+  addClientExpense: (clientId: string, expense: Omit<ClientExpenseItem, 'id' | 'createdAt'>) => void;
+  updateClientExpense: (clientId: string, expenseId: string, updates: Partial<ClientExpenseItem>) => void;
+  toggleClientExpenseActive: (clientId: string, expenseId: string) => void;
+  deleteClientExpense: (clientId: string, expenseId: string) => void;
+
   // Meetings & Agenda
   addMeeting: (meeting: Omit<MeetingItem, 'id'>) => void;
   updateMeeting: (id: string, updates: Partial<MeetingItem>) => void;
@@ -94,6 +120,20 @@ interface AgencyContextType {
   // Package Pricing Update
   updatePackagePricing: (tier: PackageTier, setupFee: number, monthlyRetainer: number) => void;
 
+  // Ad Campaigns & ROAS/ROI Tracking
+  updateCampaign: (id: string, updates: Partial<AdCampaignMetric>) => void;
+  addCampaign: (campaign: Omit<AdCampaignMetric, 'id'>) => void;
+
+  // Booking Availability & Working Hours (Landing Page Booking Control)
+  bookingSettings: BookingAvailabilitySettings;
+  updateBookingSettings: (updates: Partial<BookingAvailabilitySettings>) => void;
+  updateDaySchedule: (day: DayOfWeekKey, updates: Partial<DayScheduleConfig>) => void;
+  applyDayScheduleToAllActive: (sourceDay: DayOfWeekKey) => void;
+  applySchedulePreset: (preset: 'morocco_standard' | 'extended_sat' | 'continuous' | 'evening') => void;
+  addBlockedDate: (date: string, reason: string) => void;
+  removeBlockedDate: (id: string) => void;
+  resetBookingSettings: () => void;
+
   // Reset
   resetToInitialData: () => void;
 
@@ -102,6 +142,26 @@ interface AgencyContextType {
 }
 
 const STORAGE_PREFIX = 'ibonda_agency_ops_v1_';
+
+const createDefaultBookingSettings = (): BookingAvailabilitySettings => ({
+  isBookingOpen: true,
+  timezone: 'Africa/Casablanca',
+  slotDurationMinutes: 30,
+  bufferMinutes: 15,
+  minNoticeHours: 2,
+  maxAdvanceDays: 14,
+  maxBookingsPerDay: 8,
+  schedule: {
+    monday: { day: 'monday', enabled: true, startTime: '09:00', endTime: '18:00', hasBreak: true, breakStart: '13:00', breakEnd: '14:30' },
+    tuesday: { day: 'tuesday', enabled: true, startTime: '09:00', endTime: '18:00', hasBreak: true, breakStart: '13:00', breakEnd: '14:30' },
+    wednesday: { day: 'wednesday', enabled: true, startTime: '09:00', endTime: '18:00', hasBreak: true, breakStart: '13:00', breakEnd: '14:30' },
+    thursday: { day: 'thursday', enabled: true, startTime: '09:00', endTime: '18:00', hasBreak: true, breakStart: '13:00', breakEnd: '14:30' },
+    friday: { day: 'friday', enabled: true, startTime: '09:00', endTime: '18:00', hasBreak: true, breakStart: '13:00', breakEnd: '14:30' },
+    saturday: { day: 'saturday', enabled: true, startTime: '10:00', endTime: '14:00', hasBreak: false, breakStart: '13:00', breakEnd: '14:00' },
+    sunday: { day: 'sunday', enabled: false, startTime: '09:00', endTime: '17:00', hasBreak: false, breakStart: '13:00', breakEnd: '14:00' },
+  },
+  blockedDates: [],
+});
 
 const AgencyContext = createContext<AgencyContextType | undefined>(undefined);
 
@@ -140,7 +200,17 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [clients, setClients] = useState<AgencyClient[]>(() => {
     const saved = localStorage.getItem(`${STORAGE_PREFIX}clients`);
-    return saved ? JSON.parse(saved) : initialClients;
+    if (!saved) return initialClients;
+    try {
+      const parsed: AgencyClient[] = JSON.parse(saved);
+      return parsed.map((c) => {
+        if (c.expenses !== undefined) return c;
+        const seeded = initialClients.find((init) => init.id === c.id);
+        return { ...c, expenses: seeded?.expenses || [] };
+      });
+    } catch {
+      return initialClients;
+    }
   });
 
   const [meetings, setMeetings] = useState<MeetingItem[]>(() => {
@@ -150,7 +220,17 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [campaigns, setCampaigns] = useState<AdCampaignMetric[]>(() => {
     const saved = localStorage.getItem(`${STORAGE_PREFIX}campaigns`);
-    return saved ? JSON.parse(saved) : initialCampaigns;
+    if (!saved) return initialCampaigns;
+    try {
+      const parsed: AdCampaignMetric[] = JSON.parse(saved);
+      return parsed.map((c) => {
+        if (c.revenueGenerated !== undefined) return c;
+        const seeded = initialCampaigns.find((init) => init.id === c.id);
+        return { ...c, revenueGenerated: seeded?.revenueGenerated ?? 0 };
+      });
+    } catch {
+      return initialCampaigns;
+    }
   });
 
   const [invoices, setInvoices] = useState<MaintenanceInvoice[]>(() => {
@@ -166,6 +246,26 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [tasks, setTasks] = useState<AgencyTask[]>(() => {
     const saved = localStorage.getItem(`${STORAGE_PREFIX}tasks`);
     return saved ? JSON.parse(saved) : initialTasks;
+  });
+
+  const [bookingSettings, setBookingSettings] = useState<BookingAvailabilitySettings>(() => {
+    const saved = localStorage.getItem(`${STORAGE_PREFIX}booking_settings`);
+    if (!saved) return createDefaultBookingSettings();
+    try {
+      const parsed = JSON.parse(saved);
+      const defaults = createDefaultBookingSettings();
+      return {
+        ...defaults,
+        ...parsed,
+        schedule: {
+          ...defaults.schedule,
+          ...(parsed.schedule || {}),
+        },
+        blockedDates: Array.isArray(parsed.blockedDates) ? parsed.blockedDates : [],
+      };
+    } catch {
+      return createDefaultBookingSettings();
+    }
   });
 
   // Sync to LocalStorage
@@ -197,10 +297,43 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     localStorage.setItem(`${STORAGE_PREFIX}tasks`, JSON.stringify(tasks));
   }, [tasks]);
 
+  useEffect(() => {
+    localStorage.setItem(`${STORAGE_PREFIX}booking_settings`, JSON.stringify(bookingSettings));
+  }, [bookingSettings]);
+
+  const localizedPackages = useMemo(() => {
+    return packages.map((p) => localizePackage(p, language));
+  }, [packages, language]);
+
+  const localizedCampaigns = useMemo(() => {
+    return campaigns.map((c) => localizeCampaign(c, language));
+  }, [campaigns, language]);
+
+  const localizedInvoices = useMemo(() => {
+    return invoices.map((inv) => localizeInvoice(inv, language));
+  }, [invoices, language]);
+
+  const localizedTickets = useMemo(() => {
+    return tickets.map((tkt) => localizeTicket(tkt, language));
+  }, [tickets, language]);
+
+  const localizedClients = useMemo(() => {
+    return clients.map((c) => localizeClient(c, language));
+  }, [clients, language]);
+
+  const localizedMeetings = useMemo(() => {
+    return meetings.map((m) => localizeMeeting(m, language));
+  }, [meetings, language]);
+
+  const localizedTasks = useMemo(() => {
+    return tasks.map((t) => localizeTask(t, language));
+  }, [tasks, language]);
+
   const selectedClient = useMemo(() => {
     if (!selectedClientId) return null;
-    return clients.find((c) => c.id === selectedClientId) || null;
-  }, [clients, selectedClientId]);
+    const raw = clients.find((c) => c.id === selectedClientId);
+    return raw ? localizeClient(raw, language) : null;
+  }, [clients, selectedClientId, language]);
 
   // Client CRUD
   const addClient = (data: Omit<AgencyClient, 'id' | 'createdAt'>): AgencyClient => {
@@ -233,6 +366,117 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
         return c;
       })
+    );
+  };
+
+  // Notes & Follow-up History
+  const addClientNote = (clientId: string, noteData: Omit<ClientNoteEntry, 'id' | 'createdAt'>) => {
+    const newNote: ClientNoteEntry = {
+      ...noteData,
+      id: `note-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      createdAt: new Date().toISOString(),
+    };
+
+    setClients((prev) =>
+      prev.map((c) => {
+        if (c.id === clientId) {
+          const existingHistory = c.noteHistory || [];
+          return {
+            ...c,
+            noteHistory: [newNote, ...existingHistory],
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  const deleteClientNote = (clientId: string, noteId: string) => {
+    setClients((prev) =>
+      prev.map((c) => {
+        if (c.id === clientId) {
+          return {
+            ...c,
+            noteHistory: (c.noteHistory || []).filter((n) => n.id !== noteId),
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  const togglePinNote = (clientId: string, noteId: string) => {
+    setClients((prev) =>
+      prev.map((c) => {
+        if (c.id === clientId) {
+          return {
+            ...c,
+            noteHistory: (c.noteHistory || []).map((n) =>
+              n.id === noteId ? { ...n, isPinned: !n.isPinned } : n
+            ),
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  // Client Subscriptions & Tool Expenses CRUD
+  const addClientExpense = (clientId: string, expenseData: Omit<ClientExpenseItem, 'id' | 'createdAt'>) => {
+    const newExpense: ClientExpenseItem = {
+      ...expenseData,
+      id: `exp-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      createdAt: new Date().toISOString(),
+    };
+    setClients((prev) =>
+      prev.map((c) =>
+        c.id === clientId
+          ? { ...c, expenses: [newExpense, ...(c.expenses || [])] }
+          : c
+      )
+    );
+  };
+
+  const updateClientExpense = (clientId: string, expenseId: string, updates: Partial<ClientExpenseItem>) => {
+    setClients((prev) =>
+      prev.map((c) =>
+        c.id === clientId
+          ? {
+              ...c,
+              expenses: (c.expenses || []).map((exp) =>
+                exp.id === expenseId ? { ...exp, ...updates } : exp
+              ),
+            }
+          : c
+      )
+    );
+  };
+
+  const toggleClientExpenseActive = (clientId: string, expenseId: string) => {
+    setClients((prev) =>
+      prev.map((c) =>
+        c.id === clientId
+          ? {
+              ...c,
+              expenses: (c.expenses || []).map((exp) =>
+                exp.id === expenseId ? { ...exp, isActive: !exp.isActive } : exp
+              ),
+            }
+          : c
+      )
+    );
+  };
+
+  const deleteClientExpense = (clientId: string, expenseId: string) => {
+    setClients((prev) =>
+      prev.map((c) =>
+        c.id === clientId
+          ? {
+              ...c,
+              expenses: (c.expenses || []).filter((exp) => exp.id !== expenseId),
+            }
+          : c
+      )
     );
   };
 
@@ -481,6 +725,149 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     );
   };
 
+  // Ad Campaigns & ROAS/ROI Updates
+  const updateCampaign = (id: string, updates: Partial<AdCampaignMetric>) => {
+    setCampaigns((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
+    );
+  };
+
+  const addCampaign = (data: Omit<AdCampaignMetric, 'id'>) => {
+    const newCampaign: AdCampaignMetric = {
+      ...data,
+      id: `camp-${Date.now()}`,
+    };
+    setCampaigns((prev) => [newCampaign, ...prev]);
+  };
+
+  // Booking Availability & Working Hours Actions
+  const updateBookingSettings = (updates: Partial<BookingAvailabilitySettings>) => {
+    setBookingSettings((prev) => ({
+      ...prev,
+      ...updates,
+      schedule: updates.schedule ? { ...prev.schedule, ...updates.schedule } : prev.schedule,
+    }));
+  };
+
+  const updateDaySchedule = (day: DayOfWeekKey, updates: Partial<DayScheduleConfig>) => {
+    setBookingSettings((prev) => ({
+      ...prev,
+      schedule: {
+        ...prev.schedule,
+        [day]: {
+          ...prev.schedule[day],
+          ...updates,
+        },
+      },
+    }));
+  };
+
+  const applyDayScheduleToAllActive = (sourceDay: DayOfWeekKey) => {
+    setBookingSettings((prev) => {
+      const source = prev.schedule[sourceDay];
+      const nextSchedule = { ...prev.schedule };
+      DAY_ORDER.forEach((d) => {
+        if (nextSchedule[d].enabled) {
+          nextSchedule[d] = {
+            ...nextSchedule[d],
+            startTime: source.startTime,
+            endTime: source.endTime,
+            hasBreak: source.hasBreak,
+            breakStart: source.breakStart,
+            breakEnd: source.breakEnd,
+          };
+        }
+      });
+      return { ...prev, schedule: nextSchedule };
+    });
+  };
+
+  const applySchedulePreset = (preset: 'morocco_standard' | 'extended_sat' | 'continuous' | 'evening') => {
+    setBookingSettings((prev) => {
+      const nextSchedule = { ...prev.schedule };
+      if (preset === 'morocco_standard') {
+        DAY_ORDER.forEach((d) => {
+          const isWeekday = d !== 'saturday' && d !== 'sunday';
+          nextSchedule[d] = {
+            day: d,
+            enabled: isWeekday,
+            startTime: '09:00',
+            endTime: '18:00',
+            hasBreak: true,
+            breakStart: '13:00',
+            breakEnd: '14:30',
+          };
+        });
+      } else if (preset === 'extended_sat') {
+        DAY_ORDER.forEach((d) => {
+          const isWorking = d !== 'sunday';
+          nextSchedule[d] = {
+            day: d,
+            enabled: isWorking,
+            startTime: d === 'saturday' ? '10:00' : '09:30',
+            endTime: d === 'saturday' ? '15:00' : '19:00',
+            hasBreak: d !== 'saturday',
+            breakStart: '13:00',
+            breakEnd: '14:30',
+          };
+        });
+      } else if (preset === 'continuous') {
+        DAY_ORDER.forEach((d) => {
+          const isWeekday = d !== 'saturday' && d !== 'sunday';
+          nextSchedule[d] = {
+            day: d,
+            enabled: isWeekday,
+            startTime: '09:00',
+            endTime: '17:00',
+            hasBreak: false,
+            breakStart: '13:00',
+            breakEnd: '14:00',
+          };
+        });
+      } else if (preset === 'evening') {
+        DAY_ORDER.forEach((d) => {
+          const isWorking = d !== 'sunday';
+          nextSchedule[d] = {
+            day: d,
+            enabled: isWorking,
+            startTime: '14:00',
+            endTime: '21:00',
+            hasBreak: false,
+            breakStart: '17:00',
+            breakEnd: '17:30',
+          };
+        });
+      }
+      return { ...prev, schedule: nextSchedule };
+    });
+  };
+
+  const addBlockedDate = (date: string, reason: string) => {
+    if (!date) return;
+    setBookingSettings((prev) => {
+      if (prev.blockedDates.some((b) => b.date === date)) return prev;
+      return {
+        ...prev,
+        blockedDates: [
+          ...prev.blockedDates,
+          { id: `blk-${Date.now()}`, date, reason: reason.trim() },
+        ].sort((a, b) => a.date.localeCompare(b.date)),
+      };
+    });
+  };
+
+  const removeBlockedDate = (id: string) => {
+    setBookingSettings((prev) => ({
+      ...prev,
+      blockedDates: prev.blockedDates.filter((b) => b.id !== id),
+    }));
+  };
+
+  const resetBookingSettings = () => {
+    localStorage.removeItem(`${STORAGE_PREFIX}booking_settings`);
+    setBookingSettings(createDefaultBookingSettings());
+  };
+
   const resetToInitialData = () => {
     localStorage.removeItem(`${STORAGE_PREFIX}packages`);
     localStorage.removeItem(`${STORAGE_PREFIX}clients`);
@@ -506,6 +893,15 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const activeRetainerList = clients.filter((c) => c.stage === 'active_retainer');
     const currentMRR = activeRetainerList.reduce((sum, c) => sum + (c.monthlyRetainer || 0), 0);
+    const totalMonthlyClientExpenses = activeRetainerList.reduce(
+      (sum, c) =>
+        sum +
+        (c.expenses || [])
+          .filter((e) => e.isActive)
+          .reduce((expSum, e) => expSum + (e.monthlyCost || 0), 0),
+      0
+    );
+    const netRetainerProfit = currentMRR - totalMonthlyClientExpenses;
 
     const trialsInProgress = clients.filter((c) => c.stage === 'trial_7_days').length;
     const buildProjectsActive = clients.filter((c) => c.stage === 'delivery_in_progress').length;
@@ -526,6 +922,8 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       meetingsBookedThisMonth: meetings.length,
       totalAdSpendThisMonth: totalAdSpend,
       averageCAC,
+      totalMonthlyClientExpenses,
+      netRetainerProfit,
     };
   }, [invoices, clients, campaigns, meetings]);
 
@@ -537,13 +935,13 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         language,
         setLanguage,
         direction,
-        packages,
-        clients,
-        meetings,
-        campaigns,
-        invoices,
-        tickets,
-        tasks,
+        packages: localizedPackages,
+        clients: localizedClients,
+        meetings: localizedMeetings,
+        campaigns: localizedCampaigns,
+        invoices: localizedInvoices,
+        tickets: localizedTickets,
+        tasks: localizedTasks,
         searchQuery,
         setSearchQuery,
         dateFilter,
@@ -565,6 +963,13 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateDeliveryProgress,
         activateMonthlyRetainer,
         replaceClientsFromSheet,
+        addClientNote,
+        deleteClientNote,
+        togglePinNote,
+        addClientExpense,
+        updateClientExpense,
+        toggleClientExpenseActive,
+        deleteClientExpense,
         addMeeting,
         updateMeeting,
         updateMeetingStatus,
@@ -579,6 +984,16 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         addTicket,
         updateTicketStatus,
         updatePackagePricing,
+        updateCampaign,
+        addCampaign,
+        bookingSettings,
+        updateBookingSettings,
+        updateDaySchedule,
+        applyDayScheduleToAllActive,
+        applySchedulePreset,
+        addBlockedDate,
+        removeBlockedDate,
+        resetBookingSettings,
         resetToInitialData,
         metrics,
       }}

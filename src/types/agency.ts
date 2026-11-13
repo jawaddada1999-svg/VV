@@ -67,6 +67,43 @@ export interface AgencyClient {
   isReferralPartner?: boolean; // واش الوكالة شريكة كاتجيب لينا زبناء آخرين (Parrainage)
 
   notes: string;
+  noteHistory?: ClientNoteEntry[];
+  expenses?: ClientExpenseItem[];
+}
+
+export type ExpenseCategory =
+  | 'whatsapp_api'
+  | 'automation_platform'
+  | 'ai_tokens'
+  | 'hosting_domain'
+  | 'crm_calendar'
+  | 'other';
+
+export interface ClientExpenseItem {
+  id: string;
+  name: string;
+  provider?: string;
+  category: ExpenseCategory;
+  monthlyCost: number;
+  billingCycle: 'monthly' | 'yearly';
+  isActive: boolean;
+  notes?: string;
+  createdAt: string;
+}
+
+export type NoteType = 'meeting_summary' | 'follow_up' | 'call' | 'whatsapp' | 'contract' | 'general';
+
+export interface ClientNoteEntry {
+  id: string;
+  clientId: string;
+  createdAt: string;
+  author: string;
+  type: NoteType;
+  title: string;
+  content: string;
+  followUpDate?: string;
+  outcome?: string;
+  isPinned?: boolean;
 }
 
 export interface MeetingItem {
@@ -117,6 +154,7 @@ export interface AdCampaignMetric {
   campaignName: string;
   platform: 'meta' | 'google' | 'linkedin' | 'referral';
   spend: number;               // الميزانية المصروفة (MAD)
+  revenueGenerated?: number;   // إجمالي الإيرادات المحققة من الحملة (MAD)
   impressions: number;
   clicks: number;
   landingPageVisitors: number; // عدد زوار صفحة الهبوط
@@ -165,4 +203,44 @@ export interface AgencyMetricsSummary {
   meetingsBookedThisMonth: number;
   totalAdSpendThisMonth: number;
   averageCAC: number;           // تكلفة اكتساب العميل
+  totalMonthlyClientExpenses: number; // إجمالي مصاريف واشتراكات العملاء النشطين
+  netRetainerProfit: number;          // صافي الربح الشهري المتبقي من الصيانة
 }
+
+export type DayOfWeekKey =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday';
+
+export interface DayScheduleConfig {
+  day: DayOfWeekKey;
+  enabled: boolean;
+  startTime: string; // HH:mm
+  endTime: string;   // HH:mm
+  hasBreak: boolean;
+  breakStart: string; // HH:mm
+  breakEnd: string;   // HH:mm
+}
+
+export interface BlockedDateItem {
+  id: string;
+  date: string; // YYYY-MM-DD
+  reason: string;
+}
+
+export interface BookingAvailabilitySettings {
+  isBookingOpen: boolean;
+  timezone: string;
+  slotDurationMinutes: 15 | 30 | 45 | 60;
+  bufferMinutes: 0 | 10 | 15 | 30;
+  minNoticeHours: 1 | 2 | 4 | 12 | 24;
+  maxAdvanceDays: 7 | 14 | 21 | 30 | 60;
+  maxBookingsPerDay: number;
+  schedule: Record<DayOfWeekKey, DayScheduleConfig>;
+  blockedDates: BlockedDateItem[];
+}
+

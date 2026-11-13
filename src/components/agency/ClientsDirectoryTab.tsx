@@ -39,9 +39,13 @@ export const ClientsDirectoryTab: React.FC = () => {
   const [tierFilter, setTierFilter] = useState<string>('all');
   const [referralFilter, setReferralFilter] = useState<string>('all');
 
-  // Extract unique cities list for filter
+  // Extract unique base cities list for filter in active language
   const uniqueCities = useMemo(() => {
-    const citiesSet = new Set(clients.map((c) => c.city.split(' ')[0]));
+    const citiesSet = new Set(
+      clients
+        .map((c) => c.city.split('(')[0].trim())
+        .filter(Boolean)
+    );
     return Array.from(citiesSet);
   }, [clients]);
 
@@ -52,7 +56,7 @@ export const ClientsDirectoryTab: React.FC = () => {
         c.contactPerson.toLowerCase().includes(search.toLowerCase()) ||
         c.city.toLowerCase().includes(search.toLowerCase()) ||
         c.phone.includes(search);
-      const matchCity = cityFilter === 'all' || c.city.includes(cityFilter);
+      const matchCity = cityFilter === 'all' || c.city.toLowerCase().includes(cityFilter.toLowerCase());
       const matchStage = stageFilter === 'all' || c.stage === stageFilter;
       const matchTier = tierFilter === 'all' || c.packageTier === tierFilter;
       const matchReferral =
@@ -178,7 +182,7 @@ export const ClientsDirectoryTab: React.FC = () => {
 
         <div className="flex items-center gap-2 self-stretch md:self-center flex-wrap">
           {/* City Filter */}
-          <div className="flex items-center gap-1 bg-slate-50 border-2 border-slate-200 rounded-xl px-2.5 py-1">
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 min-h-[40px]">
             <MapPin className="w-3.5 h-3.5 text-orange-600 shrink-0" />
             <select
               value={cityFilter}
@@ -186,11 +190,11 @@ export const ClientsDirectoryTab: React.FC = () => {
               className="bg-transparent font-bold text-slate-800 focus:outline-none cursor-pointer"
             >
               <option value="all">{t.filterByCity} {t.all}</option>
-              <option value="Casablanca">Casablanca</option>
-              <option value="Marrakech">Marrakech</option>
-              <option value="Tanger">Tanger</option>
-              <option value="Rabat">Rabat</option>
-              <option value="Agadir">Agadir</option>
+              {uniqueCities.map((cityName) => (
+                <option key={cityName} value={cityName}>
+                  {cityName}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -198,7 +202,7 @@ export const ClientsDirectoryTab: React.FC = () => {
           <select
             value={stageFilter}
             onChange={(e) => setStageFilter(e.target.value)}
-            className="bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-1.5 font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3 min-h-[40px] font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
           >
             <option value="all">{t.filterByStatus} {t.all}</option>
             <option value="trial_7_days">7 {t.days}</option>
@@ -213,7 +217,7 @@ export const ClientsDirectoryTab: React.FC = () => {
           <select
             value={tierFilter}
             onChange={(e) => setTierFilter(e.target.value)}
-            className="bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-1.5 font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3 min-h-[40px] font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
           >
             <option value="all">{t.allTiers}</option>
             <option value="starter">{t.starterPackage}</option>
@@ -225,10 +229,10 @@ export const ClientsDirectoryTab: React.FC = () => {
           <select
             value={referralFilter}
             onChange={(e) => setReferralFilter(e.target.value)}
-            className="bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-1.5 font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3 min-h-[40px] font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
           >
             <option value="all">{t.all}</option>
-            <option value="partner">⭐ {t.badgeReferralPartner}</option>
+            <option value="partner">{t.badgeReferralPartner}</option>
             <option value="standard">{t.badgeStandardClient}</option>
           </select>
         </div>

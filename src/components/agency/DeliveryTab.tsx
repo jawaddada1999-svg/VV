@@ -28,6 +28,7 @@ export const DeliveryTab: React.FC = () => {
     activateMonthlyRetainer,
     setSelectedClientId,
     language,
+    direction,
   } = useAgency();
 
   const t = translations[language];
@@ -78,17 +79,19 @@ export const DeliveryTab: React.FC = () => {
           <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-xs">
             <Percent className="w-5 h-5 stroke-[2.5]" />
           </div>
-          <div className="text-right">
-            <span className="text-[10px] text-purple-700 font-bold block">متوسط تقدم المشاريع</span>
+          <div className={direction === 'rtl' ? 'text-right' : 'text-left'}>
+            <span className="text-[10px] text-purple-700 font-bold block">
+              {language === 'ar' ? 'متوسط تقدم المشاريع' : language === 'fr' ? 'Avancement moyen' : 'Average Progress'}
+            </span>
             <span className="text-lg font-mono font-extrabold text-purple-950">
-              {avgProgress}% إنجاز
+              {avgProgress}% {language === 'ar' ? 'إنجاز' : language === 'fr' ? 'complété' : 'complete'}
             </span>
           </div>
         </div>
       </div>
 
       {/* 2. Top Summary Cards (4 Cards with Distinct Vivid Coordinated Colors) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Projects in build (Vibrant Purple/Indigo) */}
         <div className="bg-gradient-to-br from-white to-purple-50/50 p-5 rounded-2xl border-2 border-purple-300 shadow-xs hover:border-purple-500 hover:shadow-md transition-all">
           <div className="flex items-center justify-between mb-2.5">
@@ -96,7 +99,7 @@ export const DeliveryTab: React.FC = () => {
               <FolderSync className="w-4 h-4 stroke-[2.5]" />
             </span>
             <span className="text-[10px] font-bold text-purple-900 bg-purple-100 px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider">
-              In Build
+              {t.cardInBuildTitle}
             </span>
           </div>
           <span className="text-xs font-bold text-slate-600 block">{t.cardInBuildTitle}</span>
@@ -118,7 +121,7 @@ export const DeliveryTab: React.FC = () => {
               <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
             </span>
             <span className="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider">
-              Delivered
+              {t.cardDeliveredTitle}
             </span>
           </div>
           <span className="text-xs font-bold text-slate-600 block">{t.cardDeliveredTitle}</span>
@@ -140,7 +143,7 @@ export const DeliveryTab: React.FC = () => {
               <Timer className="w-4 h-4 stroke-[2.5]" />
             </span>
             <span className="text-[10px] font-bold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider">
-              7-Day Trials
+              {t.cardTrialTitle}
             </span>
           </div>
           <span className="text-xs font-bold text-slate-600 block">{t.cardTrialTitle}</span>
@@ -162,7 +165,7 @@ export const DeliveryTab: React.FC = () => {
               <Zap className="w-4 h-4 stroke-[2.5]" />
             </span>
             <span className="text-[10px] font-bold text-teal-900 bg-teal-100 px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider">
-              Active Retainers
+              {t.cardRetainersTitle}
             </span>
           </div>
           <span className="text-xs font-bold text-slate-600 block">{t.cardRetainersTitle}</span>
@@ -195,7 +198,7 @@ export const DeliveryTab: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-right text-xs whitespace-nowrap">
+          <table className={`w-full text-xs whitespace-nowrap ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
             <thead className="bg-slate-100/90 text-slate-700 border-b border-slate-200 font-bold">
               <tr>
                 <th className="p-3.5">{t.colClientAgency}</th>
@@ -212,13 +215,19 @@ export const DeliveryTab: React.FC = () => {
               {inProgressProjects.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-400 font-medium">
-                    لا توجد مشاريع قيد التسليم حالياً. كل المشاريع السابقة تم تسليمها بنجاح وهي تحت الصيانة.
+                    {language === 'ar'
+                      ? 'لا توجد مشاريع قيد التسليم حالياً. كل المشاريع السابقة تم تسليمها بنجاح وهي تحت الصيانة.'
+                      : language === 'fr'
+                      ? 'Aucun projet en cours de livraison actuellement. Tous les projets précédents sont actifs en maintenance.'
+                      : 'No delivery projects currently in progress. All completed systems are active on monthly retainers.'}
                   </td>
                 </tr>
               ) : (
                 inProgressProjects.map((project) => {
                   const currentPct = project.deliveryProgressPct || 25;
-                  const deadline = project.targetDeliveryDate || 'خلال 3 أيام';
+                  const deadline =
+                    project.targetDeliveryDate ||
+                    (language === 'ar' ? 'خلال 3 أيام' : language === 'fr' ? 'Sous 3 jours' : 'Within 3 days');
 
                   return (
                     <tr key={project.id} className="hover:bg-slate-50/90 transition-colors">
@@ -260,7 +269,9 @@ export const DeliveryTab: React.FC = () => {
                       <td className="p-3.5 text-center bg-purple-50/20 border-x border-purple-100">
                         <div className="space-y-1.5 max-w-xs mx-auto">
                           <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-slate-500 font-medium">التقدم الحالي:</span>
+                            <span className="text-slate-500 font-medium">
+                              {language === 'ar' ? 'التقدم الحالي:' : language === 'fr' ? 'Progression :' : 'Progress:'}
+                            </span>
                             <span className="font-mono font-extrabold text-purple-900 text-xs">{currentPct}%</span>
                           </div>
 
@@ -323,7 +334,7 @@ export const DeliveryTab: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-right text-xs whitespace-nowrap">
+          <table className={`w-full text-xs whitespace-nowrap ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
             <thead className="bg-slate-100 text-slate-700 border-b border-slate-200 font-bold">
               <tr>
                 <th className="p-3.5">{t.colClientAgency}</th>
@@ -352,7 +363,7 @@ export const DeliveryTab: React.FC = () => {
                     {c.monthlyRetainer.toLocaleString()} {t.perMonth}
                   </td>
                   <td className="p-3.5 font-mono text-slate-700">
-                    {c.nextBillingDate ? new Date(c.nextBillingDate).toLocaleDateString('ar-MA') : 'شهري'}
+                    {c.nextBillingDate ? new Date(c.nextBillingDate).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US') : (language === 'ar' ? 'شهري' : language === 'fr' ? 'Mensuel' : 'Monthly')}
                   </td>
                   <td className="p-3.5">
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">

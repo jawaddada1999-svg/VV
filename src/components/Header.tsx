@@ -7,14 +7,8 @@ import {
   Bell,
   X,
   Clock,
-  CheckCircle2,
-  PhoneCall,
-  Sparkles,
   Globe,
   ChevronDown,
-  Building2,
-  Activity,
-  FileCheck2,
 } from 'lucide-react';
 import { translations, Language } from '../translations';
 import { IbondaLogo } from './IbondaLogo';
@@ -25,12 +19,10 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
   const {
-    activeTab,
     searchQuery,
     setSearchQuery,
     setShowAddClientModal,
     clients,
-    metrics,
     setSelectedClientId,
     language,
     setLanguage,
@@ -39,70 +31,88 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
 
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const t = translations[language];
 
-  // Active trials that need urgent attention (expiring within 48h)
+  // Active trials that need urgent attention
   const trialAlerts = clients.filter((c) => c.stage === 'trial_7_days');
 
-  // Languages list with clear flags and labels
-  const languagesList: Array<{ code: Language; label: string; flag: string; sub: string }> = [
-    { code: 'ar', label: 'العربية', flag: '🇲🇦', sub: 'عربية 100%' },
-    { code: 'fr', label: 'Français', flag: '🇫🇷', sub: 'Français' },
-    { code: 'en', label: 'English', flag: '🇬🇧', sub: 'English' },
+  const languagesList: Array<{ code: Language; short: string; label: string; flag: string; sub: string }> = [
+    { code: 'ar', short: 'AR', label: 'العربية', flag: '🇲🇦', sub: 'عربية 100%' },
+    { code: 'fr', short: 'FR', label: 'Français', flag: '🇫🇷', sub: 'Français 100%' },
+    { code: 'en', short: 'EN', label: 'English', flag: '🇬🇧', sub: 'English 100%' },
   ];
+
+  const currentLangObj = languagesList.find((l) => l.code === language) || languagesList[0];
 
   return (
     <>
-      {/* SPATIOUS, CLEAR AND HIGH HEADER (Header عريض وواضح باش يبان كلشي) */}
-      <header className="sticky top-0 z-40 h-20 sm:h-24 bg-white/95 backdrop-blur-md border-b-2 border-slate-200 shadow-sm px-4 sm:px-8 w-full max-w-full transition-all">
-        <div className="h-full flex items-center justify-between gap-3 sm:gap-6 max-w-full">
-          {/* ========================================================= */}
-          {/* SIDE 1: Logo Brand, Menu toggle, Add Client Button, Search */}
-          {/* ========================================================= */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink min-w-0">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs w-full max-w-full transition-all">
+        <div className="h-16 sm:h-20 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4 max-w-full">
+          {/* SIDE 1: Mobile Menu + Compact Logo / Add Button + Desktop Search */}
+          <div className="flex items-center gap-2 sm:gap-3.5 shrink min-w-0">
             {/* Mobile Menu Hamburger */}
             <button
+              type="button"
               onClick={onToggleMobileSidebar}
-              className="p-2.5 rounded-xl text-slate-700 hover:bg-slate-100 lg:hidden cursor-pointer shrink-0 transition-colors border border-slate-200"
-              title="القائمة"
-              aria-label="القائمة الجانبية"
+              className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 lg:hidden cursor-pointer shrink-0 transition-colors border border-slate-200 bg-white"
+              title={language === 'ar' ? 'القائمة' : language === 'fr' ? 'Menu' : 'Menu'}
+              aria-label={language === 'ar' ? 'القائمة الجانبية' : language === 'fr' ? 'Menu latéral' : 'Sidebar menu'}
             >
               <Menu className="w-5 h-5 stroke-[2.2]" />
             </button>
 
-            {/* Primary Action Button: + إضافة عقد / صفقة جديدة */}
+            {/* Primary Action Button: + New Deal / Client */}
             <button
+              type="button"
               onClick={() => setShowAddClientModal(true)}
-              className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 via-orange-600 to-[#FF5500] hover:from-orange-600 hover:to-[#D93800] active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg transition-all cursor-pointer whitespace-nowrap shrink-0 border border-orange-400/40"
+              className="min-h-[40px] flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4.5 py-2 bg-gradient-to-r from-[#FF6600] to-[#E65500] hover:from-[#E65500] hover:to-[#CC4A00] active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-sm shadow-orange-500/20 transition-all cursor-pointer whitespace-nowrap shrink-0"
             >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span className="hidden xs:inline sm:inline">
-                {t.addClientBtn}
-              </span>
-              <span className="xs:hidden">
-                + عقد
+              <Plus className="w-4 h-4 stroke-[2.8]" />
+              <span className="hidden sm:inline">{t.addClientBtn}</span>
+              <span className="sm:hidden font-black">
+                {language === 'ar' ? 'عقد جديد' : language === 'fr' ? 'Contrat' : 'New Deal'}
               </span>
             </button>
 
-            {/* Search Box on Desktop - Spacious */}
-            <div className="hidden md:flex items-center relative w-64 lg:w-96">
-              <Search className={`w-4 h-4 absolute ${direction === 'rtl' ? 'right-3.5' : 'left-3.5'} text-slate-400 pointer-events-none`} />
+            {/* Desktop Search Box */}
+            <div className="hidden md:flex items-center relative w-64 lg:w-88">
+              <Search
+                className={`w-4 h-4 absolute ${direction === 'rtl' ? 'right-3.5' : 'left-3.5'} text-slate-400 pointer-events-none`}
+              />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className={`w-full ${direction === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 text-xs bg-slate-100 hover:bg-slate-100/90 focus:bg-white border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20`}
+                className={`w-full min-h-[42px] ${direction === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2 text-xs bg-slate-100 hover:bg-slate-100/90 focus:bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#FF6600] focus:ring-2 focus:ring-orange-500/20`}
               />
             </div>
           </div>
 
-          {/* ========================================================= */}
-          {/* SIDE 2: Language Switcher, Notifications, Brand Display */}
-          {/* ========================================================= */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            {/* LANGUAGE SWITCHER BUTTON (واضح وعريض، يفتح قائمة بارزة فوق كل شيء) */}
+          {/* SIDE 2: Mobile Search Toggle, Language Switcher, Notifications, Brand Logo */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            {/* Mobile Search Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowMobileSearch(!showMobileSearch);
+                setShowLangMenu(false);
+                setShowNotifMenu(false);
+              }}
+              className={`md:hidden min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl border transition-colors cursor-pointer ${
+                showMobileSearch || searchQuery
+                  ? 'border-[#FF6600] bg-orange-50 text-[#FF6600]'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+              }`}
+              title={t.searchPlaceholder}
+              aria-label={t.searchPlaceholder}
+            >
+              {showMobileSearch ? <X className="w-4 h-4 stroke-[2.4]" /> : <Search className="w-4 h-4 stroke-[2.2]" />}
+            </button>
+
+            {/* Language Switcher */}
             <div className="relative">
               <button
                 type="button"
@@ -110,31 +120,39 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
                   setShowLangMenu(!showLangMenu);
                   setShowNotifMenu(false);
                 }}
-                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border-2 transition-all cursor-pointer shadow-xs ${
+                className={`min-h-[40px] flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 rounded-xl border transition-all cursor-pointer ${
                   showLangMenu
-                    ? 'border-orange-500 bg-orange-50 text-orange-900 ring-2 ring-orange-400/30 font-black'
-                    : 'border-slate-300 hover:border-orange-500 bg-white text-slate-800 font-extrabold'
+                    ? 'border-[#FF6600] bg-orange-50 text-orange-900 ring-2 ring-orange-400/20 font-black'
+                    : 'border-slate-200 hover:border-[#FF6600] bg-white text-slate-800 font-extrabold'
                 }`}
-                title="تغيير لغة لوحة التحكم / Change Language / Changer la langue"
+                title={t.languageSelect}
               >
-                <Globe className="w-4 h-4 text-orange-600 shrink-0" />
-                <span className="font-mono text-xs font-black text-slate-900 flex items-center gap-1.5">
-                  <span>{language === 'ar' ? '🇲🇦' : language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
-                  <span>{language === 'ar' ? 'العربية' : language === 'fr' ? 'Français' : 'English'}</span>
+                <Globe className="w-4 h-4 text-[#FF6600] shrink-0" />
+                <span className="font-mono text-xs font-black text-slate-900 flex items-center gap-1">
+                  <span>{currentLangObj.flag}</span>
+                  <span className="hidden sm:inline">{currentLangObj.label}</span>
+                  <span className="sm:hidden">{currentLangObj.short}</span>
                 </span>
-                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showLangMenu ? 'rotate-180 text-orange-600' : ''}`} />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-slate-400 transition-transform hidden sm:block ${
+                    showLangMenu ? 'rotate-180 text-[#FF6600]' : ''
+                  }`}
+                />
               </button>
 
-              {/* Language Dropdown Menu with High Z-Index & Clear Borders */}
               {showLangMenu && (
                 <div
                   className={`absolute ${
                     direction === 'rtl' ? 'left-0' : 'right-0'
-                  } top-full mt-2 w-56 bg-white border-2 border-orange-500/60 rounded-2xl shadow-2xl py-2 z-[100] text-xs animate-fade-in`}
+                  } top-full mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-2xl py-2 z-[100] text-xs`}
                 >
-                  <div className={`px-4 py-2 text-[11px] font-black text-slate-500 border-b border-slate-100 flex items-center justify-between ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  <div
+                    className={`px-4 py-2 text-[11px] font-black text-slate-500 border-b border-slate-100 flex items-center justify-between ${
+                      direction === 'rtl' ? 'text-right' : 'text-left'
+                    }`}
+                  >
                     <span>{t.languageSelect}</span>
-                    <span className="text-[10px] text-orange-600 font-bold">
+                    <span className="text-[10px] text-[#FF6600] font-bold">
                       {language === 'ar' ? 'تحويل شامل' : language === 'fr' ? 'Basculement total' : 'Full Switch'}
                     </span>
                   </div>
@@ -148,8 +166,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
                           setLanguage(lang.code);
                           setShowLangMenu(false);
                         }}
-                        className={`w-full px-4 py-3 flex items-center justify-between hover:bg-orange-50/90 cursor-pointer font-bold transition-colors ${
-                          isCurrent ? 'text-orange-600 bg-orange-50 font-black' : 'text-slate-800'
+                        className={`w-full min-h-[44px] px-4 py-2.5 flex items-center justify-between hover:bg-orange-50/90 cursor-pointer font-bold transition-colors ${
+                          isCurrent ? 'text-[#FF6600] bg-orange-50 font-black' : 'text-slate-800'
                         } ${direction === 'rtl' ? 'text-right' : 'text-left'}`}
                       >
                         <span className="flex items-center gap-2.5">
@@ -160,7 +178,9 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
                           </div>
                         </span>
                         {isCurrent && (
-                          <span className="text-orange-600 font-black text-sm px-2 py-0.5 bg-orange-100 rounded-md">✓</span>
+                          <span className="text-[#FF6600] font-black text-sm px-2 py-0.5 bg-orange-100 rounded-md">
+                            ✓
+                          </span>
                         )}
                       </button>
                     );
@@ -169,7 +189,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
               )}
             </div>
 
-            {/* Notifications Dropdown with Badge */}
+            {/* Notifications Dropdown */}
             <div className="relative shrink-0">
               <button
                 type="button"
@@ -177,12 +197,12 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
                   setShowNotifMenu(!showNotifMenu);
                   setShowLangMenu(false);
                 }}
-                className="relative p-2.5 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer border-2 border-slate-200"
+                className="relative min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200 bg-white"
                 title={t.notificationsTitle}
               >
-                <Bell className="w-5 h-5 stroke-[2.2]" />
+                <Bell className="w-4.5 h-4.5 stroke-[2.2]" />
                 {trialAlerts.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-orange-500 text-white text-[10px] font-mono font-extrabold rounded-full flex items-center justify-center animate-pulse shadow-xs">
+                  <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-[#FF6600] text-white text-[10px] font-mono font-extrabold rounded-full flex items-center justify-center shadow-xs">
                     {trialAlerts.length}
                   </span>
                 )}
@@ -190,14 +210,18 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
 
               {showNotifMenu && (
                 <div
-                  className={`absolute ${direction === 'rtl' ? 'left-0' : 'right-0'} top-full mt-2 w-80 sm:w-96 bg-white border-2 border-slate-200 rounded-2xl shadow-2xl z-[100] overflow-hidden text-xs ${direction === 'rtl' ? 'text-right' : 'text-left'}`}
+                  className={`fixed sm:absolute inset-x-3 sm:inset-x-auto ${
+                    direction === 'rtl' ? 'sm:left-0' : 'sm:right-0'
+                  } top-18 sm:top-full sm:mt-2 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] overflow-hidden text-xs ${
+                    direction === 'rtl' ? 'text-right' : 'text-left'
+                  }`}
                 >
                   <div className="p-3.5 bg-gradient-to-r from-[#082E35] to-[#0B434C] text-white flex items-center justify-between font-bold border-b border-orange-500/40">
                     <span className="flex items-center gap-1.5">
                       <Clock className="w-4 h-4 text-orange-400" />
                       <span>{t.notificationsTitle}</span>
                     </span>
-                    <span className="text-[10px] bg-orange-500 text-white font-extrabold px-2.5 py-0.5 rounded-full font-mono">
+                    <span className="text-[10px] bg-[#FF6600] text-white font-extrabold px-2.5 py-0.5 rounded-full font-mono">
                       {trialAlerts.length} {t.alertsCount}
                     </span>
                   </div>
@@ -217,13 +241,11 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
                         >
                           <div className="flex items-center justify-between font-bold text-slate-900 mb-0.5">
                             <span>{client.agencyName}</span>
-                            <span className="text-[10px] text-orange-600 font-mono font-extrabold">
+                            <span className="text-[10px] text-[#FF6600] font-mono font-extrabold">
                               {client.packageTier.toUpperCase()}
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-600 leading-relaxed truncate">
-                            {client.notes}
-                          </p>
+                          <p className="text-[11px] text-slate-600 leading-relaxed truncate">{client.notes}</p>
                         </div>
                       ))
                     )}
@@ -232,15 +254,45 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
               )}
             </div>
 
-            {/* Brand Logo & Name: High Profile, Prominent and Clear */}
-            <div className="flex items-center border-r-2 rtl:border-r-0 rtl:border-l-2 border-slate-200/80 px-2 sm:px-3">
-              <IbondaLogo size="lg" variant="light" />
+            {/* Responsive Brand Logo */}
+            <div className="hidden xs:flex sm:hidden items-center border-r rtl:border-r-0 rtl:border-l border-slate-200/80 px-2">
+              <IbondaLogo size="sm" variant="light" showText={false} />
+            </div>
+            <div className="hidden sm:flex items-center border-r rtl:border-r-0 rtl:border-l border-slate-200/80 px-3">
+              <IbondaLogo size="md" variant="light" />
             </div>
           </div>
         </div>
+
+        {/* Expandable Mobile Search Bar */}
+        {showMobileSearch && (
+          <div className="md:hidden px-3 pb-3 pt-1 border-t border-slate-100 bg-white">
+            <div className="relative flex items-center">
+              <Search
+                className={`w-4 h-4 absolute ${direction === 'rtl' ? 'right-3.5' : 'left-3.5'} text-slate-400 pointer-events-none`}
+              />
+              <input
+                type="text"
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                className={`w-full min-h-[44px] ${direction === 'rtl' ? 'pr-10 pl-10' : 'pl-10 pr-10'} py-2 text-xs bg-slate-100 focus:bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 font-medium focus:outline-none focus:border-[#FF6600]`}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className={`absolute ${direction === 'rtl' ? 'left-3' : 'right-3'} p-1 text-slate-400 hover:text-slate-700 cursor-pointer`}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Global Click-Away Backdrop for Menus */}
       {(showLangMenu || showNotifMenu) && (
         <div
           onClick={() => {

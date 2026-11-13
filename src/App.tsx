@@ -10,9 +10,11 @@ import { RetainersTab } from './components/agency/RetainersTab';
 import { AdsTab } from './components/agency/AdsTab';
 import { ClientsDirectoryTab } from './components/agency/ClientsDirectoryTab';
 import { PackagesSettingsTab } from './components/agency/PackagesSettingsTab';
+import { BookingSettingsTab } from './components/agency/BookingSettingsTab';
 import { ClientModal } from './components/agency/ClientModal';
 import { ClientDetailDrawer } from './components/agency/ClientDetailDrawer';
-import { Clock, AlertTriangle, ArrowRight } from 'lucide-react';
+import { MobileBottomNav } from './components/MobileBottomNav';
+import { Clock } from 'lucide-react';
 import { translations } from './translations';
 
 const DashboardContent: React.FC = () => {
@@ -47,9 +49,9 @@ const DashboardContent: React.FC = () => {
           setMobileOpen={setMobileSidebarOpen}
         />
 
-        {/* Content Container with Directional Margin for Sidebar */}
+        {/* Content Container with Directional Margin for Sidebar & Bottom Nav Clearance on Mobile */}
         <main
-          className={`flex-1 w-full max-w-full min-w-0 transition-all duration-300 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 ${
+          className={`flex-1 w-full max-w-full min-w-0 transition-all duration-300 pt-3.5 pb-24 sm:py-6 lg:pb-8 px-3 sm:px-6 lg:px-8 ${
             direction === 'rtl'
               ? sidebarCollapsed
                 ? 'lg:mr-20'
@@ -67,11 +69,11 @@ const DashboardContent: React.FC = () => {
                   setSelectedClientId(urgentTrial.id);
                   setActiveTab('pipeline');
                 }}
-                className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white px-4 py-2.5 rounded-2xl shadow-sm flex items-center justify-between gap-3 text-xs font-semibold cursor-pointer transition-all hover:shadow-md"
+                className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white px-3.5 py-2.5 rounded-2xl shadow-sm flex items-center justify-between gap-2.5 text-xs font-semibold cursor-pointer transition-all hover:shadow-md"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <Clock className="w-4 h-4 animate-pulse shrink-0" />
-                  <span>
+                  <span className="truncate sm:whitespace-normal">
                     <strong>{t.urgentTrialsAlert}:</strong>{' '}
                     {urgentTrial.agencyName} ({urgentTrial.contactPerson}) -{' '}
                     {urgentTrial.setupFee.toLocaleString()} {t.mad}
@@ -91,10 +93,14 @@ const DashboardContent: React.FC = () => {
             {activeTab === 'retainers' && <RetainersTab />}
             {activeTab === 'ads' && <AdsTab />}
             {activeTab === 'clients' && <ClientsDirectoryTab />}
+            {activeTab === 'booking_settings' && <BookingSettingsTab />}
             {activeTab === 'packages' && <PackagesSettingsTab />}
           </div>
         </main>
       </div>
+
+      {/* Fixed Native-Style Bottom Navigation on Mobile */}
+      <MobileBottomNav onOpenMenu={() => setMobileSidebarOpen(true)} />
 
       {/* Global Modals & Drawers */}
       <ClientModal />

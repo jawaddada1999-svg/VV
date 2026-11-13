@@ -16,10 +16,10 @@ import {
   Sparkles,
   Flame,
   Zap,
-  FileSpreadsheet,
 } from 'lucide-react';
 import { translations } from '../translations';
 import { IbondaLogo } from './IbondaLogo';
+import { DAY_ORDER } from '../utils/bookingSlots';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -47,11 +47,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen,
   setMobileOpen,
 }) => {
-  const { activeTab, setActiveTab, metrics, clients, language, direction } = useAgency();
+  const { activeTab, setActiveTab, metrics, clients, bookingSettings, language, direction } = useAgency();
   const t = translations[language];
 
   const trialsCount = clients.filter((c) => c.stage === 'trial_7_days').length;
   const buildsCount = clients.filter((c) => c.stage === 'delivery_in_progress').length;
+  const activeWorkingDaysCount = DAY_ORDER.filter((d) => bookingSettings.schedule[d]?.enabled).length;
 
   const navigationGroups: NavigationGroup[] = [
     {
@@ -111,6 +112,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeColor: 'bg-white/20 text-white',
         },
         {
+          id: 'booking_settings',
+          label: t.navBookingSettings,
+          icon: Clock,
+          badge: `${activeWorkingDaysCount}/7`,
+          badgeColor: bookingSettings.isBookingOpen
+            ? 'bg-emerald-500 text-white font-bold'
+            : 'bg-rose-500 text-white font-bold',
+        },
+        {
           id: 'packages',
           label: t.navPackages,
           icon: Settings,
@@ -167,7 +177,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={() => setCollapsed(!collapsed)}
               className="hidden lg:flex p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/15 transition-colors cursor-pointer mr-auto"
-              title={collapsed ? 'توسيع القائمة' : 'تصغير القائمة'}
+              title={
+                collapsed
+                  ? language === 'ar'
+                    ? 'توسيع القائمة'
+                    : language === 'fr'
+                    ? 'Agrandir le menu'
+                    : 'Expand sidebar'
+                  : language === 'ar'
+                  ? 'تصغير القائمة'
+                  : language === 'fr'
+                  ? 'Réduire le menu'
+                  : 'Collapse sidebar'
+              }
             >
               {collapsed ? (
                 <ChevronLeft className={`w-4 h-4 ${direction === 'rtl' ? 'rotate-180' : ''} stroke-[2.5]` } />

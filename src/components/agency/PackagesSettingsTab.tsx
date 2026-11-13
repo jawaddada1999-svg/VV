@@ -52,9 +52,9 @@ export const PackagesSettingsTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* 1. Header Banner */}
-      <div className="bg-white p-5 rounded-2xl border-2 border-slate-200/90 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full bg-slate-100 text-slate-800 border border-slate-300">
@@ -64,7 +64,7 @@ export const PackagesSettingsTab: React.FC = () => {
               {language === 'ar' ? '3 باقات معتمدة' : language === 'fr' ? '3 Forfaits' : '3 Tiers'}
             </span>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
             {t.packagesHeaderTitle}
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -78,7 +78,7 @@ export const PackagesSettingsTab: React.FC = () => {
               resetToInitialData();
             }
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer border border-slate-200"
+          className="min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer border border-slate-200"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>{language === 'ar' ? 'إعادة الضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
@@ -86,15 +86,15 @@ export const PackagesSettingsTab: React.FC = () => {
       </div>
 
       {/* 2. Packages Pricing Form */}
-      <form onSubmit={handleSaveAll} className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <form onSubmit={handleSaveAll} className="space-y-4 sm:space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
           {packages.map((pkg) => {
             const current = prices[pkg.id] || { setup: pkg.setupFee, retainer: pkg.monthlyRetainer };
 
             return (
               <div
                 key={pkg.id}
-                className="bg-white p-5 rounded-2xl border-2 border-slate-200 hover:border-orange-500 transition-all shadow-2xs flex flex-col justify-between"
+                className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-[#FF6600] transition-all shadow-2xs flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -123,7 +123,7 @@ export const PackagesSettingsTab: React.FC = () => {
                           type="number"
                           value={current.setup}
                           onChange={(e) => handlePriceChange(pkg.id, 'setup', Number(e.target.value))}
-                          className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-mono font-bold text-slate-900 text-sm focus:outline-none focus:border-orange-500"
+                          className="w-full min-h-[44px] px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono font-bold text-slate-900 text-sm focus:outline-none focus:border-[#FF6600]"
                         />
                         <span className={`absolute ${direction === 'rtl' ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs pointer-events-none`}>
                           {t.mad}
@@ -140,7 +140,7 @@ export const PackagesSettingsTab: React.FC = () => {
                           type="number"
                           value={current.retainer}
                           onChange={(e) => handlePriceChange(pkg.id, 'retainer', Number(e.target.value))}
-                          className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-mono font-bold text-emerald-700 text-sm focus:outline-none focus:border-orange-500"
+                          className="w-full min-h-[44px] px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono font-bold text-emerald-700 text-sm focus:outline-none focus:border-[#FF6600]"
                         />
                         <span className={`absolute ${direction === 'rtl' ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs pointer-events-none`}>
                           {t.perMonth}
@@ -170,12 +170,12 @@ export const PackagesSettingsTab: React.FC = () => {
         </div>
 
         {/* Save Bar */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <span className="text-xs text-slate-500">
             {t.packagesHeaderDesc}
           </span>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between sm:justify-end gap-3">
             {savedSuccess && (
               <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4" />
@@ -185,7 +185,7 @@ export const PackagesSettingsTab: React.FC = () => {
 
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-[#FF5500] hover:from-orange-600 hover:to-[#D93800] text-white font-extrabold text-xs rounded-xl transition-colors cursor-pointer shadow-sm"
+              className="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-[#FF6600] to-[#E65500] hover:from-[#E65500] hover:to-[#CC4A00] text-white font-extrabold text-xs rounded-xl transition-colors cursor-pointer shadow-sm"
             >
               <Save className="w-4 h-4" />
               <span>{language === 'ar' ? 'حفظ تعديلات الأسعار' : language === 'fr' ? 'Enregistrer les tarifs' : 'Save Pricing'}</span>

@@ -24,7 +24,7 @@ export interface Translations {
   navRetainers: string;
   navClients: string;
   navPackages: string;
-  navGoogleSheets: string;
+  navBookingSettings: string;
   sidebarBadge: string;
 
   // Common Units & Statuses
@@ -127,6 +127,7 @@ export interface Translations {
   subtabPerformance: string;
   subtabTasks: string;
   subtabAllMeetings: string;
+  subtabBookingHours: string;
   agendaTodayTitle: string;
   agendaTodaySub: string;
   reminderStatus: string;
@@ -229,6 +230,7 @@ export interface Translations {
   btnCopiedRib: string;
   btnSendWhatsAppInvoice: string;
   subtabClients: string;
+  subtabExpenses: string;
   subtabInvoices: string;
   subtabTickets: string;
 
@@ -273,7 +275,7 @@ export const translations: Record<Language, Translations> = {
     navRetainers: 'عقود واشتراكات الصيانة',
     navClients: 'دليل الوكالات والعملاء',
     navPackages: 'هيكلة وتسعير الباقات الثلاث',
-    navGoogleSheets: 'الربط الحي مع جداول البيانات',
+    navBookingSettings: 'أوقات العمل ونظام الحجز',
     sidebarBadge: 'لوحة التحكم',
 
     mad: 'درهم مغربي',
@@ -372,6 +374,7 @@ export const translations: Record<Language, Translations> = {
     subtabPerformance: 'مؤشرات الأداء والتحويل اليومي والأسبوعي',
     subtabTasks: 'قائمة المهام اليومية',
     subtabAllMeetings: 'سجل المواعيد الشامل',
+    subtabBookingHours: 'أوقات العمل والحجز',
     agendaTodayTitle: 'أجندة مواعيد اليوم وتأكيد الحضور',
     agendaTodaySub: 'تتبع المواعيد المجدولة لليوم، فحص إرسال التذكيرات وتأكيد العملاء، وإطلاق المحادثات بنقرة واحدة.',
     reminderStatus: 'حالة إرسال التذكير',
@@ -471,6 +474,7 @@ export const translations: Record<Language, Translations> = {
     btnCopiedRib: '✓ تم نسخ رقم الحساب بنجاح',
     btnSendWhatsAppInvoice: 'إرسال تذكير وفاتورة عبر واتساب',
     subtabClients: 'وكالات عقود الصيانة',
+    subtabExpenses: 'مصاريف واشتراكات العملاء',
     subtabInvoices: 'فواتير الصيانة',
     subtabTickets: 'تذاكر الدعم والصيانة',
 
@@ -512,7 +516,7 @@ export const translations: Record<Language, Translations> = {
     navRetainers: 'Contrats de Maintenance',
     navClients: 'Annuaire des Agences',
     navPackages: 'Offres & Forfaits',
-    navGoogleSheets: 'Synchronisation Google Sheets',
+    navBookingSettings: 'Horaires & Réservation',
     sidebarBadge: 'PANNEAU CONTRÔLE',
 
     mad: 'MAD',
@@ -611,6 +615,7 @@ export const translations: Record<Language, Translations> = {
     subtabPerformance: 'Performance & Conversion (Jour/Semaine)',
     subtabTasks: 'Liste des Tâches',
     subtabAllMeetings: 'Registre Complet des RDV',
+    subtabBookingHours: 'Horaires & Réservation',
     agendaTodayTitle: 'Agenda du Jour & Statuts de Confirmation',
     agendaTodaySub: 'Suivi des réunions du jour, rappels envoyés, confirmations clients et déclenchement d’actions immédiates.',
     reminderStatus: 'Statut du Rappel',
@@ -710,6 +715,7 @@ export const translations: Record<Language, Translations> = {
     btnCopiedRib: '✓ RIB copié dans le presse-papier',
     btnSendWhatsAppInvoice: 'Envoyer facture & RIB par WhatsApp',
     subtabClients: 'Agences sous Contrat',
+    subtabExpenses: 'Dépenses & Marge Nette',
     subtabInvoices: 'Factures de Maintenance',
     subtabTickets: 'Tickets de Support & Requêtes',
 
@@ -751,7 +757,7 @@ export const translations: Record<Language, Translations> = {
     navRetainers: 'Maintenance Retainers',
     navClients: 'Agency Directory',
     navPackages: 'Tiers & Pricing Setup',
-    navGoogleSheets: 'Google Sheets Live Sync',
+    navBookingSettings: 'Working Hours & Booking',
     sidebarBadge: 'CONTROL HUB',
 
     mad: 'MAD',
@@ -850,6 +856,7 @@ export const translations: Record<Language, Translations> = {
     subtabPerformance: 'Daily & Weekly Performance',
     subtabTasks: 'Agency To-Do List',
     subtabAllMeetings: 'All Appointments Master',
+    subtabBookingHours: 'Working Hours & Booking',
     agendaTodayTitle: 'Daily Agenda & Confirmation Hub',
     agendaTodaySub: 'Track today’s scheduled demo calls, check reminder deliveries, client confirmations, and trigger instant WhatsApp messages.',
     reminderStatus: 'Reminder Status',
@@ -949,6 +956,7 @@ export const translations: Record<Language, Translations> = {
     btnCopiedRib: '✓ RIB copied to clipboard',
     btnSendWhatsAppInvoice: 'Send Invoice & RIB via WhatsApp',
     subtabClients: 'Retainer Clients',
+    subtabExpenses: 'Expenses & Net Profit',
     subtabInvoices: 'Maintenance Invoices',
     subtabTickets: 'Maintenance Tickets',
 
