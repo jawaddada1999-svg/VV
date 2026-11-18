@@ -170,8 +170,12 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Language & i18n
   const [language, setLanguage] = useState<'ar' | 'fr' | 'en'>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}lang`);
-    return (saved as 'ar' | 'fr' | 'en') || 'ar';
+    try {
+      const saved = localStorage.getItem(`${STORAGE_PREFIX}lang`);
+      return saved === 'ar' || saved === 'fr' || saved === 'en' ? saved : 'ar';
+    } catch {
+      return 'ar';
+    }
   });
 
   const direction = language === 'ar' ? 'rtl' : 'ltr';
