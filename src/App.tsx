@@ -9,7 +9,6 @@ import { DeliveryTab } from './components/agency/DeliveryTab';
 import { RetainersTab } from './components/agency/RetainersTab';
 import { AdsTab } from './components/agency/AdsTab';
 import { ClientsDirectoryTab } from './components/agency/ClientsDirectoryTab';
-import { PackagesSettingsTab } from './components/agency/PackagesSettingsTab';
 import { BookingSettingsTab } from './components/agency/BookingSettingsTab';
 import { ClientModal } from './components/agency/ClientModal';
 import { ClientDetailDrawer } from './components/agency/ClientDetailDrawer';
@@ -50,7 +49,6 @@ const DashboardContent: React.FC = () => {
             {activeTab === 'ads' && <AdsTab />}
             {activeTab === 'clients' && <ClientsDirectoryTab />}
             {activeTab === 'booking_settings' && <BookingSettingsTab />}
-            {activeTab === 'packages' && <PackagesSettingsTab />}
           </div>
         </main>
       </div>
