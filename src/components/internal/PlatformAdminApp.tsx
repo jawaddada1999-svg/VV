@@ -83,9 +83,94 @@ const LoginScreen: React.FC = () => {
           <button type="submit" disabled={busy} className="w-full h-12 rounded-xl bg-[#0B434C] hover:bg-[#0F5662] disabled:opacity-60 text-white font-bold transition-colors">
             {busy ? 'جارٍ تسجيل الدخول...' : 'تسجيل الدخول'}
           </button>
+          <button type="button" onClick={async () => {
+            setError('');
+            if (!email.trim()) {
+              setError('دخل البريد الإلكتروني أولاً باش نصيفطو ليك رابط الاسترجاع.');
+              return;
+            }
+            if (!supabase) {
+              setError('إعدادات Supabase غير مكتملة.');
+              return;
+            }
+            setBusy(true);
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+              redirectTo: `${window.location.origin}/admin?reset=1`,
+            });
+            setBusy(false);
+            if (resetError) setError('ما قدرناش نصيفطو رابط الاسترجاع. تأكد من إعدادات البريد الإلكتروني وحاول مجدداً.');
+            else setError('تم إرسال رابط استرجاع كلمة المرور إلى بريدك الإلكتروني. تفقد صندوق الوارد والرسائل غير المرغوب فيها.');
+          }} disabled={busy} className="w-full text-sm font-semibold text-[#0B5964] hover:underline disabled:opacity-60">
+            نسيت كلمة المرور؟
+          </button>
           <p className="text-[11px] text-slate-400 text-center">الدخول مخصص للحسابات المصرح بها فقط.</p>
         </form>
       </div>
+    </main>
+  );
+};
+
+const ResetPasswordScreen: React.FC = () => {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError('');
+    setMessage('');
+    if (password.length < 8) {
+      setError('كلمة المرور خاصها تكون على الأقل 8 أحرف.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('كلمتا المرور غير متطابقتين.');
+      return;
+    }
+    if (!supabase) {
+      setError('إعدادات Supabase غير مكتملة.');
+      return;
+    }
+    setBusy(true);
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    setBusy(false);
+    if (updateError) {
+      setError('تعذر تغيير كلمة المرور. افتح رابط الاسترجاع من آخر رسالة وصلاتك، أو طلب رابطاً جديداً.');
+      return;
+    }
+    setMessage('تبدلات كلمة المرور بنجاح. يمكنك الآن الدخول إلى لوحة IBONDA.');
+    window.history.replaceState({}, document.title, '/admin');
+    window.setTimeout(() => window.location.reload(), 1800);
+  };
+
+  return (
+    <main dir="rtl" className="min-h-screen bg-[#061F25] flex items-center justify-center px-4 py-10">
+      <form onSubmit={submit} className="w-full max-w-md bg-white rounded-2xl p-6 sm:p-8 shadow-2xl space-y-5">
+        <div className="text-center mb-2">
+          <div className="text-[#FF8A3D] text-xs font-bold tracking-[0.22em]">IBONDA PLATFORM</div>
+          <h1 className="text-slate-900 text-2xl font-bold mt-2">تعيين كلمة مرور جديدة</h1>
+          <p className="text-slate-500 text-sm mt-2">اختَر كلمة مرور جديدة وآمنة لحساب الإدارة.</p>
+        </div>
+        <div>
+          <label htmlFor="new-admin-password" className="block text-sm font-bold text-slate-700 mb-2">كلمة المرور الجديدة</label>
+          <input id="new-admin-password" type="password" autoComplete="new-password" minLength={8} required value={password}
+            onChange={e => setPassword(e.target.value)} placeholder="8 أحرف على الأقل"
+            className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 outline-none focus:border-[#0F5662] focus:ring-4 focus:ring-[#0F5662]/10" />
+        </div>
+        <div>
+          <label htmlFor="confirm-admin-password" className="block text-sm font-bold text-slate-700 mb-2">تأكيد كلمة المرور</label>
+          <input id="confirm-admin-password" type="password" autoComplete="new-password" minLength={8} required value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)} placeholder="أعد كتابة كلمة المرور"
+            className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 outline-none focus:border-[#0F5662] focus:ring-4 focus:ring-[#0F5662]/10" />
+        </div>
+        {error && <p role="alert" className="text-sm text-rose-700 bg-rose-50 border border-rose-100 rounded-xl p-3">{error}</p>}
+        {message && <p role="status" className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl p-3">{message}</p>}
+        <button type="submit" disabled={busy} className="w-full h-12 rounded-xl bg-[#0B434C] hover:bg-[#0F5662] disabled:opacity-60 text-white font-bold transition-colors">
+          {busy ? 'جارٍ حفظ كلمة المرور...' : 'حفظ كلمة المرور الجديدة'}
+        </button>
+      </form>
     </main>
   );
 };
@@ -94,6 +179,7 @@ const AccessGate: React.FC = () => {
   const { user, loading, configured, signOut } = useAuth();
   const [access, setAccess] = useState<AccessState>('checking');
   const [accessError, setAccessError] = useState('');
+  const isPasswordRecovery = new URLSearchParams(window.location.search).get('reset') === '1';
 
   useEffect(() => {
     let active = true;
@@ -122,6 +208,11 @@ const AccessGate: React.FC = () => {
     return () => { active = false; };
   }, [user, loading, configured]);
 
+  if (isPasswordRecovery) {
+    if (loading) return <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center text-slate-600" dir="rtl">جارٍ التحقق من رابط الاسترجاع...</div>;
+    if (!user) return <main dir="rtl" className="min-h-screen bg-[#061F25] flex items-center justify-center p-6"><div className="max-w-md bg-white rounded-2xl p-6 text-center"><h2 className="font-bold text-slate-900 text-lg">رابط الاسترجاع غير صالح أو انتهت صلاحيته</h2><p className="text-sm text-slate-600 mt-2">ارجع لصفحة الدخول واطلب رابط استرجاع جديد.</p><a href="/admin" className="inline-block mt-5 px-4 py-2 rounded-lg bg-[#0B434C] text-white text-sm">العودة لتسجيل الدخول</a></div></main>;
+    return <ResetPasswordScreen />;
+  }
   if (loading || access === 'checking') {
     return <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center text-slate-600" dir="rtl">جارٍ التحقق من الجلسة والصلاحيات...</div>;
   }
