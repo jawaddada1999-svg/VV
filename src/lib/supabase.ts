@@ -1,14 +1,14 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const supabaseUrl = import.meta.env.URL as string | undefined;
+const supabaseAnonKey = import.meta.env.ANONKEY as string | undefined;
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl?.trim() && supabaseAnonKey?.trim()
 );
 
 /**
- * Browser client only. Never put the Supabase service_role key in VITE_ variables.
+ * Browser client only. Never put the Supabase service_role key in client env vars.
  * Database access is still restricted by Supabase RLS and permission functions.
  */
 export const supabase: SupabaseClient | null = isSupabaseConfigured
