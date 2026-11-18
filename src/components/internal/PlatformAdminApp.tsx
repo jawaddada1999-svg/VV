@@ -52,7 +52,7 @@ const LoginScreen: React.FC = () => {
     setBusy(true);
     const result = await signIn(email, password);
     setBusy(false);
-    if (result.error) setError('تعذر تسجيل الدخول. تأكد من البريد الإلكتروني وكلمة المرور، ثم حاول مجدداً.');
+    if (result.error) setError(`خطأ تسجيل الدخول: ${result.error}`);
   };
 
   return (
