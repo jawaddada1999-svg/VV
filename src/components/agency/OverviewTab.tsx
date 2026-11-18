@@ -92,11 +92,11 @@ export const OverviewTab: React.FC = () => {
   // 3. Weekly & Monthly Historical / Projected Retainer & Deals Data
   const monthlyData = [
     { period: language === 'ar' ? 'يونيو' : language === 'fr' ? 'Juin' : 'June', retainerMrr: 4500, setupCash: 12500, deals: 2 },
-    { period: language === 'ar' ? 'يوليوز' : language === 'fr' ? 'Juillet' : 'July', retainerMrr: 6500, setupCash: 16500, deals: 3 },
-    { period: language === 'ar' ? 'غشت' : language === 'fr' ? 'Août' : 'August', retainerMrr: 9500, setupCash: 21000, deals: 4 },
-    { period: language === 'ar' ? 'شتنبر' : language === 'fr' ? 'Septembre' : 'September', retainerMrr: 12500, setupCash: 24500, deals: 5 },
+    { period: language === 'ar' ? 'يوليو' : language === 'fr' ? 'Juillet' : 'July', retainerMrr: 6500, setupCash: 16500, deals: 3 },
+    { period: language === 'ar' ? 'أغسطس' : language === 'fr' ? 'Août' : 'August', retainerMrr: 9500, setupCash: 21000, deals: 4 },
+    { period: language === 'ar' ? 'سبتمبر' : language === 'fr' ? 'Septembre' : 'September', retainerMrr: 12500, setupCash: 24500, deals: 5 },
     { period: language === 'ar' ? 'أكتوبر' : language === 'fr' ? 'Octobre' : 'October', retainerMrr: 15500, setupCash: 29000, deals: 6 },
-    { period: language === 'ar' ? 'نونبر الحالي' : language === 'fr' ? 'Novembre (Actuel)' : 'November (Current)', retainerMrr: metrics.currentMRR, setupCash: metrics.totalRevenueCash, deals: 7 },
+    { period: language === 'ar' ? 'نوفمبر الحالي' : language === 'fr' ? 'Novembre (Actuel)' : 'November (Current)', retainerMrr: metrics.currentMRR, setupCash: metrics.totalRevenueCash, deals: 7 },
   ];
 
   const weeklyData = [
@@ -110,19 +110,19 @@ export const OverviewTab: React.FC = () => {
 
   // 3B. Financial Performance Dataset (1M weekly breakdown + 3M / 6M / 12M monthly trajectory)
   const raw12Months = [
-    { period: language === 'ar' ? 'دجنبر' : language === 'fr' ? 'Déc' : 'Dec', retainerRevenue: 1200, adSpend: 2200, toolCosts: 280 },
+    { period: language === 'ar' ? 'ديسمبر' : language === 'fr' ? 'Déc' : 'Dec', retainerRevenue: 1200, adSpend: 2200, toolCosts: 280 },
     { period: language === 'ar' ? 'يناير' : language === 'fr' ? 'Jan' : 'Jan', retainerRevenue: 1800, adSpend: 2500, toolCosts: 340 },
     { period: language === 'ar' ? 'فبراير' : language === 'fr' ? 'Fév' : 'Feb', retainerRevenue: 2500, adSpend: 2700, toolCosts: 420 },
     { period: language === 'ar' ? 'مارس' : language === 'fr' ? 'Mar' : 'Mar', retainerRevenue: 3100, adSpend: 2900, toolCosts: 480 },
     { period: language === 'ar' ? 'أبريل' : language === 'fr' ? 'Avr' : 'Apr', retainerRevenue: 3700, adSpend: 3100, toolCosts: 540 },
     { period: language === 'ar' ? 'مايو' : language === 'fr' ? 'Mai' : 'May', retainerRevenue: 4100, adSpend: 3250, toolCosts: 600 },
     { period: language === 'ar' ? 'يونيو' : language === 'fr' ? 'Juin' : 'Jun', retainerRevenue: 4500, adSpend: 3400, toolCosts: 650 },
-    { period: language === 'ar' ? 'يوليوز' : language === 'fr' ? 'Juil' : 'Jul', retainerRevenue: 6500, adSpend: 3900, toolCosts: 920 },
-    { period: language === 'ar' ? 'غشت' : language === 'fr' ? 'Août' : 'Aug', retainerRevenue: 9500, adSpend: 4250, toolCosts: 1350 },
-    { period: language === 'ar' ? 'شتنبر' : language === 'fr' ? 'Sept' : 'Sep', retainerRevenue: 12500, adSpend: 4600, toolCosts: 1720 },
+    { period: language === 'ar' ? 'يوليو' : language === 'fr' ? 'Juil' : 'Jul', retainerRevenue: 6500, adSpend: 3900, toolCosts: 920 },
+    { period: language === 'ar' ? 'أغسطس' : language === 'fr' ? 'Août' : 'Aug', retainerRevenue: 9500, adSpend: 4250, toolCosts: 1350 },
+    { period: language === 'ar' ? 'سبتمبر' : language === 'fr' ? 'Sept' : 'Sep', retainerRevenue: 12500, adSpend: 4600, toolCosts: 1720 },
     { period: language === 'ar' ? 'أكتوبر' : language === 'fr' ? 'Oct' : 'Oct', retainerRevenue: 15500, adSpend: 4950, toolCosts: 2050 },
     {
-      period: language === 'ar' ? 'نونبر' : 'Nov',
+      period: language === 'ar' ? 'نوفمبر' : 'Nov',
       retainerRevenue: metrics.currentMRR,
       adSpend: metrics.totalAdSpendThisMonth,
       toolCosts: metrics.totalMonthlyClientExpenses,
@@ -213,7 +213,7 @@ export const OverviewTab: React.FC = () => {
         financialRange === '1m'
           ? 'تفصيل هذا الشهر أسبوعاً بأسبوع: كم دخل من الصيانة، كم صُرف في الإعلانات والأدوات، وكم بقي لك كربح صافي'
           : 'مقارنة واضحة بالدرهم بين عوائد الصيانة الشهرية، مصاريف الإعلانات والأدوات، وصافي الربح الفعلي المتبقي',
-      range1m: 'شهر 1',
+      range1m: 'الشهر الأول',
       range3m: '3 أشهر',
       range6m: '6 أشهر',
       range12m: '12 شهر',
