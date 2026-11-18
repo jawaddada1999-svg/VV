@@ -95,10 +95,10 @@ const LoginScreen: React.FC = () => {
             }
             setBusy(true);
             const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-              redirectTo: 'https://vv-bu1sx3f3i-jawaddada1999-svgs-projects.vercel.app/admin?reset=1',
+              redirectTo: `${window.location.origin}/admin?reset=1`,
             });
             setBusy(false);
-            if (resetError) setError('ما قدرناش نصيفطو رابط الاسترجاع. تأكد من إعدادات البريد الإلكتروني وحاول مجدداً.');
+            if (resetError) setError(`فشل إرسال رابط الاسترجاع: ${resetError.message}`);
             else setError('تم إرسال رابط استرجاع كلمة المرور إلى بريدك الإلكتروني. تفقد صندوق الوارد والرسائل غير المرغوب فيها.');
           }} disabled={busy} className="w-full text-sm font-semibold text-[#0B5964] hover:underline disabled:opacity-60">
             نسيت كلمة المرور؟
