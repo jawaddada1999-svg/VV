@@ -5,6 +5,9 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // Explicitly expose only the two public Supabase config variable prefixes
+    // in addition to Vite's standard VITE_ prefix.
+    envPrefix: ['VITE_', 'URL', 'ANONKEY'],
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
