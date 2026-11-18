@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { useAuth } from './AuthContext';
 import {
   Agency,
   Subscription,
@@ -129,11 +130,12 @@ const STORAGE_KEY_PREFIX = 'ibonda_internal_v1_';
 const InternalContext = createContext<InternalContextType | undefined>(undefined);
 
 export const InternalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
   const adminUser = {
-    name: 'جواد (Jawad)',
-    email: 'jawad@ibonda.com',
+    name: String(user?.user_metadata?.full_name || user?.user_metadata?.name || 'مسؤول IBONDA'),
+    email: user?.email || '',
     role: 'ibonda_admin' as const,
-    title: 'المؤسس والرئيس التنفيذي (Founder & CEO)',
+    title: 'مسؤول المنصة (Platform Administrator)',
   };
 
   const [activeTab, setActiveTab] = useState<string>('overview');
