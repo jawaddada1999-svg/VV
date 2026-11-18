@@ -95,7 +95,7 @@ const LoginScreen: React.FC = () => {
             }
             setBusy(true);
             const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-              redirectTo: 'https://vv-p9yk1vvw8-jawaddada1999-svgs-projects.vercel.app/admin?reset=1',
+              redirectTo: 'https://vv-bu1sx3f3i-jawaddada1999-svgs-projects.vercel.app/admin?reset=1',
             });
             setBusy(false);
             if (resetError) setError('ما قدرناش نصيفطو رابط الاسترجاع. تأكد من إعدادات البريد الإلكتروني وحاول مجدداً.');
