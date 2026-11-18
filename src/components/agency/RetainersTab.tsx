@@ -86,12 +86,12 @@ export const RetainersTab: React.FC = () => {
       netRemaining: 'صافي الربح المتبقي',
       marginLabel: 'هامش الربح',
       retainerFee: 'مبلغ الصيانة',
-      expensesCost: 'الاشتراكات والأدوات',
-      netProfit: 'المتبقي الصافي',
-      filterRetainersOnly: 'عملاء الصيانة النشطين',
+      expensesCost: 'اشتراكات الأدوات والخدمات',
+      netProfit: 'صافي المبلغ المتبقي',
+      filterRetainersOnly: 'الوكالات ذات الاشتراكات النشطة',
       filterAllClients: 'كافة الوكالات (بما فيها التجربة والتنفيذ)',
       searchAgencyPlaceholder: 'بحث باسم الوكالة أو المدينة...',
-      addExpenseBtn: '+ إضافة اشتراك / مصروف',
+      addExpenseBtn: '+ إضافة اشتراك أو مصروف',
       quickAddForClient: '+ إضافة مصروف',
       modalTitle: 'إضافة اشتراك أو مصروف شهري على العميل',
       presetsLabel: 'قوالب سريعة (بنقرة واحدة):',
@@ -120,7 +120,7 @@ export const RetainersTab: React.FC = () => {
       saveRetainer: 'حفظ',
       totalLedgerLabel: 'صافي الربح التراكمي للعرض الحالي',
       colSubscriptions: 'الاشتراكات',
-      colNetRemaining: 'المتبقي الصافي',
+      colNetRemaining: 'صافي المبلغ المتبقي',
       stageBadgeActive: 'صيانة نشطة',
       stageBadgeTrial: 'تجربة 7 أيام',
       stageBadgeDelivery: 'قيد التنفيذ',
@@ -341,7 +341,7 @@ export const RetainersTab: React.FC = () => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     const textBody =
       language === 'ar'
-        ? `السلام عليكم أستاذ ${clientName}، تحية طيبة من فريق IBONDA للأوتوميشن العقاري. نود تذكيركم بموعد تجديد اشتراك الصيانة الشهرية لوكالة "${agencyName}" (فاتورة رقم: ${invNum}) بمبلغ ${amount.toLocaleString()} درهم، لضمان استمرار عمل سيناريوهات واتساب ونماذج الإعلانات بدون انقطاع.\n\nبيانات التحويل البنكي (RIB):\n${agencyRib}\n\nيرجى إرسال وصل التحويل فور السداد لتحديث ملف الوكالة. شكراً لثقتكم!`
+        ? `السلام عليكم أستاذ ${clientName}، تحية طيبة من فريق IBONDA للالأتمتة العقاري. نود تذكيركم بموعد تجديد اشتراك الصيانة الشهرية لوكالة "${agencyName}" (فاتورة رقم: ${invNum}) بمبلغ ${amount.toLocaleString()} درهم، لضمان استمرار عمل سيناريوهات واتساب ونماذج الإعلانات بدون انقطاع.\n\nبيانات التحويل البنكي (RIB):\n${agencyRib}\n\nيرجى إرسال وصل التحويل فور السداد لتحديث ملف الوكالة. شكراً لثقتكم!`
         : language === 'fr'
         ? `Bonjour ${clientName}, ici l’équipe IBONDA Automation. Nous vous rappelons l’échéance de votre forfait de maintenance mensuelle pour l’agence « ${agencyName} » (Facture : ${invNum}) d’un montant de ${amount.toLocaleString()} MAD, afin d’assurer la continuité de vos scénarios WhatsApp et formulaires publicitaires.\n\nCoordonnées bancaires (RIB) :\n${agencyRib}\n\nMerci de nous transmettre le justificatif de virement dès paiement effectué.`
         : `Hello ${clientName}, greetings from the IBONDA Automation team. This is a friendly reminder regarding the monthly maintenance retainer renewal for "${agencyName}" (Invoice: ${invNum}) totaling ${amount.toLocaleString()} MAD, ensuring uninterrupted WhatsApp and ad lead workflows.\n\nBank Transfer Details (RIB):\n${agencyRib}\n\nPlease share your transfer receipt once completed. Thank you!`;
