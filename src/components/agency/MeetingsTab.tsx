@@ -506,7 +506,7 @@ export const MeetingsTab: React.FC = () => {
         : meet.scheduledTime;
       const reminderMsg = encodeURIComponent(
         language === 'ar'
-          ? `السلام عليكم أستاذ ${meet.clientName}،\nنذكركم بموعد مكالمة استشارة أوتوميشن التسويق العقاري لوكالتكم "${meet.agencyName}" المقرر اليوم على الساعة ${timeOnly}.\n\nالمرجو تأكيد حضوركم بالرد بكلمة "مؤكد" لتثبيت الرابط.\nشكراً، فريق IBONDA.`
+          ? `السلام عليكم أستاذ ${meet.clientName}،\nنذكركم بموعد مكالمة استشارة أتمتة التسويق العقاري لوكالتكم "${meet.agencyName}" المقرر اليوم على الساعة ${timeOnly}.\n\nالمرجو تأكيد حضوركم بالرد بكلمة "مؤكد" لتثبيت الرابط.\nشكراً، فريق IBONDA.`
           : language === 'fr'
           ? `Bonjour M./Mme ${meet.clientName},\nNous vous rappelons votre rendez-vous de démonstration d'automatisation immobilière pour votre agence "${meet.agencyName}" prévu aujourd'hui à ${timeOnly}.\n\nMerci de confirmer votre présence en répondant "Confirmé".\nCordialement, l'équipe IBONDA.`
           : `Hello ${meet.clientName},\nThis is a reminder for your real estate automation consultation call for "${meet.agencyName}" scheduled today at ${timeOnly}.\n\nPlease reply with "Confirmed" to confirm your attendance.\nBest regards, IBONDA Team.`
@@ -756,7 +756,7 @@ export const MeetingsTab: React.FC = () => {
                     }`}
                   >
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>{language === 'ar' ? 'الأجندة الأسبوعية (7 أيام)' : language === 'fr' ? 'Agenda Hebdomadaire' : 'Weekly Agenda'}</span>
+                    <span>{language === 'ar' ? 'جدول المواعيد الأسبوعي (7 أيام)' : language === 'fr' ? 'Agenda Hebdomadaire' : 'Weekly Agenda'}</span>
                   </button>
 
                   <button
@@ -1227,7 +1227,7 @@ export const MeetingsTab: React.FC = () => {
                               {meet.mainProblem && (
                                 <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70 max-w-2xl leading-relaxed">
                                   <span className="font-bold text-amber-700">
-                                    {language === 'ar' ? 'المشكل الرئيسي: ' : language === 'fr' ? 'Problème identifié : ' : 'Main problem: '}
+                                    {language === 'ar' ? 'المشكلة الرئيسية: ' : language === 'fr' ? 'Problème identifié : ' : 'Main problem: '}
                                   </span>
                                   <span>{meet.mainProblem}</span>
                                 </div>
