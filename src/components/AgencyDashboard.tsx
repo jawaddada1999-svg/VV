@@ -155,9 +155,9 @@ export const AgencyDashboard: React.FC = () => {
   };
 
   const nav = (
-    <aside className="h-full w-72 bg-[#102A56] text-white flex flex-col">
+    <aside className="h-full w-72 bg-gradient-to-b from-[#082E35] via-[#0B3A42] to-[#041D22] text-white flex flex-col">
       <div className="h-20 px-5 flex items-center gap-3 border-b border-white/10">
-        <div className="h-11 w-11 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center"><Building2 className="w-5 h-5 text-[#E2A64A]"/></div>
+        <div className="h-11 w-11 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center"><Building2 className="w-5 h-5 text-orange-400"/></div>
         <div className="min-w-0"><div className="font-bold truncate">{t.agency}</div><div className="text-[10px] text-blue-200/80">AGENCY WORKSPACE</div></div>
       </div>
       <div className="px-4 py-4 border-b border-white/10">
@@ -169,8 +169,8 @@ export const AgencyDashboard: React.FC = () => {
           const Icon = item.icon;
           const selected = section === item.id;
           return <button key={item.id} onClick={() => { setSection(item.id); setMobileOpen(false); }}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-colors ${selected ? 'bg-[#244A83] text-white shadow-lg' : 'text-blue-50/80 hover:bg-white/5 hover:text-white'}`}>
-            <Icon className={`w-4 h-4 ${selected ? 'text-[#E2A64A]' : 'text-blue-100/60'}`} />
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-colors ${selected ? 'bg-gradient-to-r from-orange-500 to-[#FF5500] text-white shadow-lg shadow-orange-500/25' : 'text-blue-50/80 hover:bg-white/5 hover:text-white'}`}>
+            <Icon className={`w-4 h-4 ${selected ? 'text-orange-400' : 'text-blue-100/60'}`} />
             <span>{t[item.key]}</span>
           </button>;
         })}
@@ -200,7 +200,7 @@ export const AgencyDashboard: React.FC = () => {
               {notificationsOpen && <div className={`absolute top-12 ${rtl ? 'left-0' : 'right-0'} z-50 w-[min(340px,calc(100vw-2rem))] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden`}>
                 <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-2">
                   <h3 className="font-bold text-sm">{language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}</h3>
-                  <button onClick={() => setReadNotifications(notificationItems.map((_, i) => i))} className="text-[11px] font-semibold text-[#244A83] hover:underline">{language === 'ar' ? 'تحديد الكل كمقروء' : language === 'fr' ? 'Tout marquer comme lu' : 'Mark all as read'}</button>
+                  <button onClick={() => setReadNotifications(notificationItems.map((_, i) => i))} className="text-[11px] font-semibold text-orange-600 hover:underline">{language === 'ar' ? 'تحديد الكل كمقروء' : language === 'fr' ? 'Tout marquer comme lu' : 'Mark all as read'}</button>
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {notificationItems.map((item, i) => <button key={i} onClick={() => setReadNotifications(prev => prev.includes(i) ? prev : [...prev, i])} className={`w-full text-start p-4 border-b border-slate-100 last:border-0 hover:bg-blue-50/60 ${readNotifications.includes(i) ? 'opacity-60' : 'bg-blue-50/30'}`}>
@@ -214,8 +214,8 @@ export const AgencyDashboard: React.FC = () => {
         </header>
         <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div><div className="text-xs font-bold text-[#244A83] mb-2">{t.agency}</div><h2 className="text-2xl font-black text-slate-900">{t.title}</h2><p className="text-sm text-slate-500 mt-1">{t.subtitle}</p></div>
-            <button onClick={() => { if(section === 'leads') setShowLeadForm(true); else setSection('leads'); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173B73] hover:bg-[#244A83] text-white px-4 py-2.5 text-sm font-bold shadow-sm"><Plus className="w-4 h-4"/>{t.addLead}</button>
+            <div><div className="text-xs font-bold text-orange-600 mb-2">{t.agency}</div><h2 className="text-2xl font-black text-slate-900">{t.title}</h2><p className="text-sm text-slate-500 mt-1">{t.subtitle}</p></div>
+            <button onClick={() => { if(section === 'leads') setShowLeadForm(true); else setSection('leads'); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173B73] hover:bg-orange-500 text-white px-4 py-2.5 text-sm font-bold shadow-sm"><Plus className="w-4 h-4"/>{t.addLead}</button>
           </div>
           {section === 'leads' ? (
             <section className="space-y-5">
@@ -225,12 +225,12 @@ export const AgencyDashboard: React.FC = () => {
                   {label: language === 'ar' ? 'عملاء جدد' : language === 'fr' ? 'Nouveaux' : 'New leads', value: '32', icon: UserPlus},
                   {label: language === 'ar' ? 'معاينات محجوزة' : language === 'fr' ? 'Visites planifiées' : 'Viewings booked', value: '18', icon: CalendarDays},
                   {label: language === 'ar' ? 'بانتظار المتابعة' : language === 'fr' ? 'À relancer' : 'Needs follow-up', value: '14', icon: Clock3},
-                ].map((item,i)=>{const Icon=item.icon;return <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="text-xs text-slate-500 font-semibold">{item.label}</span><Icon className="w-4 h-4 text-[#244A83]"/></div><div className="text-2xl font-black mt-3 tabular-nums">{item.value}</div></div>})}
+                ].map((item,i)=>{const Icon=item.icon;return <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="text-xs text-slate-500 font-semibold">{item.label}</span><Icon className="w-4 h-4 text-orange-600"/></div><div className="text-2xl font-black mt-3 tabular-nums">{item.value}</div></div>})}
               </div>
               <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div><h3 className="font-bold text-lg">{language === 'ar' ? 'قاعدة العملاء المحتملين' : language === 'fr' ? 'Base des prospects' : 'Lead database'}</h3><p className="text-xs text-slate-500 mt-1">{ov.demoNote}</p></div>
-                  <button onClick={()=>setShowLeadForm(true)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173B73] text-white px-4 py-2.5 text-sm font-bold"><Plus className="w-4 h-4"/>{t.addLead}</button>
+                  <button onClick={()=>setShowLeadForm(true)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 text-sm font-bold"><Plus className="w-4 h-4"/>{t.addLead}</button>
                 </div>
                 <div className="flex flex-col md:flex-row gap-3">
                   <div className="flex-1 flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5"><Search className="w-4 h-4 text-slate-400"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.search} className="w-full outline-none text-sm bg-transparent"/></div>
@@ -253,7 +253,7 @@ export const AgencyDashboard: React.FC = () => {
                   ];
                   const all=[...addedLeads.map((l,i)=>({...l,status:l.status,label:l.status==='new'?ov.new:language==='ar'?'متابعة مطلوبة':language==='fr'?'Suivi requis':'Follow-up needed',date:ov.todayLabel,key:'added-'+i})),...sample.map((l,i)=>({...l,key:'sample-'+i}))];
                   const filtered=all.filter(l=>(leadStatusFilter==='all'||l.status===leadStatusFilter)&&[l.name,l.phone,l.interest,l.source].join(' ').toLowerCase().includes(query.toLowerCase()));
-                  return <div className="overflow-x-auto border border-slate-100 rounded-xl"><table className="w-full text-sm min-w-[720px]"><thead className="bg-slate-50 text-slate-500 text-xs"><tr><th className="p-4 text-start">{t.lead}</th><th className="p-4 text-start">{language==='ar'?'رقم الهاتف':language==='fr'?'Téléphone':'Phone'}</th><th className="p-4 text-start">{t.interest}</th><th className="p-4 text-start">{language==='ar'?'المصدر':language==='fr'?'Source':'Source'}</th><th className="p-4 text-start">{t.status}</th><th className="p-4 text-start">{t.date}</th></tr></thead><tbody>{filtered.map((l:any)=><tr key={l.key} className="border-t border-slate-100 hover:bg-slate-50/70"><td className="p-4 font-semibold whitespace-nowrap">{l.name}</td><td className="p-4 text-slate-600 whitespace-nowrap"><span className="inline-flex items-center gap-1.5"><Phone className="w-3 h-3"/>{l.phone}</span></td><td className="p-4 text-slate-600 whitespace-nowrap">{l.interest}</td><td className="p-4 text-slate-500">{l.source}</td><td className="p-4"><span className="rounded-full bg-blue-50 text-blue-800 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">{l.label}</span></td><td className="p-4 text-slate-500 text-xs">{l.date}</td></tr>)}{filtered.length===0&&<tr><td colSpan={6} className="p-8 text-center text-sm text-slate-400">{language==='ar'?'لا توجد نتائج مطابقة':language==='fr'?'Aucun résultat':'No matching leads'}</td></tr>}</tbody></table></div>;
+                  return <div className="overflow-x-auto border border-slate-100 rounded-xl"><table className="w-full text-sm min-w-[720px]"><thead className="bg-slate-50 text-slate-500 text-xs"><tr><th className="p-4 text-start">{t.lead}</th><th className="p-4 text-start">{language==='ar'?'رقم الهاتف':language==='fr'?'Téléphone':'Phone'}</th><th className="p-4 text-start">{t.interest}</th><th className="p-4 text-start">{language==='ar'?'المصدر':language==='fr'?'Source':'Source'}</th><th className="p-4 text-start">{t.status}</th><th className="p-4 text-start">{t.date}</th></tr></thead><tbody>{filtered.map((l:any)=><tr key={l.key} className="border-t border-slate-100 hover:bg-slate-50/70"><td className="p-4 font-semibold whitespace-nowrap">{l.name}</td><td className="p-4 text-slate-600 whitespace-nowrap"><span className="inline-flex items-center gap-1.5"><Phone className="w-3 h-3"/>{l.phone}</span></td><td className="p-4 text-slate-600 whitespace-nowrap">{l.interest}</td><td className="p-4 text-slate-500">{l.source}</td><td className="p-4"><span className="rounded-full bg-orange-50 text-orange-700 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">{l.label}</span></td><td className="p-4 text-slate-500 text-xs">{l.date}</td></tr>)}{filtered.length===0&&<tr><td colSpan={6} className="p-8 text-center text-sm text-slate-400">{language==='ar'?'لا توجد نتائج مطابقة':language==='fr'?'Aucun résultat':'No matching leads'}</td></tr>}</tbody></table></div>;
                 })()}
               </div>
               {showLeadForm && <div className="fixed inset-0 z-[70] bg-slate-950/50 flex items-center justify-center p-4" onClick={()=>setShowLeadForm(false)}>
@@ -263,14 +263,14 @@ export const AgencyDashboard: React.FC = () => {
                   <label className="block text-xs font-semibold text-slate-600">{language==='ar'?'رقم الهاتف':language==='fr'?'Téléphone':'Phone number'}<input required value={newLeadPhone} onChange={e=>setNewLeadPhone(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label>
                   <label className="block text-xs font-semibold text-slate-600">{language==='ar'?'العقار أو نوع الاهتمام':language==='fr'?'Bien ou intérêt':'Property or interest'}<input value={newLeadInterest} onChange={e=>setNewLeadInterest(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label>
                   <label className="block text-xs font-semibold text-slate-600">{language==='ar'?'مصدر العميل':language==='fr'?'Source du prospect':'Lead source'}<input value={newLeadSource} onChange={e=>setNewLeadSource(e.target.value)} placeholder="Meta Ads / Instagram / Site web" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label>
-                  <div className="flex justify-end gap-2 pt-2"><button type="button" onClick={()=>setShowLeadForm(false)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold">{language==='ar'?'إلغاء':language==='fr'?'Annuler':'Cancel'}</button><button type="submit" className="rounded-xl bg-[#173B73] text-white px-4 py-2 text-sm font-bold">{language==='ar'?'حفظ العميل':language==='fr'?'Enregistrer':'Save lead'}</button></div>
+                  <div className="flex justify-end gap-2 pt-2"><button type="button" onClick={()=>setShowLeadForm(false)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold">{language==='ar'?'إلغاء':language==='fr'?'Annuler':'Cancel'}</button><button type="submit" className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 text-sm font-bold">{language==='ar'?'حفظ العميل':language==='fr'?'Enregistrer':'Save lead'}</button></div>
                 </form>
               </div>}
             </section>
           ) : section === 'adAnalysis' ? (
             <section className="space-y-5">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center gap-3"><span className="h-11 w-11 rounded-xl bg-[#EAF2FF] text-[#244A83] flex items-center justify-center"><Megaphone className="w-5 h-5"/></span><div><h3 className="font-bold">{t.adAnalysis}</h3><p className="text-xs text-slate-500 mt-1">{t.demo} · {language === 'ar' ? 'سيتم ربط بيانات الحملات الفعلية لاحقاً' : language === 'fr' ? 'Les données réelles des campagnes seront connectées ultérieurement' : 'Live campaign data will be connected later'}</p></div></div>
+                <div className="flex items-center gap-3"><span className="h-11 w-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"><Megaphone className="w-5 h-5"/></span><div><h3 className="font-bold">{t.adAnalysis}</h3><p className="text-xs text-slate-500 mt-1">{t.demo} · {language === 'ar' ? 'سيتم ربط بيانات الحملات الفعلية لاحقاً' : language === 'fr' ? 'Les données réelles des campagnes seront connectées ultérieurement' : 'Live campaign data will be connected later'}</p></div></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 {[
@@ -309,16 +309,16 @@ export const AgencyDashboard: React.FC = () => {
                   { label: ov.newLeads, value: '32', note: '+8.2%', icon: TrendingUp },
                   { label: t.visits, value: '18', note: '+4', icon: CalendarDays },
                   { label: ov.completedDeals, value: '7', note: '+2', icon: Building2 },
-                ].map((item, index) => { const Icon = item.icon; return <div key={index} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm min-w-0"><div className="flex items-center justify-between gap-2"><span className="text-xs text-slate-500 font-semibold">{item.label}</span><span className="h-9 w-9 shrink-0 rounded-xl bg-blue-50 text-[#244A83] flex items-center justify-center"><Icon className="w-4 h-4"/></span></div><div className="mt-3 flex items-end justify-between gap-2"><strong className="text-2xl sm:text-3xl font-black tabular-nums">{item.value}</strong><span className="text-[10px] font-bold text-emerald-600">{item.note}</span></div></div>; })}
+                ].map((item, index) => { const Icon = item.icon; return <div key={index} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm min-w-0"><div className="flex items-center justify-between gap-2"><span className="text-xs text-slate-500 font-semibold">{item.label}</span><span className="h-9 w-9 shrink-0 rounded-xl bg-blue-50 text-orange-600 flex items-center justify-center"><Icon className="w-4 h-4"/></span></div><div className="mt-3 flex items-end justify-between gap-2"><strong className="text-2xl sm:text-3xl font-black tabular-nums">{item.value}</strong><span className="text-[10px] font-bold text-emerald-600">{item.note}</span></div></div>; })}
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
                 <section className="xl:col-span-3 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-                  <div className="flex items-center justify-between gap-2 mb-5"><div><h3 className="font-bold">{ov.pipeline}</h3><p className="text-xs text-slate-400 mt-1">{ov.demo}</p></div><KanbanSquare className="w-5 h-5 text-[#244A83]"/></div>
+                  <div className="flex items-center justify-between gap-2 mb-5"><div><h3 className="font-bold">{ov.pipeline}</h3><p className="text-xs text-slate-400 mt-1">{ov.demo}</p></div><KanbanSquare className="w-5 h-5 text-orange-600"/></div>
                   <div className="space-y-4">
                     {[
-                      { label: ov.stageNew, count: 32, width: '100%', color: 'bg-blue-500' },
-                      { label: ov.stageVisit, count: 18, width: '56%', color: 'bg-indigo-500' },
+                      { label: ov.stageNew, count: 32, width: '100%', color: 'bg-orange-500' },
+                      { label: ov.stageVisit, count: 18, width: '56%', color: 'bg-orange-400' },
                       { label: ov.stageAttended, count: 12, width: '38%', color: 'bg-emerald-500' },
                       { label: ov.stageMissed, count: 6, width: '19%', color: 'bg-rose-500' },
                       { label: ov.stageWon, count: 7, width: '22%', color: 'bg-amber-500' },
@@ -326,7 +326,7 @@ export const AgencyDashboard: React.FC = () => {
                   </div>
                 </section>
                 <section className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-                  <div className="flex items-center justify-between mb-4"><h3 className="font-bold">{ov.alerts}</h3><Bell className="w-5 h-5 text-[#244A83]"/></div>
+                  <div className="flex items-center justify-between mb-4"><h3 className="font-bold">{ov.alerts}</h3><Bell className="w-5 h-5 text-orange-600"/></div>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-100 p-3"><span className="h-8 w-8 shrink-0 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center"><Clock3 className="w-4 h-4"/></span><div className="min-w-0"><div className="text-sm font-bold text-slate-800">5</div><p className="text-xs text-slate-600 mt-1">{ov.alert1}</p></div></div>
                     <div className="flex items-start gap-3 rounded-xl bg-rose-50 border border-rose-100 p-3"><span className="h-8 w-8 shrink-0 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center"><CalendarDays className="w-4 h-4"/></span><div className="min-w-0"><div className="text-sm font-bold text-slate-800">3</div><p className="text-xs text-slate-600 mt-1">{ov.alert2}</p></div></div>
@@ -336,38 +336,51 @@ export const AgencyDashboard: React.FC = () => {
 
               <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
                 <section className="xl:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-2"><h3 className="font-bold">{ov.recent}</h3><button onClick={() => setSection('leads')} className="text-xs font-bold text-[#244A83]">{ov.viewAll}</button></div>
+                  <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-2"><h3 className="font-bold">{ov.recent}</h3><button onClick={() => setSection('leads')} className="text-xs font-bold text-orange-600">{ov.viewAll}</button></div>
                   <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-slate-50 text-slate-500 text-xs"><tr><th className="p-4 text-start">{t.lead}</th><th className="p-4 text-start">{t.interest}</th><th className="p-4 text-start">{t.status}</th><th className="p-4 text-start">{t.date}</th></tr></thead><tbody>
-                    {[[ov.lead1,ov.interest1,ov.qualified,ov.todayLabel],[ov.lead2,ov.interest2,ov.new,ov.yesterday],[ov.lead3,ov.interest3,ov.contacted,ov.yesterday]].map((row,i)=><tr key={i} className="border-t border-slate-100"><td className="p-4 font-semibold whitespace-nowrap">{row[0]}</td><td className="p-4 text-slate-600 whitespace-nowrap">{row[1]}</td><td className="p-4"><span className="rounded-full bg-blue-50 text-blue-800 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">{row[2]}</span></td><td className="p-4 text-slate-500 text-xs whitespace-nowrap">{row[3]}</td></tr>)}
+                    {[[ov.lead1,ov.interest1,ov.stageAttended,ov.todayLabel],[ov.lead2,ov.interest2,ov.stageMissed,ov.yesterday],[ov.lead3,ov.interest3,ov.stageNew,ov.yesterday]].map((row,i)=><tr key={i} className="border-t border-slate-100"><td className="p-4 font-semibold whitespace-nowrap">{row[0]}</td><td className="p-4 text-slate-600 whitespace-nowrap">{row[1]}</td><td className="p-4"><span className="rounded-full bg-orange-50 text-orange-700 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">{row[2]}</span></td><td className="p-4 text-slate-500 text-xs whitespace-nowrap">{row[3]}</td></tr>)}
                   </tbody></table></div>
                 </section>
                 <section className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-2"><h3 className="font-bold">{ov.nextVisits}</h3><button onClick={() => setSection('appointments')} className="text-xs font-bold text-[#244A83]">{ov.viewAll}</button></div>
+                  <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-2"><h3 className="font-bold">{ov.nextVisits}</h3><button onClick={() => setSection('appointments')} className="text-xs font-bold text-orange-600">{ov.viewAll}</button></div>
                   <div className="p-4 space-y-4">
-                    {[[ '09:30',ov.visit1,ov.property1,ov.todayLabel ],[ '11:00',ov.visit2,ov.property2,ov.todayLabel ],[ '15:30',ov.visit3,ov.property3,ov.tomorrow ]].map((item,i)=><div key={i} className="flex items-start gap-3"><div className="rounded-lg bg-blue-50 text-[#244A83] px-2.5 py-2 text-xs font-black tabular-nums">{item[0]}</div><div className="min-w-0"><div className="text-sm font-bold">{item[1]}</div><div className="text-xs text-slate-500 mt-1">{item[2]}</div><div className="text-[10px] text-slate-400 mt-1">{item[3]}</div></div></div>)}
+                    {[[ '09:30',ov.visit1,ov.property1,ov.todayLabel ],[ '11:00',ov.visit2,ov.property2,ov.todayLabel ],[ '15:30',ov.visit3,ov.property3,ov.tomorrow ]].map((item,i)=><div key={i} className="flex items-start gap-3"><div className="rounded-lg bg-blue-50 text-orange-600 px-2.5 py-2 text-xs font-black tabular-nums">{item[0]}</div><div className="min-w-0"><div className="text-sm font-bold">{item[1]}</div><div className="text-xs text-slate-500 mt-1">{item[2]}</div><div className="text-[10px] text-slate-400 mt-1">{item[3]}</div></div></div>)}
                   </div>
                 </section>
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <section className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-                  <div className="flex items-center justify-between mb-4"><h3 className="font-bold">{ov.teamActivity}</h3><UserRoundCog className="w-5 h-5 text-[#244A83]"/></div>
+                  <div className="flex items-center justify-between mb-4"><h3 className="font-bold">{ov.teamActivity}</h3><UserRoundCog className="w-5 h-5 text-orange-600"/></div>
                   <div className="space-y-4">
-                    {[{name:ov.team1,handled:42,done:35},{name:ov.team2,handled:36,done:29},{name:ov.team3,handled:28,done:24}].map((person,i)=><div key={i}><div className="flex justify-between gap-2 text-xs mb-1.5"><span className="font-semibold text-slate-700">{person.name}</span><span className="text-slate-500">{person.handled} · {person.done}</span></div><div className="h-2 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-[#315C9B] rounded-full" style={{width:(person.done/person.handled*100)+'%'}}/></div></div>)}
+                    {[{name:ov.team1,handled:42,done:35},{name:ov.team2,handled:36,done:29},{name:ov.team3,handled:28,done:24}].map((person,i)=><div key={i}><div className="flex justify-between gap-2 text-xs mb-1.5"><span className="font-semibold text-slate-700">{person.name}</span><span className="text-slate-500">{person.handled} · {person.done}</span></div><div className="h-2 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-orange-500 rounded-full" style={{width:(person.done/person.handled*100)+'%'}}/></div></div>)}
                   </div>
                   <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-slate-500"><span>{ov.handled}: <b className="text-slate-800">106</b></span><span>{ov.tasksDone}: <b className="text-slate-800">88</b></span></div>
                 </section>
-                <section className="bg-[#102A56] rounded-2xl p-5 text-white flex flex-col justify-between gap-4">
+                <section className="bg-gradient-to-b from-[#082E35] via-[#0B3A42] to-[#041D22] rounded-2xl p-5 text-white flex flex-col justify-between gap-4">
                   <div><div className="text-xs text-blue-200 mb-2">{t.agency}</div><h3 className="text-lg font-bold">{ov.pipeline}</h3><p className="text-xs text-blue-100/75 mt-2">{ov.demoNote}</p></div>
                   <div className="flex flex-wrap gap-2"><button onClick={() => setSection('leads')} className="rounded-xl bg-white text-[#102A56] px-4 py-2 text-xs font-bold">{t.addLead}</button><button onClick={() => setSection('appointments')} className="rounded-xl bg-white/10 border border-white/20 text-white px-4 py-2 text-xs font-bold">{ov.nextVisits}</button></div>
                 </section>
               </div>
             </section>
           ) : (
-            <section className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-12 text-center shadow-sm">
-              <div className="mx-auto h-14 w-14 rounded-2xl bg-teal-50 text-[#16707A] flex items-center justify-center mb-4"><Settings className="w-6 h-6"/></div>
-              <h3 className="text-xl font-black">{t.emptyTitle}: {activeLabel}</h3><p className="max-w-xl mx-auto text-sm text-slate-500 mt-2 leading-7">{t.emptyText}</p>
-              <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-amber-50 text-amber-800 border border-amber-100 px-3 py-1.5 text-xs font-bold"><Clock3 className="w-3.5 h-3.5"/> {t.demo}</div>
+            <section className="space-y-5">
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <div><h3 className="font-black text-lg">{activeLabel}</h3><p className="text-xs text-slate-500 mt-1">{t.emptyText}</p></div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 text-amber-800 border border-amber-100 px-3 py-1.5 text-xs font-bold"><Clock3 className="w-3.5 h-3.5"/> {t.demo}</span>
+              </div>
+              <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+                {[
+                  {label: language==='ar'?'الإجمالي':language==='fr'?'Total':'Total',value:'—',icon:Users},
+                  {label: language==='ar'?'هذا الأسبوع':language==='fr'?'Cette semaine':'This week',value:'—',icon:CalendarDays},
+                  {label: language==='ar'?'قيد المتابعة':language==='fr'?'En cours':'In progress',value:'—',icon:Clock3},
+                  {label: language==='ar'?'مكتمل':language==='fr'?'Terminé':'Completed',value:'—',icon:CheckCheck},
+                ].map((item,i)=>{const Icon=item.icon;return <div key={i} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="text-xs text-slate-500 font-semibold">{item.label}</span><span className="h-9 w-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"><Icon className="w-4 h-4"/></span></div><div className="mt-3 text-2xl font-black">{item.value}</div></div>;})}
+              </div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-2"><h3 className="font-bold">{language==='ar'?'سجل القسم':language==='fr'?'Activité récente':'Recent activity'}</h3><span className="text-[11px] text-slate-400">{t.demo}</span></div>
+                <div className="p-8 text-center"><div className="mx-auto h-12 w-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-3"><Settings className="w-5 h-5"/></div><p className="text-sm font-semibold text-slate-700">{t.emptyTitle}</p><p className="text-xs text-slate-500 mt-2">{t.emptyText}</p></div>
+              </div>
             </section>
           )}
         </div>
