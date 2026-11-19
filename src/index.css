@@ -66,3 +66,32 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+
+/* Business dashboard: keep section headings and supporting copy concise. */
+@layer components {
+  main h1 + p,
+  main h2 + p,
+  main h3 + p {
+    max-width: 68ch;
+    margin-top: 0.35rem;
+    color: #64748b;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  main h1,
+  main h2 {
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+  }
+
+  main section,
+  main article {
+    min-width: 0;
+  }
+}

@@ -12,6 +12,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { PlanTier } from '../../types/database';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 export const SettingsTab: React.FC = () => {
   const {
@@ -91,7 +92,7 @@ export const SettingsTab: React.FC = () => {
         {/* Pricing Plans Configuration */}
         <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-2xs">
           <h3 className="text-sm font-bold text-slate-900 mb-1">تسعير باقات الاشتراك الشهرية (MAD)</h3>
-          <p className="text-xs text-slate-500 mb-3">تعديل التسعير الافتراضي للوكالات الجديدة</p>
+          <p className="text-xs text-slate-500 mb-3">معاينة واجهة التسعير فقط — لم يتم ربط الحفظ بقاعدة البيانات بعد</p>
 
           <form onSubmit={handleSavePricing} className="space-y-3 text-xs">
             <div className="grid grid-cols-3 gap-2">
@@ -134,7 +135,7 @@ export const SettingsTab: React.FC = () => {
                 type="submit"
                 className="px-4 py-1.5 bg-petrol-800 text-white font-bold rounded-lg hover:bg-petrol-700 cursor-pointer"
               >
-                تحديث الأسعار
+                تجربة تحديث الأسعار
               </button>
             </div>
           </form>
@@ -143,36 +144,34 @@ export const SettingsTab: React.FC = () => {
 
       {/* 3. API Integrations Status */}
       <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-2xs">
-        <h3 className="text-sm font-bold text-slate-900 mb-1">مفاتيح الربط البرمجي (Platform API Keys)</h3>
-        <p className="text-xs text-slate-500 mb-4">تم تأمين المفاتيح في المتغيرات البيئية للمنصة</p>
+        <h3 className="text-sm font-bold text-slate-900 mb-1">حالة الربط بالخدمات الخارجية</h3>
+        <p className="text-xs text-slate-500 mb-4">هذه الحالة تعكس ما تم تهيئته فعلياً في النسخة الحالية، ولا يتم عرض أو تخزين المفاتيح السرية داخل المتصفح.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-            <span className="font-semibold text-slate-700">Supabase Service Role Key</span>
-            <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">متصل وآمن</span>
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+            <span className="font-semibold text-slate-700">Supabase Public Client</span>
+            <span className={`text-[11px] font-mono px-2 py-0.5 rounded border ${isSupabaseConfigured ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>{isSupabaseConfigured ? 'الإعدادات موجودة' : 'غير مهيأ'}</span>
           </div>
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-            <span className="font-semibold text-slate-700">Meta Marketing App Secret</span>
-            <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">متصل وآمن</span>
-          </div>
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-            <span className="font-semibold text-slate-700">WhatsApp Cloud Token</span>
-            <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">متصل وآمن</span>
-          </div>
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-            <span className="font-semibold text-slate-700">Google Calendar OAuth 2.0</span>
-            <span className="text-[11px] font-mono text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">تجديد دوري</span>
-          </div>
+          {[
+            'Meta Marketing API',
+            'WhatsApp Cloud API',
+            'Google Calendar OAuth 2.0',
+          ].map((service) => (
+            <div key={service} className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+              <span className="font-semibold text-slate-700">{service}</span>
+              <span className="text-[11px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">لم يتم الربط بعد</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* 4. Immutable Audit Trail Log */}
+      {/* 4. Activity Log — Demo Data */}
       <div className="bg-white rounded-xl border border-slate-200/90 shadow-[0_1px_3px_0_rgba(0,0,0,0.03)] overflow-hidden">
         <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-slate-600" />
             <h3 className="text-sm font-bold text-slate-900">
-              سجل التدقيق الداخلي (Immutable Audit Trail Log)
+              سجل الأنشطة الإدارية (بيانات تجريبية)
             </h3>
           </div>
           <span className="text-xs text-slate-500 font-mono font-bold">

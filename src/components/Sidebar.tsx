@@ -8,7 +8,6 @@ import {
   CreditCard,
   Target,
   Building2,
-  Settings,
   ChevronLeft,
   ChevronRight,
   X,
@@ -119,13 +118,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeColor: bookingSettings.isBookingOpen
             ? 'bg-emerald-500 text-white font-bold'
             : 'bg-rose-500 text-white font-bold',
-        },
-        {
-          id: 'packages',
-          label: t.navPackages,
-          icon: Settings,
-          badge: '3',
-          badgeColor: 'bg-white/15 text-white',
         },
       ],
     },

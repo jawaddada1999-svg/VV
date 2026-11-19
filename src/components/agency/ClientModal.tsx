@@ -226,7 +226,7 @@ export const ClientModal: React.FC = () => {
             <div>
               <label className="block font-semibold text-slate-700 mb-1">
                 {language === 'ar'
-                  ? 'باقة الأوتوميشن والصيانة'
+                  ? 'باقة الأتمتة والصيانة'
                   : language === 'fr'
                   ? 'Offre d’automatisation'
                   : 'Package Tier'}
