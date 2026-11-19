@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, KanbanSquare, Building2, CalendarDays,
   UserRoundCog, MessageSquare, Bell, ChartNoAxesCombined, Settings,
   Search, Plus, Menu, X, Globe2, ChevronDown, Home, Clock3,
-  TrendingUp, Eye, MapPin, BedDouble, Bath, ArrowUpRight, Megaphone, CheckCheck
+  TrendingUp, Eye, MapPin, BedDouble, Bath, ArrowUpRight, Megaphone, CheckCheck, Phone, Mail, Filter, UserPlus, XCircle
 } from 'lucide-react';
 
 type Lang = 'ar' | 'fr' | 'en';
@@ -81,12 +81,19 @@ export const AgencyDashboard: React.FC = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [readNotifications, setReadNotifications] = useState<number[]>([]);
   const [overviewRange, setOverviewRange] = useState<'today' | 'week' | 'month'>('week');
+  const [leadStatusFilter, setLeadStatusFilter] = useState('all');
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [newLeadName, setNewLeadName] = useState('');
+  const [newLeadPhone, setNewLeadPhone] = useState('');
+  const [newLeadInterest, setNewLeadInterest] = useState('');
+  const [newLeadSource, setNewLeadSource] = useState('');
+  const [addedLeads, setAddedLeads] = useState<Array<{name:string;phone:string;interest:string;source:string;status:string}>>([]);
   const t = copy[language];
   const rtl = language === 'ar';
   const ov = language === 'ar' ? {
     period: 'الفترة', today: 'اليوم', week: 'هذا الأسبوع', month: 'هذا الشهر',
     newLeads: 'العملاء الجدد', completedDeals: 'الصفقات المكتملة', pipeline: 'مسار العملاء',
-    stageNew: 'جدد', stageContacted: 'تم التواصل', stageQualified: 'مؤهلون', stageVisit: 'معاينة', stageWon: 'صفقات ناجحة',
+    stageNew: 'عملاء جدد', stageVisit: 'حُجزت معاينة', stageAttended: 'حضروا المعاينة', stageMissed: 'لم يحضروا', stageWon: 'صفقات ناجحة',
     teamActivity: 'نشاط الفريق', handled: 'عملاء تمت متابعتهم', tasksDone: 'متابعات مكتملة',
     alerts: 'ما يحتاج إلى انتباه', noContact: 'عملاء لم يتم التواصل معهم', overdue: 'متابعات متأخرة',
     recent: 'أحدث العملاء', nextVisits: 'المعاينات القادمة', viewAll: 'عرض الكل',
@@ -102,7 +109,7 @@ export const AgencyDashboard: React.FC = () => {
   } : language === 'fr' ? {
     period: 'Période', today: 'Aujourd’hui', week: 'Cette semaine', month: 'Ce mois',
     newLeads: 'Nouveaux prospects', completedDeals: 'Transactions conclues', pipeline: 'Parcours des prospects',
-    stageNew: 'Nouveaux', stageContacted: 'Contactés', stageQualified: 'Qualifiés', stageVisit: 'Visite', stageWon: 'Gagnés',
+    stageNew: 'Nouveaux prospects', stageVisit: 'Visite planifiée', stageAttended: 'Présents à la visite', stageMissed: 'Absents à la visite', stageWon: 'Transactions conclues',
     teamActivity: 'Activité de l’équipe', handled: 'Prospects suivis', tasksDone: 'Suivis terminés',
     alerts: 'Points à traiter', noContact: 'Prospects sans premier contact', overdue: 'Suivis en retard',
     recent: 'Prospects récents', nextVisits: 'Prochaines visites', viewAll: 'Tout voir',
@@ -118,7 +125,7 @@ export const AgencyDashboard: React.FC = () => {
   } : {
     period: 'Period', today: 'Today', week: 'This week', month: 'This month',
     newLeads: 'New leads', completedDeals: 'Closed deals', pipeline: 'Lead pipeline',
-    stageNew: 'New', stageContacted: 'Contacted', stageQualified: 'Qualified', stageVisit: 'Viewing', stageWon: 'Won',
+    stageNew: 'New leads', stageVisit: 'Viewing booked', stageAttended: 'Attended viewings', stageMissed: 'Missed viewings', stageWon: 'Closed deals',
     teamActivity: 'Team activity', handled: 'Leads followed up', tasksDone: 'Follow-ups completed',
     alerts: 'Needs attention', noContact: 'Leads awaiting first contact', overdue: 'Overdue follow-ups',
     recent: 'Recent leads', nextVisits: 'Upcoming viewings', viewAll: 'View all',
@@ -208,9 +215,59 @@ export const AgencyDashboard: React.FC = () => {
         <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div><div className="text-xs font-bold text-[#244A83] mb-2">{t.agency}</div><h2 className="text-2xl font-black text-slate-900">{t.title}</h2><p className="text-sm text-slate-500 mt-1">{t.subtitle}</p></div>
-            <button onClick={() => setSection('leads')} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173B73] hover:bg-[#244A83] text-white px-4 py-2.5 text-sm font-bold shadow-sm"><Plus className="w-4 h-4"/>{t.addLead}</button>
+            <button onClick={() => { if(section === 'leads') setShowLeadForm(true); else setSection('leads'); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173B73] hover:bg-[#244A83] text-white px-4 py-2.5 text-sm font-bold shadow-sm"><Plus className="w-4 h-4"/>{t.addLead}</button>
           </div>
-          {section === 'adAnalysis' ? (
+          {section === 'leads' ? (
+            <section className="space-y-5">
+              <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+                {[
+                  {label: language === 'ar' ? 'إجمالي العملاء' : language === 'fr' ? 'Total prospects' : 'Total leads', value: '248', icon: Users},
+                  {label: language === 'ar' ? 'عملاء جدد' : language === 'fr' ? 'Nouveaux' : 'New leads', value: '32', icon: UserPlus},
+                  {label: language === 'ar' ? 'معاينات محجوزة' : language === 'fr' ? 'Visites planifiées' : 'Viewings booked', value: '18', icon: CalendarDays},
+                  {label: language === 'ar' ? 'بانتظار المتابعة' : language === 'fr' ? 'À relancer' : 'Needs follow-up', value: '14', icon: Clock3},
+                ].map((item,i)=>{const Icon=item.icon;return <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="text-xs text-slate-500 font-semibold">{item.label}</span><Icon className="w-4 h-4 text-[#244A83]"/></div><div className="text-2xl font-black mt-3 tabular-nums">{item.value}</div></div>})}
+              </div>
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div><h3 className="font-bold text-lg">{language === 'ar' ? 'قاعدة العملاء المحتملين' : language === 'fr' ? 'Base des prospects' : 'Lead database'}</h3><p className="text-xs text-slate-500 mt-1">{ov.demoNote}</p></div>
+                  <button onClick={()=>setShowLeadForm(true)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#173B73] text-white px-4 py-2.5 text-sm font-bold"><Plus className="w-4 h-4"/>{t.addLead}</button>
+                </div>
+                <div className="flex flex-col md:flex-row gap-3">
+                  <div className="flex-1 flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5"><Search className="w-4 h-4 text-slate-400"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.search} className="w-full outline-none text-sm bg-transparent"/></div>
+                  <div className="flex items-center gap-2"><Filter className="w-4 h-4 text-slate-400"/><select value={leadStatusFilter} onChange={e=>setLeadStatusFilter(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none">
+                    <option value="all">{language==='ar'?'جميع الحالات':language==='fr'?'Tous les statuts':'All statuses'}</option>
+                    <option value="new">{language==='ar'?'جديد':language==='fr'?'Nouveau':'New'}</option>
+                    <option value="follow">{language==='ar'?'متابعة مطلوبة':language==='fr'?'Suivi requis':'Follow-up needed'}</option>
+                    <option value="visit">{language==='ar'?'معاينة محجوزة':language==='fr'?'Visite planifiée':'Viewing booked'}</option>
+                    <option value="attended">{language==='ar'?'حضر المعاينة':language==='fr'?'Présent à la visite':'Attended viewing'}</option>
+                    <option value="missed">{language==='ar'?'لم يحضر':language==='fr'?'Absent':'Missed viewing'}</option>
+                  </select></div>
+                </div>
+                {(() => {
+                  const sample = [
+                    {name:ov.lead1,phone:'+212 6 12 34 56 78',interest:ov.interest1,source:'Meta Ads',status:'visit',label:language==='ar'?'معاينة محجوزة':language==='fr'?'Visite planifiée':'Viewing booked',date:ov.todayLabel},
+                    {name:ov.lead2,phone:'+212 6 23 45 67 89',interest:ov.interest2,source:'Instagram',status:'new',label:ov.new,date:ov.yesterday},
+                    {name:ov.lead3,phone:'+212 6 34 56 78 90',interest:ov.interest3,source:'Website',status:'attended',label:language==='ar'?'حضر المعاينة':language==='fr'?'Présent à la visite':'Attended',date:ov.yesterday},
+                    {name:language==='ar'?'مريم العلوي':language==='fr'?'Meryem Alaoui':'Meryem Alaoui',phone:'+212 6 45 67 89 01',interest:ov.interest1,source:'Meta Ads',status:'missed',label:language==='ar'?'لم يحضر':language==='fr'?'Absent':'Missed',date:ov.yesterday},
+                    {name:language==='ar'?'حمزة الكتاني':language==='fr'?'Hamza Kettani':'Hamza Kettani',phone:'+212 6 56 78 90 12',interest:ov.interest2,source:'Referral',status:'follow',label:language==='ar'?'متابعة مطلوبة':language==='fr'?'Suivi requis':'Follow-up needed',date:ov.todayLabel},
+                  ];
+                  const all=[...addedLeads.map((l,i)=>({...l,status:l.status,label:l.status==='new'?ov.new:language==='ar'?'متابعة مطلوبة':language==='fr'?'Suivi requis':'Follow-up needed',date:ov.todayLabel,key:'added-'+i})),...sample.map((l,i)=>({...l,key:'sample-'+i}))];
+                  const filtered=all.filter(l=>(leadStatusFilter==='all'||l.status===leadStatusFilter)&&[l.name,l.phone,l.interest,l.source].join(' ').toLowerCase().includes(query.toLowerCase()));
+                  return <div className="overflow-x-auto border border-slate-100 rounded-xl"><table className="w-full text-sm min-w-[720px]"><thead className="bg-slate-50 text-slate-500 text-xs"><tr><th className="p-4 text-start">{t.lead}</th><th className="p-4 text-start">{language==='ar'?'رقم الهاتف':language==='fr'?'Téléphone':'Phone'}</th><th className="p-4 text-start">{t.interest}</th><th className="p-4 text-start">{language==='ar'?'المصدر':language==='fr'?'Source':'Source'}</th><th className="p-4 text-start">{t.status}</th><th className="p-4 text-start">{t.date}</th></tr></thead><tbody>{filtered.map((l:any)=><tr key={l.key} className="border-t border-slate-100 hover:bg-slate-50/70"><td className="p-4 font-semibold whitespace-nowrap">{l.name}</td><td className="p-4 text-slate-600 whitespace-nowrap"><span className="inline-flex items-center gap-1.5"><Phone className="w-3 h-3"/>{l.phone}</span></td><td className="p-4 text-slate-600 whitespace-nowrap">{l.interest}</td><td className="p-4 text-slate-500">{l.source}</td><td className="p-4"><span className="rounded-full bg-blue-50 text-blue-800 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">{l.label}</span></td><td className="p-4 text-slate-500 text-xs">{l.date}</td></tr>)}{filtered.length===0&&<tr><td colSpan={6} className="p-8 text-center text-sm text-slate-400">{language==='ar'?'لا توجد نتائج مطابقة':language==='fr'?'Aucun résultat':'No matching leads'}</td></tr>}</tbody></table></div>;
+                })()}
+              </div>
+              {showLeadForm && <div className="fixed inset-0 z-[70] bg-slate-950/50 flex items-center justify-center p-4" onClick={()=>setShowLeadForm(false)}>
+                <form onSubmit={e=>{e.preventDefault();setAddedLeads(prev=>[{name:newLeadName,phone:newLeadPhone,interest:newLeadInterest,source:newLeadSource||'Direct',status:'new'},...prev]);setNewLeadName('');setNewLeadPhone('');setNewLeadInterest('');setNewLeadSource('');setShowLeadForm(false);}} onClick={e=>e.stopPropagation()} className="w-full max-w-lg bg-white rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
+                  <div className="flex items-center justify-between"><h3 className="font-bold text-lg">{t.addLead}</h3><button type="button" onClick={()=>setShowLeadForm(false)} className="p-2 rounded-lg hover:bg-slate-100"><X className="w-4 h-4"/></button></div>
+                  <label className="block text-xs font-semibold text-slate-600">{language==='ar'?'اسم العميل':language==='fr'?'Nom du prospect':'Lead name'}<input required value={newLeadName} onChange={e=>setNewLeadName(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label>
+                  <label className="block text-xs font-semibold text-slate-600">{language==='ar'?'رقم الهاتف':language==='fr'?'Téléphone':'Phone number'}<input required value={newLeadPhone} onChange={e=>setNewLeadPhone(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label>
+                  <label className="block text-xs font-semibold text-slate-600">{language==='ar'?'العقار أو نوع الاهتمام':language==='fr'?'Bien ou intérêt':'Property or interest'}<input value={newLeadInterest} onChange={e=>setNewLeadInterest(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label>
+                  <label className="block text-xs font-semibold text-slate-600">{language==='ar'?'مصدر العميل':language==='fr'?'Source du prospect':'Lead source'}<input value={newLeadSource} onChange={e=>setNewLeadSource(e.target.value)} placeholder="Meta Ads / Instagram / Site web" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label>
+                  <div className="flex justify-end gap-2 pt-2"><button type="button" onClick={()=>setShowLeadForm(false)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold">{language==='ar'?'إلغاء':language==='fr'?'Annuler':'Cancel'}</button><button type="submit" className="rounded-xl bg-[#173B73] text-white px-4 py-2 text-sm font-bold">{language==='ar'?'حفظ العميل':language==='fr'?'Enregistrer':'Save lead'}</button></div>
+                </form>
+              </div>}
+            </section>
+          ) : section === 'adAnalysis' ? (
             <section className="space-y-5">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center gap-3"><span className="h-11 w-11 rounded-xl bg-[#EAF2FF] text-[#244A83] flex items-center justify-center"><Megaphone className="w-5 h-5"/></span><div><h3 className="font-bold">{t.adAnalysis}</h3><p className="text-xs text-slate-500 mt-1">{t.demo} · {language === 'ar' ? 'سيتم ربط بيانات الحملات الفعلية لاحقاً' : language === 'fr' ? 'Les données réelles des campagnes seront connectées ultérieurement' : 'Live campaign data will be connected later'}</p></div></div>
@@ -261,10 +318,10 @@ export const AgencyDashboard: React.FC = () => {
                   <div className="space-y-4">
                     {[
                       { label: ov.stageNew, count: 32, width: '100%', color: 'bg-blue-500' },
-                      { label: ov.stageContacted, count: 24, width: '75%', color: 'bg-indigo-500' },
-                      { label: ov.stageQualified, count: 16, width: '50%', color: 'bg-violet-500' },
-                      { label: ov.stageVisit, count: 10, width: '31%', color: 'bg-amber-500' },
-                      { label: ov.stageWon, count: 7, width: '22%', color: 'bg-emerald-500' },
+                      { label: ov.stageVisit, count: 18, width: '56%', color: 'bg-indigo-500' },
+                      { label: ov.stageAttended, count: 12, width: '38%', color: 'bg-emerald-500' },
+                      { label: ov.stageMissed, count: 6, width: '19%', color: 'bg-rose-500' },
+                      { label: ov.stageWon, count: 7, width: '22%', color: 'bg-amber-500' },
                     ].map((item, i) => <div key={i}><div className="flex items-center justify-between text-xs mb-1.5"><span className="font-semibold text-slate-700">{item.label}</span><span className="font-bold tabular-nums text-slate-600">{item.count}</span></div><div className="h-2.5 bg-slate-100 rounded-full overflow-hidden"><div className={item.color + ' h-full rounded-full'} style={{width:item.width}}/></div></div>)}
                   </div>
                 </section>
