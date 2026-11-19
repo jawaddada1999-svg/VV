@@ -16,6 +16,7 @@ import { MobileBottomNav } from './components/MobileBottomNav';
 import { Clock } from 'lucide-react';
 import { translations } from './translations';
 import { PlatformAdminApp } from './components/internal/PlatformAdminApp';
+import { AgencyDashboard } from './components/AgencyDashboard';
 
 const DashboardContent: React.FC = () => {
   const { activeTab, clients, setActiveTab, setSelectedClientId, language, direction } = useAgency();
@@ -62,6 +63,9 @@ const DashboardContent: React.FC = () => {
 export default function App() {
   if (window.location.pathname.startsWith('/admin')) {
     return <PlatformAdminApp />;
+  }
+  if (window.location.pathname.startsWith('/agency')) {
+    return <AgencyDashboard />;
   }
   return <AgencyProvider><DashboardContent /></AgencyProvider>;
 }
