@@ -3,18 +3,18 @@ import {
   LayoutDashboard, Users, KanbanSquare, Building2, CalendarDays,
   UserRoundCog, MessageSquare, Bell, ChartNoAxesCombined, Settings,
   Search, Plus, Menu, X, Globe2, ChevronDown, Home, Clock3,
-  TrendingUp, Eye, MapPin, BedDouble, Bath, ArrowUpRight
+  TrendingUp, Eye, MapPin, BedDouble, Bath, ArrowUpRight, Megaphone
 } from 'lucide-react';
 
 type Lang = 'ar' | 'fr' | 'en';
-type Section = 'overview' | 'leads' | 'pipeline' | 'properties' | 'appointments' | 'team' | 'communications' | 'reports' | 'settings';
+type Section = 'overview' | 'leads' | 'pipeline' | 'properties' | 'appointments' | 'team' | 'communications' | 'adAnalysis' | 'reports' | 'settings';
 
 const copy = {
   ar: {
     title: 'لوحة الوكالة العقارية', subtitle: 'مساحة عمل موحدة لإدارة العملاء والعقارات والمعاينات',
     nav: 'القائمة الرئيسية', overview: 'نظرة عامة', leads: 'العملاء المحتملون', pipeline: 'مسار المبيعات',
     properties: 'العقارات', appointments: 'المواعيد والمعاينات', team: 'فريق العمل',
-    communications: 'التواصل', reports: 'التقارير والتحليلات', settings: 'الإعدادات',
+    communications: 'التواصل', adAnalysis: 'تحليل الإعلانات', reports: 'التقارير والتحليلات', settings: 'الإعدادات',
     search: 'ابحث عن عميل أو عقار...', addLead: 'إضافة عميل', totalLeads: 'إجمالي العملاء',
     visits: 'المعاينات القادمة', listings: 'العقارات المنشورة', conversion: 'معدل التحويل',
     recentLeads: 'أحدث العملاء المحتملين', upcoming: 'المواعيد القادمة', viewAll: 'عرض الكل',
@@ -29,7 +29,7 @@ const copy = {
     title: 'Espace agence immobilière', subtitle: 'Un espace unifié pour gérer les prospects, biens et visites',
     nav: 'Navigation principale', overview: 'Vue d’ensemble', leads: 'Prospects', pipeline: 'Pipeline commercial',
     properties: 'Biens immobiliers', appointments: 'Rendez-vous et visites', team: 'Équipe',
-    communications: 'Communications', reports: 'Rapports et analyses', settings: 'Paramètres',
+    communications: 'Communications', adAnalysis: 'Analyse publicitaire', reports: 'Rapports et analyses', settings: 'Paramètres',
     search: 'Rechercher un prospect ou un bien...', addLead: 'Ajouter un prospect', totalLeads: 'Total prospects',
     visits: 'Visites à venir', listings: 'Biens publiés', conversion: 'Taux de conversion',
     recentLeads: 'Prospects récents', upcoming: 'Prochains rendez-vous', viewAll: 'Voir tout',
@@ -44,7 +44,7 @@ const copy = {
     title: 'Real Estate Agency Dashboard', subtitle: 'One workspace to manage leads, properties and viewings',
     nav: 'Main navigation', overview: 'Overview', leads: 'Leads', pipeline: 'Sales pipeline',
     properties: 'Properties', appointments: 'Appointments & viewings', team: 'Team',
-    communications: 'Communications', reports: 'Reports & analytics', settings: 'Settings',
+    communications: 'Communications', adAnalysis: 'Ad performance', reports: 'Reports & analytics', settings: 'Settings',
     search: 'Search leads or properties...', addLead: 'Add lead', totalLeads: 'Total leads',
     visits: 'Upcoming viewings', listings: 'Published listings', conversion: 'Conversion rate',
     recentLeads: 'Recent leads', upcoming: 'Upcoming appointments', viewAll: 'View all',
@@ -134,7 +134,31 @@ export const AgencyDashboard: React.FC = () => {
             <div><div className="text-xs font-bold text-[#16707A] mb-2">{t.agency}</div><h2 className="text-2xl font-black text-slate-900">{t.title}</h2><p className="text-sm text-slate-500 mt-1">{t.subtitle}</p></div>
             <button onClick={() => setSection('leads')} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0D515B] hover:bg-[#12636E] text-white px-4 py-2.5 text-sm font-bold shadow-sm"><Plus className="w-4 h-4"/>{t.addLead}</button>
           </div>
-          {section === 'overview' ? (
+          {section === 'adAnalysis' ? (
+            <section className="space-y-5">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3"><span className="h-11 w-11 rounded-xl bg-[#EAF2FF] text-[#244A83] flex items-center justify-center"><Megaphone className="w-5 h-5"/></span><div><h3 className="font-bold">{t.adAnalysis}</h3><p className="text-xs text-slate-500 mt-1">{t.demo} · {language === 'ar' ? 'سيتم ربط بيانات الحملات الفعلية لاحقاً' : language === 'fr' ? 'Les données réelles des campagnes seront connectées ultérieurement' : 'Live campaign data will be connected later'}</p></div></div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                {[
+                  { label: language === 'ar' ? 'إجمالي الإنفاق' : language === 'fr' ? 'Dépenses totales' : 'Total spend', value: '12,450 MAD' },
+                  { label: language === 'ar' ? 'العملاء من الإعلانات' : language === 'fr' ? 'Prospects issus des publicités' : 'Ad-generated leads', value: '186' },
+                  { label: language === 'ar' ? 'تكلفة العميل المحتمل' : language === 'fr' ? 'Coût par prospect' : 'Cost per lead', value: '66.9 MAD' },
+                  { label: language === 'ar' ? 'الحملات النشطة' : language === 'fr' ? 'Campagnes actives' : 'Active campaigns', value: '4' },
+                ].map((item, i) => <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><div className="text-xs text-slate-500 font-semibold">{item.label}</div><div className="mt-4 text-2xl font-black tabular-nums">{item.value}</div></div>)}
+              </div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-100"><h3 className="font-bold">{language === 'ar' ? 'أداء الحملات' : language === 'fr' ? 'Performance des campagnes' : 'Campaign performance'}</h3></div>
+                <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-slate-50 text-slate-500 text-xs"><tr><th className="p-4 text-start">{language === 'ar' ? 'الحملة' : language === 'fr' ? 'Campagne' : 'Campaign'}</th><th className="p-4 text-start">{language === 'ar' ? 'المنصة' : language === 'fr' ? 'Plateforme' : 'Platform'}</th><th className="p-4 text-start">{language === 'ar' ? 'الإنفاق' : language === 'fr' ? 'Dépenses' : 'Spend'}</th><th className="p-4 text-start">{language === 'ar' ? 'العملاء' : language === 'fr' ? 'Prospects' : 'Leads'}</th></tr></thead><tbody>
+                  {[
+                    [language === 'ar' ? 'شقق سكنية - أكادير' : 'Residential apartments - Agadir', 'Meta Ads', '4,200 MAD', '72'],
+                    [language === 'ar' ? 'فلل للبيع - مراكش' : 'Villas for sale - Marrakech', 'Meta Ads', '5,100 MAD', '64'],
+                    [language === 'ar' ? 'مكاتب تجارية' : 'Commercial offices', 'Google Ads', '3,150 MAD', '50'],
+                  ].map((row, i) => <tr key={i} className="border-t border-slate-100"><td className="p-4 font-semibold">{row[0]}</td><td className="p-4 text-slate-600">{row[1]}</td><td className="p-4 text-slate-600">{row[2]}</td><td className="p-4 font-bold">{row[3]}</td></tr>)}
+                </tbody></table></div>
+              </div>
+            </section>
+          ) : section === 'overview' ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 {[
