@@ -25,17 +25,32 @@ export const ClientsDirectoryTab: React.FC = () => {
     clients,
     setSelectedClientId,
     setShowAddClientModal,
-    moveClientStage,
-    updateClient,
     language,
     direction,
   } = useAgency();
 
   const t = translations[language];
 
+  const getRoleLabel = (role?: string) => {
+    if (!role) return '—';
+    const roles: Record<string, { ar: string; fr: string; en: string }> = {
+      owner: { ar: 'مالك الوكالة', fr: 'Propriétaire de l’agence', en: 'Agency owner' },
+      agency_manager: { ar: 'مدير الوكالة', fr: 'Directeur d’agence', en: 'Agency manager' },
+      branch_manager: { ar: 'مدير الفرع', fr: 'Responsable d’agence', en: 'Branch manager' },
+      commercial_director: { ar: 'المدير التجاري', fr: 'Directeur commercial', en: 'Commercial director' },
+      sales_manager: { ar: 'مسؤول المبيعات', fr: 'Responsable des ventes', en: 'Sales manager' },
+      sales_agent: { ar: 'مستشار / تجاري', fr: 'Conseiller commercial', en: 'Sales agent' },
+      negotiator: { ar: 'مفاوض عقاري', fr: 'Négociateur immobilier', en: 'Property negotiator' },
+      marketing_manager: { ar: 'مسؤول التسويق', fr: 'Responsable marketing', en: 'Marketing manager' },
+      operations_manager: { ar: 'مسؤول العمليات', fr: 'Responsable des opérations', en: 'Operations manager' },
+      administrator: { ar: 'مسؤول إداري', fr: 'Responsable administratif', en: 'Administrator' },
+      assistant: { ar: 'مساعد إداري', fr: 'Assistant administratif', en: 'Administrative assistant' },
+      other: { ar: 'دور آخر', fr: 'Autre fonction', en: 'Other role' },
+    };
+    return roles[role]?.[language] || role;
+  };
+
   const [search, setSearch] = useState('');
-  const [editingClientId, setEditingClientId] = useState<string | null>(null);
-  const [editDraft, setEditDraft] = useState<any>({});
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [tierFilter, setTierFilter] = useState<string>('all');
@@ -245,27 +260,26 @@ export const ClientsDirectoryTab: React.FC = () => {
                 <th className="p-3.5">{t.colClientAgency}</th>
                 <th className="p-3.5">{t.colCity}</th>
                 <th className="p-3.5">{t.colContact}</th>
+                <th className="p-3.5">{t.colRole}</th>
+                <th className="p-3.5">{t.colTeamSize}</th>
                 <th className="p-3.5">{t.colTier}</th>
                 <th className="p-3.5">{t.colSetupFeeCollected}</th>
                 <th className="p-3.5">{t.colMonthlyRetainer}</th>
                 <th className="p-3.5">{t.colStage}</th>
-                <th className="p-3.5">{language==='ar'?'حجم الفريق':'Team size'}</th>
-                <th className="p-3.5">{language==='ar'?'الطلبات اليومية':'Daily inquiries'}</th>
-                <th className="p-3.5">{language==='ar'?'الدور':'Role'}</th>
-                <th className="p-3.5 text-center">{t.colActions}</th>
+                <th className="p-3.5">{t.colDailyInquiries}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="p-8 text-center text-slate-400 font-medium">
+                  <td colSpan={10} className="p-8 text-center text-slate-400 font-medium">
                     {t.notificationsEmpty}
                   </td>
                 </tr>
               ) : (
                 filtered.map((client) => {
                   return (
-                    <tr key={client.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={client.id} onClick={() => setSelectedClientId(client.id)} className="hover:bg-slate-50/80 transition-colors cursor-pointer">
                       <td className="p-3.5">
                         <span className="font-bold text-slate-900 block text-xs">{client.agencyName}</span>
                         <span className="text-[10px] text-slate-400 font-mono">
@@ -282,7 +296,19 @@ export const ClientsDirectoryTab: React.FC = () => {
 
                       <td className="p-3.5">
                         <span className="font-bold text-slate-900 block">{client.contactPerson}</span>
-                        <span className="text-[11px] text-slate-500 font-mono block" dir="ltr">{client.phone}</span><span className="text-[10px] text-slate-400 block">{client.email}</span>
+                        <span className="text-[11px] text-slate-500 font-mono block" dir="ltr">{client.phone}</span>
+                        <span className="text-[10px] text-slate-400 block">{client.email}</span>
+                      </td>
+
+                      <td className="p-3.5">
+                        <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold bg-violet-50 text-violet-900 border border-violet-200">
+                          {getRoleLabel(client.contactRole)}
+                        </span>
+                      </td>
+
+                      <td className="p-3.5 text-center">
+                        <span className="font-mono font-extrabold text-slate-900">{client.teamSize ?? '—'}</span>
+                        <span className="block text-[10px] text-slate-500">{language === 'ar' ? 'فرد' : language === 'fr' ? 'personnes' : 'people'}</span>
                       </td>
 
                       <td className="p-3.5">
@@ -307,11 +333,8 @@ export const ClientsDirectoryTab: React.FC = () => {
                         {getStageBadge(client.stage)}
                       </td>
 
-                      <td className="p-3.5 text-center">
-                        <div className="flex items-center gap-2 justify-center">
-                          <button onClick={() => { setEditingClientId(client.id); setEditDraft({agencyName:client.agencyName,contactPerson:client.contactPerson,phone:client.phone,email:client.email,agencyManager:client.agencyManager||'',teamSize:client.teamSize??'',dailyInquiries:client.dailyInquiries??'',contactRole:client.contactRole||''}); }} className="px-3 py-1.5 text-xs font-bold bg-orange-50 text-orange-700 hover:bg-orange-100 rounded-xl">{language==='ar'?'تعديل':'Edit'}</button>
-                          <button onClick={() => setSelectedClientId(client.id)} className="px-3 py-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-800 hover:text-white text-slate-800 rounded-xl">{t.viewDeal}</button>
-                        </div>
+                      <td className="p-3.5 text-center font-mono font-bold text-slate-800">
+                        {client.dailyInquiries ?? '—'}
                       </td>
                     </tr>
                   );
@@ -321,26 +344,7 @@ export const ClientsDirectoryTab: React.FC = () => {
           </table>
         </div>
       </div>
-      {editingClientId && (
-        <div className="fixed inset-0 z-[100] bg-slate-950/60 flex items-center justify-center p-4" onClick={()=>setEditingClientId(null)}>
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl p-5 shadow-2xl" onClick={e=>e.stopPropagation()}>
-            <h3 className="font-extrabold text-lg mb-4">{language==='ar'?'تعديل بيانات الوكالة':'Edit agency details'}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                ['agencyName',language==='ar'?'اسم الوكالة':'Agency name'],
-                ['contactPerson',language==='ar'?'اسم جهة الاتصال':'Contact person'],
-                ['phone',language==='ar'?'الهاتف':'Phone'],
-                ['email',language==='ar'?'البريد الإلكتروني':'Email'],
-                ['agencyManager',language==='ar'?'مسؤول عن الوكالة':'Agency manager'],
-                ['contactRole',language==='ar'?'الدور (مدير/تجاري)':'Role (manager/commercial)'],
-                ['teamSize',language==='ar'?'عدد الموظفين':'Team size'],
-                ['dailyInquiries',language==='ar'?'الطلبات اليومية':'Daily inquiries']
-              ].map(([key,label])=><label key={key} className="text-xs font-bold text-slate-600">{label}<input value={editDraft[key] ?? ''} onChange={e=>setEditDraft((old:any)=>({...old,[key]:e.target.value}))} className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-orange-500"/></label>)}
-            </div>
-            <div className="flex justify-end gap-2 mt-5"><button onClick={()=>setEditingClientId(null)} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold">{language==='ar'?'إلغاء':'Cancel'}</button><button onClick={()=>{if(editingClientId){updateClient(editingClientId,{...editDraft,teamSize:editDraft.teamSize===''?undefined:Number(editDraft.teamSize),dailyInquiries:editDraft.dailyInquiries===''?undefined:Number(editDraft.dailyInquiries)});setEditingClientId(null)}}} className="px-4 py-2 rounded-xl bg-orange-600 text-white text-sm font-bold">{language==='ar'?'حفظ التغييرات':'Save changes'}</button></div>
-          </div>
-        </div>
-      )}
+}
     </div>
   );
 };
