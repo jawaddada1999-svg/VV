@@ -611,17 +611,25 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     status: MeetingItem['status'],
     outcome?: MeetingItem['meetingOutcome']
   ) => {
+    const linkedMeeting = meetings.find((meeting) => meeting.id === id);
+    if (linkedMeeting) {
+      if (outcome === 'accepted_trial') {
+        start7DayTrial(linkedMeeting.clientId);
+      } else if (status === 'completed') {
+        moveClientStage(linkedMeeting.clientId, 'meeting_completed');
+      } else if (status === 'no_show') {
+        moveClientStage(linkedMeeting.clientId, 'meeting_no_show');
+      } else if (status === 'scheduled') {
+        moveClientStage(linkedMeeting.clientId, 'meeting_scheduled');
+      }
+    }
+
     setMeetings((prev) =>
-      prev.map((m) => {
-        if (m.id === id) {
-          const updated = { ...m, status, meetingOutcome: outcome || m.meetingOutcome };
-          if (outcome === 'accepted_trial') {
-            start7DayTrial(m.clientId);
-          }
-          return updated;
-        }
-        return m;
-      })
+      prev.map((m) =>
+        m.id === id
+          ? { ...m, status, meetingOutcome: outcome || m.meetingOutcome }
+          : m
+      )
     );
   };
 
