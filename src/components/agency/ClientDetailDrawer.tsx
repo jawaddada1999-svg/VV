@@ -269,7 +269,7 @@ export const ClientDetailDrawer: React.FC = () => {
       clientId: selectedClient.id,
       type: noteType,
       title: noteTitle.trim(),
-      author: noteAuthor.trim() || (language === 'ar' ? 'فريق العمل' : 'Staff'),
+      author: noteAuthor.trim() || (language === 'ar' ? 'فريق العمل' : language === 'fr' ? 'Équipe' : 'Staff'),
       content: noteContent.trim(),
       outcome: noteOutcome.trim() || undefined,
       followUpDate: noteFollowUpDate || undefined,
@@ -371,7 +371,7 @@ export const ClientDetailDrawer: React.FC = () => {
                 </span>
                 <span className="text-xs text-slate-300">
                   {selectedClient.city} • {language === 'ar' ? 'تاريخ التسجيل:' : language === 'fr' ? 'Inscrit le :' : 'Registered:'}{' '}
-                  {new Date(selectedClient.createdAt).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR')}
+                  {new Date(selectedClient.createdAt).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US')}
                 </span>
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-white mt-1">
@@ -1073,7 +1073,7 @@ export const ClientDetailDrawer: React.FC = () => {
 
                           <span className="text-[11px] text-slate-400 font-mono">
                             {new Date(entry.createdAt).toLocaleDateString(
-                              language === 'ar' ? 'ar-MA' : 'fr-FR',
+                              language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US',
                               {
                                 year: 'numeric',
                                 month: 'short',
@@ -1182,7 +1182,9 @@ export const ClientDetailDrawer: React.FC = () => {
                 placeholder={
                   language === 'ar'
                     ? 'اكتب هنا ملاحظات سريعة مختصرة يتم حفظها تلقائياً...'
-                    : 'Add quick brief notes here...'
+                    : language === 'fr'
+                    ? 'Ajoutez ici une note rapide. Elle sera enregistrée automatiquement...'
+                    : 'Add a quick note here. It will be saved automatically...'
                 }
                 className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs leading-relaxed text-slate-900 focus:outline-none focus:border-orange-500 transition-colors"
               ></textarea>
