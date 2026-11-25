@@ -3,7 +3,6 @@ import { useAgency } from '../context/AgencyContext';
 import {
   BarChart3,
   Wallet,
-  UserRoundSearch,
   Kanban,
   Calendar,
   Layers,
@@ -60,36 +59,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       groupTitle: t.navLeadershipGroup,
       items: [
+        { id: 'overview', label: t.navOverview, icon: BarChart3, badge: null },
         {
-          id: 'overview',
-          label: t.navOverview,
-          icon: BarChart3,
-          badge: null,
+          id: 'clients',
+          label: language === 'ar' ? 'دليل الوكالات والعملاء' : t.navClients,
+          icon: Building2,
+          badge: `${clients.length}`,
+          badgeColor: 'bg-white/20 text-white',
         },
         {
           id: 'pipeline',
-          label: t.navPipeline,
+          label: language === 'ar' ? 'مسار الصفقات' : t.navPipeline,
           icon: Kanban,
           badge: trialsCount > 0 ? `${trialsCount}` : null,
           badgeColor: 'bg-orange-500 text-white font-extrabold',
         },
         {
           id: 'meetings',
-          label: t.navMeetings,
+          label: language === 'ar' ? 'المواعيد ومكالمات الاستشارة' : t.navMeetings,
           icon: Calendar,
           badge: `${metrics.meetingsBookedThisMonth}`,
           badgeColor: 'bg-white/20 text-white',
         },
         {
-          id: 'prospects',
-          label: language === 'ar' ? 'العملاء المحتملون' : language === 'fr' ? 'Prospects' : 'Prospects',
-          icon: UserRoundSearch,
-          badge: `${clients.filter((c) => ['ad_lead', 'meeting_scheduled', 'meeting_completed'].includes(c.stage)).length}`,
-          badgeColor: 'bg-sky-500 text-white font-bold',
-        },
-        {
           id: 'ads',
-          label: t.navAds,
+          label: language === 'ar' ? 'حملات إعلانية' : t.navAds,
           icon: Target,
           badge: language === 'ar' ? 'ميتا وجوجل' : 'Meta & Google',
           badgeColor: 'bg-white/15 text-white',
@@ -101,35 +95,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         {
           id: 'delivery',
-          label: t.navDelivery,
+          label: language === 'ar' ? 'تسليم المشاريع' : t.navDelivery,
           icon: Layers,
           badge: buildsCount > 0 ? `${buildsCount}` : null,
           badgeColor: 'bg-purple-500 text-white font-bold',
         },
         {
           id: 'finance',
-          label: language === 'ar' ? 'الأداء المالي' : language === 'fr' ? 'Performance financière' : 'Financial Performance',
+          label: language === 'ar' ? 'الأداء المالي' : 'Financial Performance',
           icon: Wallet,
           badge: `${metrics.netRetainerProfit.toLocaleString()}`,
           badgeColor: 'bg-emerald-500 text-white font-bold',
         },
         {
           id: 'retainers',
-          label: t.navRetainers,
+          label: language === 'ar' ? 'عقود واشتراكات الصيانة' : t.navRetainers,
           icon: CreditCard,
           badge: `${metrics.activeRetainerClients}`,
           badgeColor: 'bg-emerald-500 text-white font-bold',
         },
         {
-          id: 'clients',
-          label: t.navClients,
-          icon: Building2,
-          badge: `${clients.length}`,
-          badgeColor: 'bg-white/20 text-white',
-        },
-        {
           id: 'booking_settings',
-          label: t.navBookingSettings,
+          label: language === 'ar' ? 'أوقات العمل ونظام الحجز' : t.navBookingSettings,
           icon: Clock,
           badge: `${activeWorkingDaysCount}/7`,
           badgeColor: bookingSettings.isBookingOpen
@@ -138,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'packages',
-          label: t.navPackages,
+          label: language === 'ar' ? 'هيكلة وتسعير الباقات' : t.navPackages,
           icon: Settings,
           badge: '3',
           badgeColor: 'bg-white/15 text-white',
