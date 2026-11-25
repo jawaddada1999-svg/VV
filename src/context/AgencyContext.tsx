@@ -615,6 +615,8 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (linkedMeeting) {
       if (outcome === 'accepted_trial') {
         start7DayTrial(linkedMeeting.clientId);
+      } else if (outcome === 'follow_up') {
+        moveClientStage(linkedMeeting.clientId, 'negotiation_follow_up');
       } else if (status === 'completed') {
         moveClientStage(linkedMeeting.clientId, 'meeting_completed');
       } else if (status === 'no_show') {
