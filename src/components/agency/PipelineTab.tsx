@@ -383,7 +383,7 @@ export const PipelineTab: React.FC = () => {
                               {t.active}
                             </span>
                             <span className="text-slate-400 font-mono text-[9px]">
-                              {client.nextBillingDate ? new Date(client.nextBillingDate).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR') : t.perMonth}
+                              {client.nextBillingDate ? new Date(client.nextBillingDate).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US') : t.perMonth}
                             </span>
                           </div>
                         )}
