@@ -205,7 +205,7 @@ export const DeliveryTab: React.FC = () => {
             <thead className="bg-slate-100/90 text-slate-700 border-b border-slate-200 font-bold">
               <tr>
                 <th className="p-3.5">{t.colClientAgency}</th>
-                <th className="p-3.5">{language === 'ar' ? 'مسؤول عن الوكالة' : 'Agency manager'}</th>
+                <th className="p-3.5">{language === 'ar' ? 'مسؤول عن الوكالة' : language === 'fr' ? 'Responsable de l’agence' : 'Agency manager'}</th>
                 <th className="p-3.5">{t.colPackageChosen}</th>
                 <th className="p-3.5">{t.colStartDate}</th>
                 <th className="p-3.5">{t.colTimeRemaining}</th>
@@ -245,7 +245,7 @@ export const DeliveryTab: React.FC = () => {
 
                       {/* Package Selected */}
                       <td className="p-3.5">
-                        {editingProjectId === project.id ? <div className="flex items-center gap-1"><input value={managerDraft} onChange={(e)=>setManagerDraft(e.target.value)} placeholder={language==='ar'?'اسم المسؤول':'Manager name'} className="w-32 rounded-lg border px-2 py-1 text-xs"/><button onClick={()=>{updateClient(project.id,{agencyManager:managerDraft.trim()});setEditingProjectId(null)}} className="text-emerald-700 font-bold">{language==='ar'?'حفظ':'Save'}</button></div> : <div className="flex items-center gap-2"><span>{project.agencyManager || '—'}</span><button onClick={()=>{setEditingProjectId(project.id);setManagerDraft(project.agencyManager||'')}} className="text-orange-600 font-bold">{language==='ar'?'تعديل':'Edit'}</button></div>}
+                        {editingProjectId === project.id ? <div className="flex items-center gap-1"><input value={managerDraft} onChange={(e)=>setManagerDraft(e.target.value)} placeholder={language==='ar'?'اسم المسؤول':language==='fr'?'Nom du responsable':'Manager name'} className="w-32 rounded-lg border px-2 py-1 text-xs"/><button onClick={()=>{updateClient(project.id,{agencyManager:managerDraft.trim()});setEditingProjectId(null)}} className="text-emerald-700 font-bold">{language==='ar'?'حفظ':language==='fr'?'Enregistrer':'Save'}</button></div> : <div className="flex items-center gap-2"><span>{project.agencyManager || '—'}</span><button onClick={()=>{setEditingProjectId(project.id);setManagerDraft(project.agencyManager||'')}} className="text-orange-600 font-bold">{language==='ar'?'تعديل':language==='fr'?'Modifier':'Edit'}</button></div>}
                       </td>
                       <td className="p-3.5">
                         <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase font-mono ${
