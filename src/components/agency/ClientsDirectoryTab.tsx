@@ -90,6 +90,7 @@ export const ClientsDirectoryTab: React.FC = () => {
       case 'meeting_no_show':
         return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-900 border border-rose-200">{t.colNoShowTitle}</span>;
       case 'negotiation_follow_up':
+      case 'paused':
         return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100 text-cyan-900 border border-cyan-200">{t.colFollowUpTitle}</span>;
       case 'deal_won':
         return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-900 border border-teal-200">{t.colRetainerTitle}</span>;
