@@ -146,14 +146,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside
         className={`fixed top-0 bottom-0 ${
           direction === 'rtl' ? 'right-0 border-l' : 'left-0 border-r'
-        } z-50 bg-gradient-to-b from-[#082E35] via-[#0B3A42] to-[#041D22] text-white border-petrol-800/80 transition-all duration-300 ease-in-out flex flex-col justify-between shadow-2xl lg:shadow-xl ${
+        } z-50 bg-gradient-to-b from-[#06252A] via-[#0B434C] to-[#041D22] text-white border-petrol-800/80 transition-all duration-300 ease-in-out flex flex-col justify-between shadow-2xl lg:shadow-none lg:relative lg:top-0 lg:bottom-auto lg:h-screen lg:shrink-0 ${
           collapsed ? 'lg:w-20' : 'lg:w-64'
         } w-64 max-w-[85vw] ${
           mobileOpen
             ? 'flex translate-x-0'
             : direction === 'rtl'
-            ? 'hidden lg:flex lg:translate-x-0 lg:top-20'
-            : 'hidden lg:flex lg:translate-x-0 lg:top-20'
+            ? 'hidden lg:flex lg:translate-x-0'
+            : 'hidden lg:flex lg:translate-x-0'
         }`}
       >
         <div className="p-3.5 flex flex-col flex-1 overflow-y-auto">
