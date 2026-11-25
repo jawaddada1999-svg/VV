@@ -358,7 +358,6 @@ export const ClientsDirectoryTab: React.FC = () => {
           </table>
         </div>
       </div>
-}
     </div>
   );
 };
