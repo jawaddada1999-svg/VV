@@ -32,10 +32,6 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
-  Cell,
-  ReferenceLine,
   XAxis,
   YAxis,
   Tooltip,
@@ -66,8 +62,8 @@ export const OverviewTab: React.FC = () => {
   // Time filter for charts: Monthly vs Weekly
   const [chartView, setChartView] = useState<'monthly' | 'weekly'>('weekly');
 
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentDate = new Date();
+  const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   const newClientsThisMonth = clients.filter((client) => {
     const createdAt = new Date(client.createdAt);
     return !Number.isNaN(createdAt.getTime()) && createdAt >= monthStart;
