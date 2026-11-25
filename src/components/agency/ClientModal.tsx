@@ -8,6 +8,7 @@ export const ClientModal: React.FC = () => {
   const {
     showAddClientModal,
     setShowAddClientModal,
+    newClientInitialStage,
     addClient,
     packages,
     language,
@@ -25,6 +26,10 @@ export const ClientModal: React.FC = () => {
   const [email, setEmail] = useState('');
   const [packageTier, setPackageTier] = useState<PackageTier>('growth');
   const [stage, setStage] = useState<ClientStage>('ad_lead');
+
+  useEffect(() => {
+    if (showAddClientModal) setStage(newClientInitialStage);
+  }, [showAddClientModal, newClientInitialStage]);
   const [adSource, setAdSource] = useState(
     language === 'ar' ? 'إعلانات ميتا' : language === 'fr' ? 'Publicités Meta' : 'Meta Ads'
   );
