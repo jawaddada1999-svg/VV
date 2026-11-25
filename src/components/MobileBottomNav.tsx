@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAgency } from '../context/AgencyContext';
-import { BarChart3, Kanban, Calendar, Clock, Menu } from 'lucide-react';
+import { BarChart3, Kanban, Calendar, Menu, Building2 } from 'lucide-react';
 import { translations } from '../translations';
 
 interface MobileBottomNavProps {
@@ -18,6 +18,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
       icon: BarChart3,
     },
     {
+      id: 'clients',
+      label: language === 'ar' ? 'الوكالات' : language === 'fr' ? 'Agences' : 'Agencies',
+      icon: Building2,
+    },
+    {
       id: 'pipeline',
       label: language === 'ar' ? 'الصفقات' : language === 'fr' ? 'Pipeline' : 'Pipeline',
       icon: Kanban,
@@ -26,11 +31,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
       id: 'meetings',
       label: language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Agenda' : 'Meetings',
       icon: Calendar,
-    },
-    {
-      id: 'booking_settings',
-      label: language === 'ar' ? 'الأوقات' : language === 'fr' ? 'Horaires' : 'Hours',
-      icon: Clock,
     },
   ];
 
