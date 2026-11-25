@@ -18,6 +18,8 @@ export const ClientModal: React.FC = () => {
 
   const [agencyName, setAgencyName] = useState('');
   const [contactPerson, setContactPerson] = useState('');
+  const [contactRole, setContactRole] = useState('agency_manager');
+  const [teamSize, setTeamSize] = useState(1);
   const [city, setCity] = useState(language === 'ar' ? 'الدار البيضاء' : 'Casablanca');
   const [phone, setPhone] = useState('+212 6');
   const [email, setEmail] = useState('');
@@ -56,6 +58,8 @@ export const ClientModal: React.FC = () => {
     addClient({
       agencyName,
       contactPerson,
+      contactRole,
+      teamSize,
       city,
       phone,
       email: email || `${contactPerson.toLowerCase().replace(/\s+/g, '')}@agency.ma`,
@@ -81,6 +85,8 @@ export const ClientModal: React.FC = () => {
     setShowAddClientModal(false);
     setAgencyName('');
     setContactPerson('');
+    setContactRole('agency_manager');
+    setTeamSize(1);
     setPhone('+212 6');
     setEmail('');
     setNotes('');
@@ -182,6 +188,30 @@ export const ClientModal: React.FC = () => {
                 placeholder={language === 'ar' ? 'الدار البيضاء، مراكش، طنجة...' : 'Casablanca...'}
                 className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">{t.colRole}</label>
+              <select value={contactRole} onChange={(e) => setContactRole(e.target.value)} className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs">
+                <option value="owner">{language === 'ar' ? 'مالك الوكالة' : language === 'fr' ? 'Propriétaire de l’agence' : 'Agency owner'}</option>
+                <option value="agency_manager">{language === 'ar' ? 'مدير الوكالة' : language === 'fr' ? 'Directeur d’agence' : 'Agency manager'}</option>
+                <option value="branch_manager">{language === 'ar' ? 'مدير الفرع' : language === 'fr' ? 'Responsable d’agence' : 'Branch manager'}</option>
+                <option value="commercial_director">{language === 'ar' ? 'المدير التجاري' : language === 'fr' ? 'Directeur commercial' : 'Commercial director'}</option>
+                <option value="sales_manager">{language === 'ar' ? 'مسؤول المبيعات' : language === 'fr' ? 'Responsable des ventes' : 'Sales manager'}</option>
+                <option value="sales_agent">{language === 'ar' ? 'مستشار / تجاري' : language === 'fr' ? 'Conseiller commercial' : 'Sales agent'}</option>
+                <option value="negotiator">{language === 'ar' ? 'مفاوض عقاري' : language === 'fr' ? 'Négociateur immobilier' : 'Property negotiator'}</option>
+                <option value="marketing_manager">{language === 'ar' ? 'مسؤول التسويق' : language === 'fr' ? 'Responsable marketing' : 'Marketing manager'}</option>
+                <option value="operations_manager">{language === 'ar' ? 'مسؤول العمليات' : language === 'fr' ? 'Responsable des opérations' : 'Operations manager'}</option>
+                <option value="administrator">{language === 'ar' ? 'مسؤول إداري' : language === 'fr' ? 'Responsable administratif' : 'Administrator'}</option>
+                <option value="assistant">{language === 'ar' ? 'مساعد إداري' : language === 'fr' ? 'Assistant administratif' : 'Administrative assistant'}</option>
+                <option value="other">{language === 'ar' ? 'دور آخر' : language === 'fr' ? 'Autre fonction' : 'Other role'}</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">{t.colTeamSize}</label>
+              <input type="number" min={1} value={teamSize} onChange={(e) => setTeamSize(Math.max(1, Number(e.target.value)))} className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs" />
             </div>
           </div>
 
