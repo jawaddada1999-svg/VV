@@ -553,7 +553,7 @@ export const RetainersTab: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-3.5 font-mono tabular-nums font-bold text-slate-900 text-sm">
-                        {editingRetainerId === client.id ? <div className="flex items-center gap-1"><input type="number" min="0" value={editingRetainerVal} onChange={e=>setEditingRetainerVal(e.target.value)} className="w-20 rounded-lg border px-2 py-1 text-xs"/><button onClick={()=>{updateClient(client.id,{monthlyRetainer:Math.max(0,Number(editingRetainerVal)||0)});setEditingRetainerId(null)}} className="text-emerald-700 font-bold text-xs">{language==='ar'?'حفظ':'Save'}</button></div> : <>{client.monthlyRetainer.toLocaleString()} {t.perMonth}</>}
+                        {editingRetainerId === client.id ? <div className="flex items-center gap-1"><input type="number" min="0" value={editingRetainerVal} onChange={e=>setEditingRetainerVal(e.target.value)} className="w-20 rounded-lg border px-2 py-1 text-xs"/><button onClick={()=>{updateClient(client.id,{monthlyRetainer:Math.max(0,Number(editingRetainerVal)||0)});setEditingRetainerId(null)}} className="text-emerald-700 font-bold text-xs">{language==='ar'?'حفظ':language==='fr'?'Enregistrer':'Save'}</button></div> : <>{client.monthlyRetainer.toLocaleString()} {t.perMonth}</>}
                       </td>
                       <td className="p-3.5 font-mono tabular-nums">
                         <button
@@ -581,7 +581,7 @@ export const RetainersTab: React.FC = () => {
                       <td className="p-3.5 font-mono text-slate-700 font-bold">
                         {client.nextBillingDate
                           ? new Date(client.nextBillingDate).toLocaleDateString(
-                              language === 'ar' ? 'ar-MA' : 'fr-FR'
+                              language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US'
                             )
                           : t.perMonth}
                       </td>
@@ -617,7 +617,7 @@ export const RetainersTab: React.FC = () => {
                           <span>WhatsApp + RIB</span>
                         </button>
                       </td>
-                      <td className="p-3.5 text-center"><button onClick={()=>{setEditingRetainerId(client.id);setEditingRetainerVal(String(client.monthlyRetainer))}} className="px-3 py-1.5 rounded-lg bg-orange-50 text-orange-700 font-bold text-xs">{language==='ar'?'تعديل':'Edit'}</button></td>
+                      <td className="p-3.5 text-center"><button onClick={()=>{setEditingRetainerId(client.id);setEditingRetainerVal(String(client.monthlyRetainer))}} className="px-3 py-1.5 rounded-lg bg-orange-50 text-orange-700 font-bold text-xs">{language==='ar'?'تعديل':language==='fr'?'Modifier':'Edit'}</button></td>
                     </tr>
                   );
                 })}
