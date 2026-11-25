@@ -588,6 +588,22 @@ export const MeetingsTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Appointment KPIs */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div className="rounded-2xl border-2 border-sky-200 bg-gradient-to-br from-sky-50 to-white p-4 shadow-2xs">
+          <div className="text-xs font-bold text-sky-900">{t.kpiTotalBookedMeetings}</div>
+          <div className="mt-1 text-2xl font-extrabold font-mono text-slate-900">{meetings.length}</div>
+        </div>
+        <div className="rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-2xs">
+          <div className="text-xs font-bold text-emerald-900">{t.kpiCompletedMeetings}</div>
+          <div className="mt-1 text-2xl font-extrabold font-mono text-slate-900">{meetings.filter((meeting) => meeting.status === 'completed').length}</div>
+        </div>
+        <div className="rounded-2xl border-2 border-rose-200 bg-gradient-to-br from-rose-50 to-white p-4 shadow-2xs">
+          <div className="text-xs font-bold text-rose-900">{t.kpiNoShowMeetings}</div>
+          <div className="mt-1 text-2xl font-extrabold font-mono text-slate-900">{meetings.filter((meeting) => meeting.status === 'no_show').length}</div>
+        </div>
+      </div>
+
       {/* 2. Automated Action Feedback Banner */}
       {lastActionTriggered && (
         <div className="bg-emerald-50 border border-emerald-300 text-emerald-950 p-3.5 rounded-xl text-xs flex items-center justify-between shadow-xs transition-all animate-fade-in">
@@ -2002,7 +2018,7 @@ export const MeetingsTab: React.FC = () => {
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full font-mono ${
                   summaryMetrics.urgentDeadlines > 0 ? 'bg-rose-600 text-white animate-pulse' : 'bg-rose-100 text-rose-900'
                 }`}>
-                  {summaryMetrics.urgentDeadlines > 0 ? (language === 'ar' ? 'أجل مستعجل' : 'Urgent') : (language === 'ar' ? 'مسار منتظم' : 'OK')}
+                  {summaryMetrics.urgentDeadlines > 0 ? (language === 'ar' ? 'أجل مستعجل' : language === 'fr' ? 'Échéance proche' : 'Urgent') : (language === 'ar' ? 'مسار منتظم' : language === 'fr' ? 'À jour' : 'On track')}
                 </span>
               </div>
               <span className="text-xs font-bold text-slate-600 block">{t.alertTrialUrgent}</span>
