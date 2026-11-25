@@ -48,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs w-full max-w-full transition-all">
+      <header className="vv-top-header sticky top-0 z-40 bg-gradient-to-r from-[#06252A] via-[#0B434C] to-[#06252A] backdrop-blur-md border-b border-orange-500/25 shadow-lg shadow-[#04181B]/10 w-full max-w-full transition-all">
         <div className="h-16 sm:h-20 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4 max-w-full">
           {/* SIDE 1: Mobile Menu + Compact Logo / Add Button + Desktop Search */}
           <div className="flex items-center gap-2 sm:gap-3.5 shrink min-w-0">
@@ -256,10 +256,10 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
 
             {/* Responsive Brand Logo */}
             <div className="hidden xs:flex sm:hidden items-center border-r rtl:border-r-0 rtl:border-l border-slate-200/80 px-2">
-              <IbondaLogo size="sm" variant="light" showText={false} />
+              <IbondaLogo size="sm" variant="dark" showText={false} />
             </div>
             <div className="hidden sm:flex items-center border-r rtl:border-r-0 rtl:border-l border-slate-200/80 px-3">
-              <IbondaLogo size="md" variant="light" />
+              <IbondaLogo size="md" variant="dark" />
             </div>
           </div>
         </div>
