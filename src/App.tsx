@@ -4,7 +4,6 @@ import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { OverviewTab } from './components/agency/OverviewTab';
 import { FinanceTab } from './components/agency/FinanceTab';
-import { ProspectsTab } from './components/agency/ProspectsTab';
 import { PipelineTab } from './components/agency/PipelineTab';
 import { MeetingsTab } from './components/agency/MeetingsTab';
 import { DeliveryTab } from './components/agency/DeliveryTab';
@@ -77,14 +76,13 @@ const DashboardContent: React.FC = () => {
 
             {/* TAB CONTENT */}
             {activeTab === 'overview' && <OverviewTab />}
-            {activeTab === 'finance' && <FinanceTab />}
-            {activeTab === 'prospects' && <ProspectsTab />}
+            {activeTab === 'clients' && <ClientsDirectoryTab />}
             {activeTab === 'pipeline' && <PipelineTab />}
             {activeTab === 'meetings' && <MeetingsTab />}
-            {activeTab === 'delivery' && <DeliveryTab />}
-            {activeTab === 'retainers' && <RetainersTab />}
             {activeTab === 'ads' && <AdsTab />}
-            {activeTab === 'clients' && <ClientsDirectoryTab />}
+            {activeTab === 'delivery' && <DeliveryTab />}
+            {activeTab === 'finance' && <FinanceTab />}
+            {activeTab === 'retainers' && <RetainersTab />}
             {activeTab === 'booking_settings' && <BookingSettingsTab />}
             {activeTab === 'packages' && <PackagesSettingsTab />}
             </div>
