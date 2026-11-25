@@ -26,7 +26,7 @@ export const ClientModal: React.FC = () => {
   const [packageTier, setPackageTier] = useState<PackageTier>('growth');
   const [stage, setStage] = useState<ClientStage>('ad_lead');
   const [adSource, setAdSource] = useState(
-    language === 'ar' ? 'إعلانات ميتا' : 'Meta Ads'
+    language === 'ar' ? 'إعلانات ميتا' : language === 'fr' ? 'Publicités Meta' : 'Meta Ads'
   );
   const [notes, setNotes] = useState('');
 
@@ -185,7 +185,7 @@ export const ClientModal: React.FC = () => {
                 required
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder={language === 'ar' ? 'الدار البيضاء، مراكش، طنجة...' : 'Casablanca...'}
+                placeholder={language === 'ar' ? 'الدار البيضاء، مراكش، طنجة...' : language === 'fr' ? 'Casablanca, Marrakech, Tanger...' : 'Casablanca, Marrakech, Tangier...'}
                 className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs"
               />
             </div>
@@ -292,8 +292,13 @@ export const ClientModal: React.FC = () => {
               >
                 <option value="ad_lead">{t.colAdLeadsTitle}</option>
                 <option value="meeting_scheduled">{t.colMeetingsTitle}</option>
+                <option value="meeting_completed">{t.colAttendedTitle}</option>
+                <option value="meeting_no_show">{t.colNoShowTitle}</option>
                 <option value="trial_7_days">{t.colTrialTitle}</option>
                 <option value="delivery_in_progress">{t.colDeliveryTitle}</option>
+                <option value="negotiation_follow_up">{t.colFollowUpTitle}</option>
+                <option value="deal_won">{t.colRetainerTitle}</option>
+                <option value="lost">{t.colLostTitle}</option>
                 <option value="active_retainer">{t.colRetainerTitle}</option>
               </select>
             </div>
