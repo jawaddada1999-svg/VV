@@ -3,6 +3,8 @@ import { AgencyProvider, useAgency } from './context/AgencyContext';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { OverviewTab } from './components/agency/OverviewTab';
+import { FinanceTab } from './components/agency/FinanceTab';
+import { ProspectsTab } from './components/agency/ProspectsTab';
 import { PipelineTab } from './components/agency/PipelineTab';
 import { MeetingsTab } from './components/agency/MeetingsTab';
 import { DeliveryTab } from './components/agency/DeliveryTab';
@@ -75,6 +77,8 @@ const DashboardContent: React.FC = () => {
 
             {/* TAB CONTENT */}
             {activeTab === 'overview' && <OverviewTab />}
+            {activeTab === 'finance' && <FinanceTab />}
+            {activeTab === 'prospects' && <ProspectsTab />}
             {activeTab === 'pipeline' && <PipelineTab />}
             {activeTab === 'meetings' && <MeetingsTab />}
             {activeTab === 'delivery' && <DeliveryTab />}
