@@ -176,7 +176,7 @@ export const MeetingsTab: React.FC = () => {
           ? dayNamesFr[i]
           : dayNamesEn[i];
 
-      const formattedDate = d.toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', {
+      const formattedDate = d.toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US', {
         day: 'numeric',
         month: 'short',
       });
@@ -904,7 +904,7 @@ export const MeetingsTab: React.FC = () => {
                               ? 'hover:bg-white/20 text-white'
                               : 'hover:bg-slate-200 text-slate-500'
                           }`}
-                          title={language === 'ar' ? `حجز موعد جديد ليوم ${day.dayName}` : 'Add meeting'}
+                          title={language === 'ar' ? `حجز موعد جديد ليوم ${day.dayName}` : language === 'fr' ? `Réserver un rendez-vous pour ${day.dayName}` : 'Book a new appointment'}
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -1052,7 +1052,7 @@ export const MeetingsTab: React.FC = () => {
                                         ? 'bg-emerald-600 text-white'
                                         : 'bg-slate-100 hover:bg-orange-500 hover:text-white text-slate-700'
                                     }`}
-                                    title={isConverted ? t.convertedToDeal : (language === 'ar' ? 'تحويل لصفقة 7 أيام' : 'Convert to Deal')}
+                                    title={isConverted ? t.convertedToDeal : (language === 'ar' ? 'تحويل لصفقة 7 أيام' : language === 'fr' ? 'Convertir en opportunité' : 'Convert to deal')}
                                   >
                                     <Zap className="w-3 h-3" />
                                   </button>
@@ -1074,7 +1074,7 @@ export const MeetingsTab: React.FC = () => {
                                       type="button"
                                       onClick={() => handleTriggerAction(meet, 'reminder')}
                                       className="p-1 text-emerald-600 hover:bg-emerald-50 rounded cursor-pointer"
-                                      title={language === 'ar' ? 'إرسال تذكير واتساب' : 'WhatsApp'}
+                                      title={language === 'ar' ? 'إرسال تذكير واتساب' : language === 'fr' ? 'Envoyer un rappel WhatsApp' : 'Send WhatsApp reminder'}
                                     >
                                       <Send className="w-3 h-3" />
                                     </button>
@@ -1082,7 +1082,7 @@ export const MeetingsTab: React.FC = () => {
                                       type="button"
                                       onClick={() => handleTriggerAction(meet, 'call')}
                                       className="p-1 text-blue-600 hover:bg-blue-50 rounded cursor-pointer"
-                                      title={language === 'ar' ? 'اتصال هاتفي' : 'Call'}
+                                      title={language === 'ar' ? 'اتصال هاتفي' : language === 'fr' ? 'Appeler' : 'Call'}
                                     >
                                       <PhoneCall className="w-3 h-3" />
                                     </button>
@@ -1279,7 +1279,7 @@ export const MeetingsTab: React.FC = () => {
                                   type="button"
                                   onClick={() => handleTriggerAction(meet, 'reminder')}
                                   className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-2xs transition-colors cursor-pointer"
-                                  title={language === 'ar' ? 'إرسال تذكير الموعد المباشر عبر واتساب' : 'Envoyer rappel WhatsApp'}
+                                  title={language === 'ar' ? 'إرسال تذكير الموعد المباشر عبر واتساب' : language === 'fr' ? 'Envoyer le rappel du rendez-vous par WhatsApp' : 'Send appointment reminder via WhatsApp'}
                                 >
                                   <Send className="w-3.5 h-3.5" />
                                 </button>
@@ -1921,7 +1921,7 @@ export const MeetingsTab: React.FC = () => {
                       type="button"
                       onClick={() => deleteTask(task.id)}
                       className="text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
-                      title={language === 'ar' ? 'حذف المهمة' : 'Supprimer'}
+                      title={language === 'ar' ? 'حذف المهمة' : language === 'fr' ? 'Supprimer' : 'Delete task'}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -2487,7 +2487,7 @@ export const MeetingsTab: React.FC = () => {
                   type="text"
                   value={mainProblem}
                   onChange={(e) => setMainProblem(e.target.value)}
-                  placeholder={language === 'ar' ? 'المشكل الذي تعاني منه الوكالة...' : 'Description du problème...'}
+                  placeholder={language === 'ar' ? 'المشكل الذي تعاني منه الوكالة...' : language === 'fr' ? 'Décrivez le principal enjeu commercial de l’agence...' : 'Describe the agency’s main business challenge...'}
                   className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg"
                 />
               </div>
@@ -2562,7 +2562,7 @@ export const MeetingsTab: React.FC = () => {
                   required
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
-                  placeholder={language === 'ar' ? 'مثال: إرسال تذكير الموعد عبر واتساب قبل ساعتين...' : 'Ex: Rappel de rendez-vous WhatsApp...'}
+                  placeholder={language === 'ar' ? 'مثال: إرسال تذكير الموعد عبر واتساب قبل ساعتين...' : language === 'fr' ? 'Ex. : envoyer un rappel WhatsApp deux heures avant le rendez-vous...' : 'e.g. Send a WhatsApp reminder two hours before the appointment...'}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-900"
                 />
               </div>
@@ -2573,7 +2573,7 @@ export const MeetingsTab: React.FC = () => {
                   type="text"
                   value={taskRelatedAgency}
                   onChange={(e) => setTaskRelatedAgency(e.target.value)}
-                  placeholder={language === 'ar' ? 'مثال: أكادير باي إنفست، أطلس العقارية...' : 'Nom de l’agence...'}
+                  placeholder={language === 'ar' ? 'مثال: أكادير باي إنفست، أطلس العقارية...' : language === 'fr' ? 'Nom de l’agence...' : 'Agency name...'}
                   className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg"
                 />
               </div>
@@ -2620,12 +2620,12 @@ export const MeetingsTab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">{language === 'ar' ? 'تفاصيل إضافية' : 'Détails'}</label>
+                <label className="block font-semibold text-slate-700 mb-1">{language === 'ar' ? 'تفاصيل إضافية' : language === 'fr' ? 'Détails complémentaires' : 'Additional details'}</label>
                 <textarea
                   rows={2}
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
-                  placeholder={language === 'ar' ? 'ملاحظات لتنفيذ المهمة...' : 'Notes...'}
+                  placeholder={language === 'ar' ? 'ملاحظات لتنفيذ المهمة...' : language === 'fr' ? 'Notes pour la réalisation de la tâche...' : 'Task execution notes...'}
                   className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg"
                 ></textarea>
               </div>
