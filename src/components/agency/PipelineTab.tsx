@@ -62,7 +62,7 @@ export const PipelineTab: React.FC = () => {
   const [dragOverColId, setDragOverColId] = useState<ClientStage | null>(null);
   const [activeStageDropdownId, setActiveStageDropdownId] = useState<string | null>(null);
 
-  // 6 Pipeline Columns with localized keys and separated title/badge structure
+  // 9 Pipeline Stages with localized keys and separated title/badge structure
   const columns: ColumnDef[] = [
     { id: 'ad_lead', stageIds: ['ad_lead'], titleKey: 'colAdLeadsTitle', subKey: 'colAdLeadsSub', colorBorder: 'border-blue-500', headerBg: 'bg-blue-50/90 text-blue-950', badgeBg: 'bg-blue-600', badgeTextColor: 'text-white', accentBar: 'bg-blue-500' },
     { id: 'meeting_scheduled', stageIds: ['meeting_scheduled'], titleKey: 'colMeetingsTitle', subKey: 'colMeetingsSub', colorBorder: 'border-indigo-500', headerBg: 'bg-indigo-50/90 text-indigo-950', badgeBg: 'bg-indigo-600', badgeTextColor: 'text-white', accentBar: 'bg-indigo-500' },
@@ -273,8 +273,8 @@ export const PipelineTab: React.FC = () => {
                             ? 'border-rose-200 hover:border-rose-400 bg-rose-50/20'
                             : client.stage === 'trial_7_days'
                             ? 'border-amber-200 hover:border-amber-400'
-                            : client.stage === 'active_retainer'
-                            ? 'border-emerald-200 hover:border-emerald-400'
+                            : client.stage === 'deal_won' || client.stage === 'active_retainer'
+                            ? 'border-teal-200 hover:border-teal-400'
                             : 'border-slate-200 hover:border-orange-500'
                         }`}
                       >
