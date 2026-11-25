@@ -2,6 +2,8 @@ import React from 'react';
 import { useAgency } from '../context/AgencyContext';
 import {
   BarChart3,
+  Wallet,
+  UserRoundSearch,
   Kanban,
   Calendar,
   Layers,
@@ -79,6 +81,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeColor: 'bg-white/20 text-white',
         },
         {
+          id: 'prospects',
+          label: language === 'ar' ? 'العملاء المحتملون' : language === 'fr' ? 'Prospects' : 'Prospects',
+          icon: UserRoundSearch,
+          badge: `${clients.filter((c) => ['ad_lead', 'meeting_scheduled', 'meeting_completed'].includes(c.stage)).length}`,
+          badgeColor: 'bg-sky-500 text-white font-bold',
+        },
+        {
           id: 'ads',
           label: t.navAds,
           icon: Target,
@@ -96,6 +105,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: Layers,
           badge: buildsCount > 0 ? `${buildsCount}` : null,
           badgeColor: 'bg-purple-500 text-white font-bold',
+        },
+        {
+          id: 'finance',
+          label: language === 'ar' ? 'الأداء المالي' : language === 'fr' ? 'Performance financière' : 'Financial Performance',
+          icon: Wallet,
+          badge: `${metrics.netRetainerProfit.toLocaleString()}`,
+          badgeColor: 'bg-emerald-500 text-white font-bold',
         },
         {
           id: 'retainers',
