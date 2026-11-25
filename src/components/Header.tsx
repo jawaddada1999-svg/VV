@@ -48,8 +48,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
 
   return (
     <>
-      <header className="vv-top-header sticky top-0 z-40 bg-gradient-to-r from-[#06252A] via-[#0B434C] to-[#06252A] backdrop-blur-md border-b border-orange-500/25 shadow-lg shadow-[#04181B]/10 w-full max-w-full transition-all">
-        <div className="h-16 sm:h-20 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4 max-w-full">
+      <header className="vv-top-header sticky top-0 z-40 bg-gradient-to-r from-[#06252A] via-[#0B434C] to-[#06252A] backdrop-blur-xl border-b border-orange-500/25 shadow-lg shadow-[#04181B]/10 w-full max-w-full transition-all">
+        <div className="h-16 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4 max-w-full">
           {/* SIDE 1: Mobile Menu + Compact Logo / Add Button + Desktop Search */}
           <div className="flex items-center gap-2 sm:gap-3.5 shrink min-w-0">
             {/* Mobile Menu Hamburger */}
