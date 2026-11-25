@@ -25,6 +25,7 @@ export const DeliveryTab: React.FC = () => {
   const {
     clients,
     updateDeliveryProgress,
+    updateClient,
     activateMonthlyRetainer,
     setSelectedClientId,
     language,
@@ -52,6 +53,8 @@ export const DeliveryTab: React.FC = () => {
 
   // Progress options for quick selection
   const progressOptions = [10, 25, 50, 75, 90, 100];
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [managerDraft, setManagerDraft] = useState('');
 
   return (
     <div className="space-y-6">
@@ -202,6 +205,7 @@ export const DeliveryTab: React.FC = () => {
             <thead className="bg-slate-100/90 text-slate-700 border-b border-slate-200 font-bold">
               <tr>
                 <th className="p-3.5">{t.colClientAgency}</th>
+                <th className="p-3.5">{language === 'ar' ? 'مسؤول عن الوكالة' : 'Agency manager'}</th>
                 <th className="p-3.5">{t.colPackageChosen}</th>
                 <th className="p-3.5">{t.colStartDate}</th>
                 <th className="p-3.5">{t.colTimeRemaining}</th>
@@ -214,7 +218,7 @@ export const DeliveryTab: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {inProgressProjects.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-400 font-medium">
+                  <td colSpan={7} className="p-8 text-center text-slate-400 font-medium">
                     {language === 'ar'
                       ? 'لا توجد مشاريع قيد التسليم حالياً. كل المشاريع السابقة تم تسليمها بنجاح وهي تحت الصيانة.'
                       : language === 'fr'
@@ -240,6 +244,9 @@ export const DeliveryTab: React.FC = () => {
                       </td>
 
                       {/* Package Selected */}
+                      <td className="p-3.5">
+                        {editingProjectId === project.id ? <div className="flex items-center gap-1"><input value={managerDraft} onChange={(e)=>setManagerDraft(e.target.value)} placeholder={language==='ar'?'اسم المسؤول':'Manager name'} className="w-32 rounded-lg border px-2 py-1 text-xs"/><button onClick={()=>{updateClient(project.id,{agencyManager:managerDraft.trim()});setEditingProjectId(null)}} className="text-emerald-700 font-bold">{language==='ar'?'حفظ':'Save'}</button></div> : <div className="flex items-center gap-2"><span>{project.agencyManager || '—'}</span><button onClick={()=>{setEditingProjectId(project.id);setManagerDraft(project.agencyManager||'')}} className="text-orange-600 font-bold">{language==='ar'?'تعديل':'Edit'}</button></div>}
+                      </td>
                       <td className="p-3.5">
                         <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase font-mono ${
                           project.packageTier === 'enterprise'
