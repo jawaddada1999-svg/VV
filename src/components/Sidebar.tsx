@@ -146,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside
         className={`fixed top-0 bottom-0 ${
           direction === 'rtl' ? 'right-0 border-l' : 'left-0 border-r'
-        } z-50 bg-gradient-to-b from-[#06252A] via-[#0B434C] to-[#041D22] text-white border-petrol-800/80 transition-all duration-300 ease-in-out flex flex-col justify-between shadow-2xl lg:shadow-none lg:relative lg:top-0 lg:bottom-auto lg:h-screen lg:shrink-0 ${
+        } z-50 bg-gradient-to-b from-[#06252A] via-[#0B434C] to-[#041D22] text-white border-petrol-800/80 transition-all duration-300 ease-in-out flex flex-col justify-between shadow-2xl lg:shadow-none lg:sticky lg:top-0 lg:bottom-auto lg:h-screen lg:self-start lg:shrink-0 ${
           collapsed ? 'lg:w-20' : 'lg:w-64'
         } w-64 max-w-[85vw] ${
           mobileOpen
