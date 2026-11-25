@@ -19,7 +19,7 @@ export const ClientModal: React.FC = () => {
   const [agencyName, setAgencyName] = useState('');
   const [contactPerson, setContactPerson] = useState('');
   const [contactRole, setContactRole] = useState('agency_manager');
-  const [teamSize, setTeamSize] = useState(1);
+  const [teamSize, setTeamSize] = useState<number | ''>('');
   const [city, setCity] = useState(language === 'ar' ? 'الدار البيضاء' : 'Casablanca');
   const [phone, setPhone] = useState('+212 6');
   const [email, setEmail] = useState('');
@@ -59,7 +59,7 @@ export const ClientModal: React.FC = () => {
       agencyName,
       contactPerson,
       contactRole,
-      teamSize,
+      teamSize: teamSize === '' ? undefined : Number(teamSize),
       city,
       phone,
       email: email || `${contactPerson.toLowerCase().replace(/\s+/g, '')}@agency.ma`,
@@ -86,7 +86,7 @@ export const ClientModal: React.FC = () => {
     setAgencyName('');
     setContactPerson('');
     setContactRole('agency_manager');
-    setTeamSize(1);
+    setTeamSize('');
     setPhone('+212 6');
     setEmail('');
     setNotes('');
@@ -211,7 +211,7 @@ export const ClientModal: React.FC = () => {
             </div>
             <div>
               <label className="block font-semibold text-slate-700 mb-1">{t.colTeamSize}</label>
-              <input type="number" min={1} value={teamSize} onChange={(e) => setTeamSize(Math.max(1, Number(e.target.value)))} className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs" />
+              <input type="number" min={1} value={teamSize} onChange={(e) => setTeamSize(e.target.value === '' ? '' : Math.max(1, Number(e.target.value)))} className="w-full min-h-[44px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold focus:outline-none focus:border-[#FF6600] text-sm sm:text-xs" />
             </div>
           </div>
 
