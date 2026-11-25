@@ -186,11 +186,11 @@ export const ClientsDirectoryTab: React.FC = () => {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
         {[
-          {label:language==='ar'?'جميع الوكالات':'All clients',value:clients.length},
-          {label:language==='ar'?'مرفوضة':'Rejected',value:clients.filter(c=>c.stage==='lost').length},
-          {label:language==='ar'?'تجربة مجانية':'Free trial',value:clients.filter(c=>c.stage==='trial_7_days').length},
-          {label:language==='ar'?'مرفوضة بعد التجربة':'Rejected after trial',value:clients.filter(c=>c.stage==='lost' && (!!c.trialStartDate || c.trialAccepted===false)).length},
-          {label:language==='ar'?'عملاء مشتركين':'Subscribed clients',value:clients.filter(c=>c.stage==='active_retainer').length}
+          {label:language==='ar'?'جميع الوكالات':language==='fr'?'Toutes les agences':'All agencies',value:clients.length},
+          {label:language==='ar'?'مرفوضة':language==='fr'?'Non converties':'Not converted',value:clients.filter(c=>c.stage==='lost').length},
+          {label:language==='ar'?'تجربة مجانية':language==='fr'?'Essai gratuit':'Free trial',value:clients.filter(c=>c.stage==='trial_7_days').length},
+          {label:language==='ar'?'مرفوضة بعد التجربة':language==='fr'?'Non converties après l’essai':'Not converted after trial',value:clients.filter(c=>c.stage==='lost' && (!!c.trialStartDate || c.trialAccepted===false)).length},
+          {label:language==='ar'?'عملاء مشتركين':language==='fr'?'Agences sous contrat':'Subscribed agencies',value:clients.filter(c=>c.stage==='active_retainer').length}
         ].map((x,index)=>{const tone=[{"card":"from-sky-50 to-white border-sky-200","label":"text-sky-700","bar":"bg-sky-400"},{"card":"from-emerald-50 to-white border-emerald-200","label":"text-emerald-700","bar":"bg-emerald-400"},{"card":"from-violet-50 to-white border-violet-200","label":"text-violet-700","bar":"bg-violet-400"},{"card":"from-amber-50 to-white border-amber-200","label":"text-amber-700","bar":"bg-amber-400"},{"card":"from-rose-50 to-white border-rose-200","label":"text-rose-700","bar":"bg-rose-400"},{"card":"from-cyan-50 to-white border-cyan-200","label":"text-cyan-700","bar":"bg-cyan-400"}][index % 6];return <div key={x.label} className={`relative overflow-hidden bg-gradient-to-br ${tone.card} rounded-2xl border p-4 shadow-sm hover:shadow-md transition-shadow`}><span className={`absolute inset-x-0 top-0 h-1 ${tone.bar}`} /><div className={`text-[11px] font-extrabold ${tone.label}`}>{x.label}</div><div className="text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">{x.value}</div></div>})}
       </div>
 
@@ -232,11 +232,10 @@ export const ClientsDirectoryTab: React.FC = () => {
             className="bg-slate-50 border border-slate-200 rounded-xl px-3 min-h-[40px] font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
           >
             <option value="all">{t.filterByStatus} {t.all}</option>
-            <option value="rejected">{language==='ar'?'مرفوض':'Rejected'}</option>
-            <option value="free_trial">{language==='ar'?'تجربة مجانية':'Free trial'}</option>
-            <option value="rejected_after_trial">{language==='ar'?'مرفوض بعد التجربة':'Rejected after trial'}</option>
-            <option value="subscribed">{language==='ar'?'عملاء مشتركين':'Subscribed clients'}</option>
-            <option value="trial_7_days">7 {t.days}</option>
+            <option value="rejected">{language==='ar'?'مرفوض':language==='fr'?'Non converti':'Not converted'}</option>
+            <option value="free_trial">{language==='ar'?'تجربة مجانية':language==='fr'?'Essai gratuit':'Free trial'}</option>
+            <option value="rejected_after_trial">{language==='ar'?'مرفوض بعد التجربة':language==='fr'?'Non converti après l’essai':'Not converted after trial'}</option>
+            <option value="subscribed">{language==='ar'?'عملاء مشتركين':language==='fr'?'Agences sous contrat':'Subscribed agencies'}</option>
             <option value="delivery_in_progress">{t.cardInBuildTitle}</option>
             <option value="active_retainer">{t.active}</option>
             <option value="meeting_scheduled">{t.colMeetingsTitle}</option>
