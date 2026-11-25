@@ -74,6 +74,8 @@ interface AgencyContextType {
   // Modals
   showAddClientModal: boolean;
   setShowAddClientModal: (show: boolean) => void;
+  newClientInitialStage: ClientStage;
+  setNewClientInitialStage: (stage: ClientStage) => void;
 
   // Actions on Clients & Pipeline
   addClient: (data: Omit<AgencyClient, 'id' | 'createdAt'>) => AgencyClient;
@@ -191,6 +193,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Modals & Drawers
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [newClientInitialStage, setNewClientInitialStage] = useState<ClientStage>('ad_lead');
 
   // State with LocalStorage
   const [packages, setPackages] = useState<PackageConfig[]>(() => {
@@ -967,6 +970,8 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         selectedClient,
         showAddClientModal,
         setShowAddClientModal,
+        newClientInitialStage,
+        setNewClientInitialStage,
         addClient,
         updateClient,
         moveClientStage,
