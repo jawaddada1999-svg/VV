@@ -34,7 +34,7 @@ const DashboardContent: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col w-full max-w-full overflow-x-hidden antialiased selection:bg-orange-500 selection:text-white"
+      className="vv-app-shell min-h-screen bg-[#F1F6F7] text-slate-900 flex flex-col w-full max-w-full overflow-x-hidden antialiased selection:bg-orange-500 selection:text-white"
       dir={direction}
     >
       {/* 1. Header Bar */}
@@ -51,7 +51,7 @@ const DashboardContent: React.FC = () => {
 
         {/* Content Container with Directional Margin for Sidebar & Bottom Nav Clearance on Mobile */}
         <main
-          className={`flex-1 w-full max-w-full min-w-0 transition-all duration-300 pt-3.5 pb-24 sm:py-6 lg:pb-8 px-3 sm:px-6 lg:px-8 ${
+          className={`vv-main-frame flex-1 w-full max-w-full min-w-0 transition-all duration-300 pt-3.5 pb-24 sm:py-6 lg:pb-8 px-3 sm:px-6 lg:px-8 ${
             direction === 'rtl'
               ? sidebarCollapsed
                 ? 'lg:mr-20'
@@ -61,7 +61,7 @@ const DashboardContent: React.FC = () => {
               : 'lg:ml-64'
           }`}
         >
-          <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 w-full min-w-0">
+          <div className={`max-w-[1600px] mx-auto space-y-4 sm:space-y-5 w-full min-w-0 ${activeTab === 'booking_settings' ? 'vv-booking-preserve' : 'vv-modern-content'}`}>
             {/* Top Alert for Trial Expiring Soon */}
             {urgentTrial && (
               <div
