@@ -37,7 +37,6 @@ export const ClientsDirectoryTab: React.FC = () => {
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [tierFilter, setTierFilter] = useState<string>('all');
-  const [referralFilter, setReferralFilter] = useState<string>('all');
 
   // Extract unique base cities list for filter in active language
   const uniqueCities = useMemo(() => {
@@ -59,14 +58,9 @@ export const ClientsDirectoryTab: React.FC = () => {
       const matchCity = cityFilter === 'all' || c.city.toLowerCase().includes(cityFilter.toLowerCase());
       const matchStage = stageFilter === 'all' || c.stage === stageFilter;
       const matchTier = tierFilter === 'all' || c.packageTier === tierFilter;
-      const matchReferral =
-        referralFilter === 'all' ||
-        (referralFilter === 'partner' && c.isReferralPartner) ||
-        (referralFilter === 'standard' && !c.isReferralPartner);
-
-      return matchSearch && matchCity && matchStage && matchTier && matchReferral;
+      return matchSearch && matchCity && matchStage && matchTier;
     });
-  }, [clients, search, cityFilter, stageFilter, tierFilter, referralFilter]);
+  }, [clients, search, cityFilter, stageFilter, tierFilter]);
 
   const getStageBadge = (stage: ClientStage) => {
     switch (stage) {
@@ -99,7 +93,6 @@ export const ClientsDirectoryTab: React.FC = () => {
       'Setup Fee (MAD)',
       'Monthly Retainer (MAD)',
       'Stage',
-      'Referral Partner',
       'Rejection Reason'
     ];
     const rows = filtered.map((c) => [
@@ -112,7 +105,6 @@ export const ClientsDirectoryTab: React.FC = () => {
       c.setupFee,
       c.monthlyRetainer,
       `"${c.stage}"`,
-      c.isReferralPartner ? '"Yes (Partner)"' : '"No"',
       `"${c.rejectionReason || '-'}"`,
     ]);
 
@@ -225,16 +217,6 @@ export const ClientsDirectoryTab: React.FC = () => {
             <option value="enterprise">{t.enterprisePackage}</option>
           </select>
 
-          {/* Referral Partner Filter */}
-          <select
-            value={referralFilter}
-            onChange={(e) => setReferralFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-3 min-h-[40px] font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
-          >
-            <option value="all">{t.all}</option>
-            <option value="partner">{t.badgeReferralPartner}</option>
-            <option value="standard">{t.badgeStandardClient}</option>
-          </select>
         </div>
       </div>
 
@@ -251,23 +233,21 @@ export const ClientsDirectoryTab: React.FC = () => {
                 <th className="p-3.5">{t.colSetupFeeCollected}</th>
                 <th className="p-3.5">{t.colMonthlyRetainer}</th>
                 <th className="p-3.5">{t.colStage}</th>
-                <th className="p-3.5 text-center bg-orange-50/50 text-orange-950 border-x border-orange-100">
-                  {t.badgeReferralPartner}
-                </th>
+                <th className="p-3.5">{language==='ar'?'حجم الفريق':'Team size'}</th>
+                <th className="p-3.5">{language==='ar'?'الطلبات اليومية':'Daily inquiries'}</th>
+                <th className="p-3.5">{language==='ar'?'الدور':'Role'}</th>
                 <th className="p-3.5 text-center">{t.colActions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center text-slate-400 font-medium">
+                  <td colSpan={11} className="p-8 text-center text-slate-400 font-medium">
                     {t.notificationsEmpty}
                   </td>
                 </tr>
               ) : (
                 filtered.map((client) => {
-                  const isPartner = client.isReferralPartner || client.id === 'cli-4' || client.id === 'cli-1';
-
                   return (
                     <tr key={client.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="p-3.5">
