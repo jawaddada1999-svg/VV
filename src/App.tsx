@@ -44,7 +44,7 @@ const DashboardContent: React.FC = () => {
         setMobileOpen={setMobileSidebarOpen}
       />
 
-      <div className="vv-workspace-column flex-1 min-w-0 min-h-screen flex flex-col">
+      <div className={`vv-workspace-column flex-1 min-w-0 min-h-screen flex flex-col ${direction === 'rtl' ? (sidebarCollapsed ? 'lg:mr-20' : 'lg:mr-64') : (sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64')}`}>
         <Header onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)} />
 
         <div className="vv-workspace-surface flex-1 flex flex-col min-w-0 overflow-x-clip">
