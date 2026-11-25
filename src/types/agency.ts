@@ -43,6 +43,7 @@ export interface AgencyClient {
   createdAt: string;
 
   // تفاصيل حجم العمل والمشكلة
+  agencyManager?: string;      // الشخص المسؤول عن الوكالة لدى العميل
   teamSize?: number;           // عدد أفراد الوكالة
   dailyInquiries?: number;     // عدد الطلبات يومياً
   mainProblem?: string;        // المشكل الذي يعاني منه
