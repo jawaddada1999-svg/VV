@@ -351,9 +351,9 @@ export const OverviewTab: React.FC = () => {
       </div>
 
       {/* 2. Key Operational Metrics Grid (Uniform 2-Column Mobile Grid -> 5-Column Desktop) */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-3.5">
+      <div className="vv-kpi-grid grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-3.5">
         {/* Metric 1: Monthly Maintenance MRR */}
-        <div className="bg-gradient-to-br from-white to-orange-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-orange-200 shadow-2xs hover:border-orange-400 transition-all flex flex-col justify-between">
+        <div className="vv-kpi-card bg-white p-4 sm:p-5 rounded-[22px] border border-[#DCE8EA] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-1.5 mb-2">
               <span className="p-2 rounded-xl bg-[#FF6600] text-white shadow-xs shrink-0">
@@ -391,7 +391,7 @@ export const OverviewTab: React.FC = () => {
         </div>
 
         {/* Metric 2: 7-Day Free Trials */}
-        <div className="bg-gradient-to-br from-white to-amber-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-amber-200 shadow-2xs hover:border-amber-400 transition-all flex flex-col justify-between">
+        <div className="vv-kpi-card bg-white p-4 sm:p-5 rounded-[22px] border border-[#DCE8EA] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-1.5 mb-2">
               <span className="p-2 rounded-xl bg-amber-500 text-white shadow-xs shrink-0">
@@ -421,7 +421,7 @@ export const OverviewTab: React.FC = () => {
         </div>
 
         {/* Metric 3: Active Builds */}
-        <div className="bg-gradient-to-br from-white to-purple-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-purple-200 shadow-2xs hover:border-purple-400 transition-all flex flex-col justify-between">
+        <div className="vv-kpi-card bg-white p-4 sm:p-5 rounded-[22px] border border-[#DCE8EA] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-1.5 mb-2">
               <span className="p-2 rounded-xl bg-purple-600 text-white shadow-xs shrink-0">
@@ -451,7 +451,7 @@ export const OverviewTab: React.FC = () => {
         </div>
 
         {/* Metric 4: Total Cash Collected */}
-        <div className="bg-gradient-to-br from-white to-emerald-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-emerald-200 shadow-2xs hover:border-emerald-400 transition-all flex flex-col justify-between">
+        <div className="vv-kpi-card bg-white p-4 sm:p-5 rounded-[22px] border border-[#DCE8EA] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-1.5 mb-2">
               <span className="p-2 rounded-xl bg-emerald-600 text-white shadow-xs shrink-0">
@@ -481,7 +481,7 @@ export const OverviewTab: React.FC = () => {
         </div>
 
         {/* Metric 5: Meeting Attendance Rate */}
-        <div className="col-span-2 lg:col-span-1 bg-gradient-to-br from-white to-blue-50/60 p-3.5 sm:p-4.5 rounded-2xl border border-blue-200 shadow-2xs hover:border-blue-400 transition-all flex flex-col justify-between">
+        <div className="vv-kpi-card col-span-2 lg:col-span-1 bg-white p-4 sm:p-5 rounded-[22px] border border-[#DCE8EA] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-1.5 mb-2">
               <span className="p-2 rounded-xl bg-blue-600 text-white shadow-xs shrink-0">
