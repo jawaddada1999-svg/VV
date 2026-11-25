@@ -85,12 +85,20 @@ export const ClientsDirectoryTab: React.FC = () => {
         return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-200">{t.colAdLeadsTitle}</span>;
       case 'meeting_scheduled':
         return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-900 border border-indigo-200">{t.colMeetingsTitle}</span>;
+      case 'meeting_completed':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-200">{t.colAttendedTitle}</span>;
+      case 'meeting_no_show':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-900 border border-rose-200">{t.colNoShowTitle}</span>;
+      case 'negotiation_follow_up':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100 text-cyan-900 border border-cyan-200">{t.colFollowUpTitle}</span>;
+      case 'deal_won':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-900 border border-teal-200">{t.colRetainerTitle}</span>;
       case 'trial_7_days':
         return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">{t.colTrialTitle}</span>;
       case 'delivery_in_progress':
         return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-200">{t.colDeliveryTitle}</span>;
       case 'active_retainer':
-        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">{t.colRetainerTitle}</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-900 border border-teal-300">{t.colRetainerTitle}</span>;
       case 'lost':
         return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-900 border border-rose-300">{t.colLostTitle}</span>;
       default:
@@ -231,9 +239,15 @@ export const ClientsDirectoryTab: React.FC = () => {
             <option value="trial_7_days">7 {t.days}</option>
             <option value="delivery_in_progress">{t.cardInBuildTitle}</option>
             <option value="active_retainer">{t.active}</option>
-            <option value="meeting_scheduled">{t.statusScheduled}</option>
-            <option value="ad_lead">{t.leads}</option>
-            <option value="lost">{t.overdue}</option>
+            <option value="meeting_scheduled">{t.colMeetingsTitle}</option>
+            <option value="meeting_completed">{t.colAttendedTitle}</option>
+            <option value="meeting_no_show">{t.colNoShowTitle}</option>
+            <option value="trial_7_days">{t.colTrialTitle}</option>
+            <option value="delivery_in_progress">{t.colDeliveryTitle}</option>
+            <option value="negotiation_follow_up">{t.colFollowUpTitle}</option>
+            <option value="deal_won">{t.colRetainerTitle}</option>
+            <option value="ad_lead">{t.colAdLeadsTitle}</option>
+            <option value="lost">{t.colLostTitle}</option>
           </select>
 
           {/* Package Filter */}
