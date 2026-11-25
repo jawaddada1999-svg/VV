@@ -66,235 +66,39 @@ export const OverviewTab: React.FC = () => {
   // Time filter for charts: Monthly vs Weekly
   const [chartView, setChartView] = useState<'monthly' | 'weekly'>('weekly');
 
-  // Financial Performance chart controls: 1M (weekly) / 3M / 6M / 12M, chart view mode, and cost scope
-  const [financialRange, setFinancialRange] = useState<'1m' | '3m' | '6m' | '12m'>('1m');
-  const [financialChartMode, setFinancialChartMode] = useState<'amounts' | 'margin'>('amounts');
-  const [includeClientTools, setIncludeClientTools] = useState<boolean>(true);
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const newClientsThisMonth = clients.filter((client) => {
+    const createdAt = new Date(client.createdAt);
+    return !Number.isNaN(createdAt.getTime()) && createdAt >= monthStart;
+  }).length;
+  const scheduledMeetingsCount = meetings.filter((meeting) => meeting.status === 'scheduled').length;
+  const completedMeetingsCount = meetings.filter((meeting) => meeting.status === 'completed').length;
+  const attendedMeetingsCount = meetings.filter(
+    (meeting) => meeting.status === 'completed' && Boolean(meeting.meetingOutcome)
+  ).length;
+  const noShowMeetingsCount = meetings.filter((meeting) => meeting.status === 'no_show').length;
+  const successfulDealsCount = clients.filter(
+    (client) => ['deal_won', 'delivery_in_progress', 'active_retainer'].includes(client.stage)
+  ).length;
+  const rejectedClientsCount = clients.filter((client) => client.stage === 'lost').length;
+  const followUpClientIds = new Set([
+    ...clients.filter((client) => client.stage === 'meeting_completed').map((client) => client.id),
+    ...meetings.filter((meeting) => meeting.meetingOutcome === 'follow_up').map((meeting) => meeting.clientId),
+  ]);
+  const followUpCount = followUpClientIds.size;
 
-  // 1. Attendance Rate Calculation (نسبة حضور المواعيد)
-  const completedMeetings = meetings.filter((m) => m.status === 'completed').length;
-  const totalMeetingsCount = meetings.length;
-  const attendanceRate = totalMeetingsCount > 0
-    ? Math.round((completedMeetings / totalMeetingsCount) * 100)
-    : 84;
-
-  // 2. Urgent Alerts:
-  const activeTrials = clients.filter((c) => c.stage === 'trial_7_days');
-  const unpaidInvoices = invoices.filter((inv) => inv.status === 'pending' || inv.status === 'overdue');
-
-  const now = Date.now();
-  const upcomingMeetingsSoon = meetings.filter((m) => {
-    if (m.status !== 'scheduled') return false;
-    const diffMin = (new Date(m.scheduledTime).getTime() - now) / (1000 * 60);
-    return diffMin >= -10 && diffMin <= 60;
-  });
-
-  // 3. Weekly & Monthly Historical / Projected Retainer & Deals Data
-  const monthlyData = [
-    { period: language === 'ar' ? 'يونيو' : language === 'fr' ? 'Juin' : 'June', retainerMrr: 4500, setupCash: 12500, deals: 2 },
-    { period: language === 'ar' ? 'يوليوز' : language === 'fr' ? 'Juillet' : 'July', retainerMrr: 6500, setupCash: 16500, deals: 3 },
-    { period: language === 'ar' ? 'غشت' : language === 'fr' ? 'Août' : 'August', retainerMrr: 9500, setupCash: 21000, deals: 4 },
-    { period: language === 'ar' ? 'شتنبر' : language === 'fr' ? 'Septembre' : 'September', retainerMrr: 12500, setupCash: 24500, deals: 5 },
-    { period: language === 'ar' ? 'أكتوبر' : language === 'fr' ? 'Octobre' : 'October', retainerMrr: 15500, setupCash: 29000, deals: 6 },
-    { period: language === 'ar' ? 'نونبر الحالي' : language === 'fr' ? 'Novembre (Actuel)' : 'November (Current)', retainerMrr: metrics.currentMRR, setupCash: metrics.totalRevenueCash, deals: 7 },
+  const overviewStats = [
+    { label: language === 'ar' ? 'إجمالي العملاء المحتملين' : language === 'fr' ? 'Total des prospects' : 'Total prospects', value: clients.length, tone: 'teal' },
+    { label: language === 'ar' ? 'العملاء الجدد هذا الشهر' : language === 'fr' ? 'Nouveaux clients ce mois' : 'New clients this month', value: newClientsThisMonth, tone: 'blue' },
+    { label: language === 'ar' ? 'المواعيد المجدولة' : language === 'fr' ? 'Rendez-vous planifiés' : 'Scheduled appointments', value: scheduledMeetingsCount, tone: 'indigo' },
+    { label: language === 'ar' ? 'المواعيد المكتملة' : language === 'fr' ? 'Rendez-vous terminés' : 'Completed appointments', value: completedMeetingsCount, tone: 'purple' },
+    { label: language === 'ar' ? 'حضر الموعد' : language === 'fr' ? 'Présences confirmées' : 'Attended appointments', value: attendedMeetingsCount, tone: 'green' },
+    { label: language === 'ar' ? 'غاب عن الموعد' : language === 'fr' ? 'Absences' : 'No-shows', value: noShowMeetingsCount, tone: 'rose' },
+    { label: language === 'ar' ? 'الصفقات الناجحة' : language === 'fr' ? 'Affaires conclues' : 'Successful deals', value: successfulDealsCount, tone: 'emerald' },
+    { label: language === 'ar' ? 'الرافضون' : language === 'fr' ? 'Refus' : 'Rejected', value: rejectedClientsCount, tone: 'orange' },
+    { label: language === 'ar' ? 'قيد المتابعة' : language === 'fr' ? 'À suivre' : 'In follow-up', value: followUpCount, tone: 'amber' },
   ];
-
-  const weeklyData = [
-    { period: language === 'ar' ? 'الأسبوع 1' : language === 'fr' ? 'Semaine 1' : 'Week 1', retainerMrr: 14500, setupCash: 8000, deals: 1 },
-    { period: language === 'ar' ? 'الأسبوع 2' : language === 'fr' ? 'Semaine 2' : 'Week 2', retainerMrr: 15200, setupCash: 12500, deals: 2 },
-    { period: language === 'ar' ? 'الأسبوع 3' : language === 'fr' ? 'Semaine 3' : 'Week 3', retainerMrr: 16400, setupCash: 16000, deals: 2 },
-    { period: language === 'ar' ? 'الأسبوع 4 الحالي' : language === 'fr' ? 'Semaine 4 (Actuelle)' : 'Week 4 (Current)', retainerMrr: metrics.currentMRR, setupCash: metrics.totalRevenueCash, deals: 3 },
-  ];
-
-  const currentChartData = chartView === 'weekly' ? weeklyData : monthlyData;
-
-  // 3B. Financial Performance Dataset (1M weekly breakdown + 3M / 6M / 12M monthly trajectory)
-  const raw12Months = [
-    { period: language === 'ar' ? 'دجنبر' : language === 'fr' ? 'Déc' : 'Dec', retainerRevenue: 1200, adSpend: 2200, toolCosts: 280 },
-    { period: language === 'ar' ? 'يناير' : language === 'fr' ? 'Jan' : 'Jan', retainerRevenue: 1800, adSpend: 2500, toolCosts: 340 },
-    { period: language === 'ar' ? 'فبراير' : language === 'fr' ? 'Fév' : 'Feb', retainerRevenue: 2500, adSpend: 2700, toolCosts: 420 },
-    { period: language === 'ar' ? 'مارس' : language === 'fr' ? 'Mar' : 'Mar', retainerRevenue: 3100, adSpend: 2900, toolCosts: 480 },
-    { period: language === 'ar' ? 'أبريل' : language === 'fr' ? 'Avr' : 'Apr', retainerRevenue: 3700, adSpend: 3100, toolCosts: 540 },
-    { period: language === 'ar' ? 'مايو' : language === 'fr' ? 'Mai' : 'May', retainerRevenue: 4100, adSpend: 3250, toolCosts: 600 },
-    { period: language === 'ar' ? 'يونيو' : language === 'fr' ? 'Juin' : 'Jun', retainerRevenue: 4500, adSpend: 3400, toolCosts: 650 },
-    { period: language === 'ar' ? 'يوليوز' : language === 'fr' ? 'Juil' : 'Jul', retainerRevenue: 6500, adSpend: 3900, toolCosts: 920 },
-    { period: language === 'ar' ? 'غشت' : language === 'fr' ? 'Août' : 'Aug', retainerRevenue: 9500, adSpend: 4250, toolCosts: 1350 },
-    { period: language === 'ar' ? 'شتنبر' : language === 'fr' ? 'Sept' : 'Sep', retainerRevenue: 12500, adSpend: 4600, toolCosts: 1720 },
-    { period: language === 'ar' ? 'أكتوبر' : language === 'fr' ? 'Oct' : 'Oct', retainerRevenue: 15500, adSpend: 4950, toolCosts: 2050 },
-    {
-      period: language === 'ar' ? 'نونبر' : 'Nov',
-      retainerRevenue: metrics.currentMRR,
-      adSpend: metrics.totalAdSpendThisMonth,
-      toolCosts: metrics.totalMonthlyClientExpenses,
-    },
-  ];
-
-  // Current month split cleanly across 4 weeks so "1 Month" shows clear weekly cashflow
-  const w1Retainer = Math.round(metrics.currentMRR * 0.21);
-  const w2Retainer = Math.round(metrics.currentMRR * 0.24);
-  const w3Retainer = Math.round(metrics.currentMRR * 0.26);
-  const w4Retainer = Math.max(0, metrics.currentMRR - (w1Retainer + w2Retainer + w3Retainer));
-
-  const w1Ad = Math.round(metrics.totalAdSpendThisMonth * 0.24);
-  const w2Ad = Math.round(metrics.totalAdSpendThisMonth * 0.26);
-  const w3Ad = Math.round(metrics.totalAdSpendThisMonth * 0.25);
-  const w4Ad = Math.max(0, metrics.totalAdSpendThisMonth - (w1Ad + w2Ad + w3Ad));
-
-  const w1Tool = Math.round(metrics.totalMonthlyClientExpenses * 0.25);
-  const w2Tool = Math.round(metrics.totalMonthlyClientExpenses * 0.25);
-  const w3Tool = Math.round(metrics.totalMonthlyClientExpenses * 0.25);
-  const w4Tool = Math.max(0, metrics.totalMonthlyClientExpenses - (w1Tool + w2Tool + w3Tool));
-
-  const rawCurrentMonthWeeks = [
-    {
-      period: language === 'ar' ? 'الأسبوع 1' : language === 'fr' ? 'Semaine 1' : 'Week 1',
-      retainerRevenue: w1Retainer,
-      adSpend: w1Ad,
-      toolCosts: w1Tool,
-    },
-    {
-      period: language === 'ar' ? 'الأسبوع 2' : language === 'fr' ? 'Semaine 2' : 'Week 2',
-      retainerRevenue: w2Retainer,
-      adSpend: w2Ad,
-      toolCosts: w2Tool,
-    },
-    {
-      period: language === 'ar' ? 'الأسبوع 3' : language === 'fr' ? 'Semaine 3' : 'Week 3',
-      retainerRevenue: w3Retainer,
-      adSpend: w3Ad,
-      toolCosts: w3Tool,
-    },
-    {
-      period: language === 'ar' ? 'الأسبوع 4' : language === 'fr' ? 'Semaine 4' : 'Week 4',
-      retainerRevenue: w4Retainer,
-      adSpend: w4Ad,
-      toolCosts: w4Tool,
-    },
-  ];
-
-  const selectedRawFinancial =
-    financialRange === '1m'
-      ? rawCurrentMonthWeeks
-      : financialRange === '3m'
-      ? raw12Months.slice(-3)
-      : financialRange === '6m'
-      ? raw12Months.slice(-6)
-      : raw12Months;
-
-  const financialSeries = selectedRawFinancial.map((item) => {
-    const totalSpend = includeClientTools ? item.adSpend + item.toolCosts : item.adSpend;
-    const netProfit = item.retainerRevenue - totalSpend;
-    const profitMarginPct =
-      item.retainerRevenue > 0 ? Math.round((netProfit / item.retainerRevenue) * 100) : 0;
-    return {
-      ...item,
-      totalSpend,
-      netProfit,
-      profitMarginPct,
-    };
-  });
-
-  // Summary headline KPIs represent the current full month (even when viewing 1M weekly bars)
-  const headlineTotalSpend = includeClientTools
-    ? metrics.totalAdSpendThisMonth + metrics.totalMonthlyClientExpenses
-    : metrics.totalAdSpendThisMonth;
-  const headlineNetProfit = metrics.currentMRR - headlineTotalSpend;
-  const headlineMarginPct =
-    metrics.currentMRR > 0 ? Math.round((headlineNetProfit / metrics.currentMRR) * 100) : 0;
-
-  const firstPeriodMargin = financialSeries[0]?.profitMarginPct ?? 0;
-  const lastPeriodMargin = financialSeries[financialSeries.length - 1]?.profitMarginPct ?? 0;
-  const marginDeltaPts = lastPeriodMargin - firstPeriodMargin;
-
-  const fpCopy = {
-    ar: {
-      title: 'الأداء المالي: مقارنة المداخيل، المصاريف وصافي الربح',
-      subtitle:
-        financialRange === '1m'
-          ? 'تفصيل هذا الشهر أسبوعاً بأسبوع: كم دخل من الصيانة، كم صُرف في الإعلانات والأدوات، وكم بقي لك كربح صافي'
-          : 'مقارنة واضحة بالدرهم بين عوائد الصيانة الشهرية، مصاريف الإعلانات والأدوات، وصافي الربح الفعلي المتبقي',
-      range1m: 'شهر 1',
-      range3m: '3 أشهر',
-      range6m: '6 أشهر',
-      range12m: '12 شهر',
-      modeAmounts: 'المبالغ (درهم)',
-      modeMargin: 'هامش الربح (%)',
-      scopeAll: 'إعلانات + اشتراكات',
-      scopeAdsOnly: 'إعلانات فقط',
-      statRetainer: 'عوائد الصيانة (الشهر الحالي)',
-      statAdSpend: includeClientTools ? 'مصاريف الإعلانات والاشتراكات' : 'الإنفاق الإعلاني الشهري',
-      statNetProfit: 'صافي الربح الفعلي المتبقي',
-      statMargin: 'نسبة هامش الربح',
-      legendRetainer: 'مداخيل الصيانة',
-      legendSpend: includeClientTools ? 'الإعلانات + الاشتراكات' : 'الإنفاق الإعلاني',
-      legendNetProfit: 'صافي الربح المتبقي',
-      legendMargin: 'نسبة الربح الصافي (%)',
-      tooltipAds: 'مصاريف الإعلانات',
-      tooltipTools: 'اشتراكات أدوات العملاء',
-      tooltipNet: 'صافي الربح المتبقي',
-      tooltipMargin: 'هامش الربح',
-      breakdownTitle: financialRange === '1m' ? 'ملخص أسابيع هذا الشهر:' : 'ملخص صافي الربح لكل شهر:',
-      madShort: 'د.م',
-    },
-    fr: {
-      title: 'Performance Financière : Revenus, Dépenses & Bénéfice Net',
-      subtitle:
-        financialRange === '1m'
-          ? 'Détail hebdomadaire du mois en cours : revenus de maintenance, dépenses pubs/outils et bénéfice net réel'
-          : 'Comparaison claire en MAD entre revenus mensuels de maintenance, dépenses publicitaires et profit net restant',
-      range1m: '1 mois',
-      range3m: '3 mois',
-      range6m: '6 mois',
-      range12m: '12 mois',
-      modeAmounts: 'Montants (MAD)',
-      modeMargin: 'Marge (%)',
-      scopeAll: 'Pubs + Abonnements',
-      scopeAdsOnly: 'Pubs uniquement',
-      statRetainer: 'Revenus Maintenance (Mois)',
-      statAdSpend: includeClientTools ? 'Dépenses Pubs & Outils' : 'Dépenses Pubs (Mois)',
-      statNetProfit: 'Bénéfice Net Restant',
-      statMargin: 'Marge Bénéficiaire',
-      legendRetainer: 'Revenus Maintenance',
-      legendSpend: includeClientTools ? 'Pubs + Abonnements' : 'Dépenses Pubs',
-      legendNetProfit: 'Bénéfice Net',
-      legendMargin: 'Marge Nette (%)',
-      tooltipAds: 'Dépenses Pubs',
-      tooltipTools: 'Abonnements Outils Clients',
-      tooltipNet: 'Bénéfice Net Restant',
-      tooltipMargin: 'Marge Nette',
-      breakdownTitle: financialRange === '1m' ? 'Détail par semaine (mois actuel) :' : 'Marge nette par mois :',
-      madShort: 'MAD',
-    },
-    en: {
-      title: 'Financial Performance: Revenue, Spend & Net Profit',
-      subtitle:
-        financialRange === '1m'
-          ? 'Current month broken down week by week: retainer cash in, ad & tool costs out, and net profit remaining'
-          : 'Clear side-by-side MAD comparison of monthly retainer revenue, total ad/tool spend, and actual net profit',
-      range1m: '1 Month',
-      range3m: '3 Months',
-      range6m: '6 Months',
-      range12m: '12 Months',
-      modeAmounts: 'Amounts (MAD)',
-      modeMargin: 'Margin (%)',
-      scopeAll: 'Ads + Subscriptions',
-      scopeAdsOnly: 'Ad Spend Only',
-      statRetainer: 'Retainer Revenue (Month)',
-      statAdSpend: includeClientTools ? 'Ads + Tools Spend' : 'Monthly Ad Spend',
-      statNetProfit: 'Actual Net Profit',
-      statMargin: 'Current Profit Margin',
-      legendRetainer: 'Retainer Revenue',
-      legendSpend: includeClientTools ? 'Ads + Tool Costs' : 'Ad Spend',
-      legendNetProfit: 'Net Profit',
-      legendMargin: 'Profit Margin (%)',
-      tooltipAds: 'Ad Spend',
-      tooltipTools: 'Client Subscriptions',
-      tooltipNet: 'Actual Net Profit',
-      tooltipMargin: 'Profit Margin',
-      breakdownTitle: financialRange === '1m' ? 'Weekly breakdown (this month):' : 'Net profit & margin by month:',
-      madShort: 'MAD',
-    },
-  }[language];
 
   const badgeLabels = {
     cash: language === 'ar' ? 'تحصيل' : language === 'fr' ? 'Cash' : 'Cash',
@@ -510,6 +314,26 @@ export const OverviewTab: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Operational overview statistics */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm sm:text-base font-extrabold text-slate-900">
+            {language === 'ar' ? 'مؤشرات العملاء والمواعيد والصفقات' : language === 'fr' ? 'Indicateurs clients, rendez-vous et affaires' : 'Client, appointment & deal metrics'}
+          </h2>
+          <span className="text-[10px] sm:text-xs font-semibold text-slate-500">
+            {language === 'ar' ? 'محدثة حسب البيانات المسجلة' : language === 'fr' ? 'Selon les données enregistrées' : 'Based on recorded data'}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+          {overviewStats.map((stat) => (
+            <div key={stat.label} className="bg-white p-3.5 sm:p-4 rounded-2xl border border-[#DCE8EA] shadow-sm min-w-0">
+              <span className="block text-[11px] sm:text-xs font-bold text-slate-600 leading-relaxed min-h-[34px]">{stat.label}</span>
+              <strong className="block mt-1 text-2xl sm:text-3xl font-extrabold font-mono tabular-nums text-[#082E35]">{stat.value.toLocaleString()}</strong>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* 3. MULTI-ALERT COMMAND CENTER:
           Alert 1: Meeting starting in less than 30 mins
@@ -769,387 +593,6 @@ export const OverviewTab: React.FC = () => {
               />
             </AreaChart>
           </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* 4B. FINANCIAL PERFORMANCE: CLEAR 3-BAR REVENUE VS SPEND VS NET PROFIT (+ MARGIN % VIEW & 1M/3M/6M/12M) */}
-      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 space-y-5">
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <span className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <BarChart3 className="w-5 h-5" />
-              </span>
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                {fpCopy.title}
-              </h3>
-            </div>
-            <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-              {fpCopy.subtitle}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 self-start xl:self-center">
-            {/* View Mode Toggle: Clear MAD Bars vs Margin % Trend */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setFinancialChartMode('amounts')}
-                className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  financialChartMode === 'amounts'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {fpCopy.modeAmounts}
-              </button>
-              <button
-                type="button"
-                onClick={() => setFinancialChartMode('margin')}
-                className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  financialChartMode === 'margin'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {fpCopy.modeMargin}
-              </button>
-            </div>
-
-            {/* Cost Scope Toggle */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setIncludeClientTools(true)}
-                className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  includeClientTools
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {fpCopy.scopeAll}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIncludeClientTools(false)}
-                className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  !includeClientTools
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {fpCopy.scopeAdsOnly}
-              </button>
-            </div>
-
-            {/* Full Timeframe Selector: 1M · 3M · 6M · 12M */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
-              {(
-                [
-                  { key: '1m', label: fpCopy.range1m },
-                  { key: '3m', label: fpCopy.range3m },
-                  { key: '6m', label: fpCopy.range6m },
-                  { key: '12m', label: fpCopy.range12m },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.key}
-                  type="button"
-                  onClick={() => setFinancialRange(opt.key)}
-                  className={`px-3 min-h-[34px] text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                    financialRange === opt.key
-                      ? 'bg-[#082E35] text-white'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Clean Tabular KPI Summary Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pb-4 border-b border-slate-100">
-          <div>
-            <span className="text-[11px] font-semibold text-slate-500 block">{fpCopy.statRetainer}</span>
-            <span className="text-base sm:text-xl font-extrabold font-mono tabular-nums text-[#082E35] mt-0.5 block">
-              {metrics.currentMRR.toLocaleString()} {t.mad}
-            </span>
-          </div>
-
-          <div>
-            <span className="text-[11px] font-semibold text-slate-500 block">{fpCopy.statAdSpend}</span>
-            <span
-              dir="ltr"
-              className="text-base sm:text-xl font-extrabold font-mono tabular-nums text-[#FF6600] mt-0.5 inline-block"
-            >
-              -{headlineTotalSpend.toLocaleString()} {t.mad}
-            </span>
-          </div>
-
-          <div>
-            <span className="text-[11px] font-semibold text-slate-500 block">{fpCopy.statNetProfit}</span>
-            <span
-              dir="ltr"
-              className={`text-base sm:text-xl font-extrabold font-mono tabular-nums mt-0.5 inline-block ${
-                headlineNetProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'
-              }`}
-            >
-              {headlineNetProfit >= 0 ? '+' : ''}
-              {headlineNetProfit.toLocaleString()} {t.mad}
-            </span>
-          </div>
-
-          <div>
-            <span className="text-[11px] font-semibold text-slate-500 block">{fpCopy.statMargin}</span>
-            <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
-              <span
-                dir="ltr"
-                className={`text-base sm:text-xl font-extrabold font-mono tabular-nums ${
-                  headlineMarginPct >= 0 ? 'text-emerald-700' : 'text-rose-600'
-                }`}
-              >
-                {headlineMarginPct}%
-              </span>
-              {financialRange !== '1m' && (
-                <span dir="ltr" className="text-[11px] font-mono tabular-nums font-semibold text-slate-500">
-                  ({marginDeltaPts >= 0 ? `+${marginDeltaPts}` : marginDeltaPts} pts)
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Crystal-Clear Chart Viewport */}
-        <div className="h-80 w-full" dir="ltr">
-          <ResponsiveContainer width="100%" height="100%">
-            {financialChartMode === 'amounts' ? (
-              <BarChart data={financialSeries} margin={{ top: 12, right: 12, left: 4, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-                <XAxis
-                  dataKey="period"
-                  tick={{ fontSize: 11, fill: '#334155', fontWeight: 700 }}
-                  tickLine={false}
-                  axisLine={{ stroke: '#E2E8F0' }}
-                  interval={0}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: '#64748B', fontWeight: 600 }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v) => `${Number(v).toLocaleString()} ${fpCopy.madShort}`}
-                  width={76}
-                />
-                <ReferenceLine y={0} stroke="#CBD5E1" strokeWidth={1.5} />
-                <Tooltip
-                  cursor={{ fill: '#F8FAFC' }}
-                  content={({ active, payload, label }) => {
-                    if (!active || !payload || payload.length === 0) return null;
-                    const row = payload[0]?.payload as (typeof financialSeries)[number] | undefined;
-                    if (!row) return null;
-                    return (
-                      <div
-                        dir={direction}
-                        className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-lg text-xs space-y-1.5 min-w-[230px]"
-                      >
-                        <div className="font-bold text-slate-900 border-b border-slate-100 pb-1.5">
-                          {label}
-                        </div>
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="text-slate-600">{fpCopy.legendRetainer}</span>
-                          <span className="font-mono tabular-nums font-bold text-[#082E35]">
-                            {row.retainerRevenue.toLocaleString()} {t.mad}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="text-slate-600">{fpCopy.tooltipAds}</span>
-                          <span className="font-mono tabular-nums font-bold text-[#FF6600]">
-                            -{row.adSpend.toLocaleString()} {t.mad}
-                          </span>
-                        </div>
-                        {includeClientTools && (
-                          <div className="flex items-center justify-between gap-4">
-                            <span className="text-slate-600">{fpCopy.tooltipTools}</span>
-                            <span className="font-mono tabular-nums font-semibold text-slate-700">
-                              -{row.toolCosts.toLocaleString()} {t.mad}
-                            </span>
-                          </div>
-                        )}
-                        <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between gap-4 font-bold">
-                          <span className="text-slate-900">{fpCopy.tooltipNet}</span>
-                          <span
-                            className={`font-mono tabular-nums ${
-                              row.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'
-                            }`}
-                          >
-                            {row.netProfit >= 0 ? '+' : ''}
-                            {row.netProfit.toLocaleString()} {t.mad}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-4 font-bold">
-                          <span className="text-slate-900">{fpCopy.tooltipMargin}</span>
-                          <span
-                            className={`font-mono tabular-nums ${
-                              row.profitMarginPct >= 0 ? 'text-emerald-700' : 'text-rose-600'
-                            }`}
-                          >
-                            {row.profitMarginPct}%
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  }}
-                />
-                <Legend
-                  verticalAlign="top"
-                  align="right"
-                  wrapperStyle={{ paddingBottom: '12px', fontSize: '12px', fontWeight: 700 }}
-                />
-                <Bar
-                  dataKey="retainerRevenue"
-                  name={fpCopy.legendRetainer}
-                  fill="#082E35"
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={24}
-                />
-                <Bar
-                  dataKey="totalSpend"
-                  name={fpCopy.legendSpend}
-                  fill="#FF6600"
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={24}
-                />
-                <Bar
-                  dataKey="netProfit"
-                  name={fpCopy.legendNetProfit}
-                  fill="#16A34A"
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={24}
-                >
-                  {financialSeries.map((entry, idx) => (
-                    <Cell
-                      key={`net-cell-${idx}`}
-                      fill={entry.netProfit >= 0 ? '#16A34A' : '#DC2626'}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            ) : (
-              <AreaChart data={financialSeries} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
-                <defs>
-                  <linearGradient id="marginAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#16A34A" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#16A34A" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-                <XAxis
-                  dataKey="period"
-                  tick={{ fontSize: 11, fill: '#334155', fontWeight: 700 }}
-                  tickLine={false}
-                  axisLine={{ stroke: '#E2E8F0' }}
-                  interval={0}
-                />
-                <YAxis
-                  domain={[(dataMin: number) => Math.min(0, Math.floor(dataMin / 10) * 10), 100]}
-                  tick={{ fontSize: 11, fill: '#16A34A', fontWeight: 700 }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v) => `${v}%`}
-                  width={52}
-                />
-                <ReferenceLine y={0} stroke="#CBD5E1" strokeDasharray="3 3" />
-                <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (!active || !payload || payload.length === 0) return null;
-                    const row = payload[0]?.payload as (typeof financialSeries)[number] | undefined;
-                    if (!row) return null;
-                    return (
-                      <div
-                        dir={direction}
-                        className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-lg text-xs space-y-1.5 min-w-[210px]"
-                      >
-                        <div className="font-bold text-slate-900 border-b border-slate-100 pb-1.5">
-                          {label}
-                        </div>
-                        <div className="flex items-center justify-between gap-4 font-bold">
-                          <span className="text-slate-700">{fpCopy.tooltipMargin}</span>
-                          <span
-                            className={`font-mono tabular-nums ${
-                              row.profitMarginPct >= 0 ? 'text-emerald-700' : 'text-rose-600'
-                            }`}
-                          >
-                            {row.profitMarginPct}%
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="text-slate-600">{fpCopy.tooltipNet}</span>
-                          <span
-                            className={`font-mono tabular-nums font-bold ${
-                              row.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'
-                            }`}
-                          >
-                            {row.netProfit >= 0 ? '+' : ''}
-                            {row.netProfit.toLocaleString()} {t.mad}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  }}
-                />
-                <Legend
-                  verticalAlign="top"
-                  align="right"
-                  wrapperStyle={{ paddingBottom: '12px', fontSize: '12px', fontWeight: 700 }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="profitMarginPct"
-                  name={fpCopy.legendMargin}
-                  stroke="#16A34A"
-                  strokeWidth={3}
-                  fillOpacity={1}
-                  fill="url(#marginAreaGrad)"
-                  dot={{ r: 5, fill: '#16A34A', strokeWidth: 2, stroke: '#FFFFFF' }}
-                  activeDot={{ r: 7 }}
-                />
-              </AreaChart>
-            )}
-          </ResponsiveContainer>
-        </div>
-
-        {/* Flat Scannable Period-by-Period Margin Strip */}
-        <div className="pt-4 border-t border-slate-100 space-y-2">
-          <span className="text-xs font-bold text-slate-600 block">{fpCopy.breakdownTitle}</span>
-          <div className="flex items-stretch gap-2 overflow-x-auto pb-1 no-scrollbar">
-            {financialSeries.map((row, idx) => (
-              <div
-                key={idx}
-                className="min-w-[120px] flex-1 p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between gap-1"
-              >
-                <div className="flex items-center justify-between gap-2 text-[11px]">
-                  <span className="font-bold text-slate-800 truncate">{row.period}</span>
-                  <span
-                    className={`font-mono tabular-nums font-extrabold ${
-                      row.profitMarginPct >= 0 ? 'text-emerald-700' : 'text-rose-600'
-                    }`}
-                  >
-                    {row.profitMarginPct}%
-                  </span>
-                </div>
-                <div className="font-mono tabular-nums text-xs font-bold">
-                  <span
-                    dir="ltr"
-                    className={`inline-block ${row.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}
-                  >
-                    {row.netProfit >= 0 ? '+' : ''}
-                    {row.netProfit.toLocaleString()} {fpCopy.madShort}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
