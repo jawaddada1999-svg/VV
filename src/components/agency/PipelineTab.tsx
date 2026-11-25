@@ -198,8 +198,8 @@ export const PipelineTab: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Drag & Drop Kanban Columns (Snappy horizontal swipe on mobile, 6-col board on desktop) */}
-      <div className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-4  items-start no-scrollbar">
+      {/* 3. Drag & Drop Kanban: fixed-width stages with horizontal scrolling on all screen sizes */}
+      <div className="flex w-full max-w-full overflow-x-auto overflow-y-hidden snap-x snap-proximity gap-3.5 pb-5 items-start no-scrollbar overscroll-x-contain scroll-smooth" style={{ scrollbarWidth: "thin" }}>
         {columns.map((col) => {
           const columnClients = filteredClients.filter((c) => col.stageIds.includes(c.stage));
           const isOver = dragOverColId === col.id;
@@ -212,7 +212,7 @@ export const PipelineTab: React.FC = () => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`snap-start shrink-0 w-[84vw] sm:w-[320px] lg:w-[340px] rounded-2xl p-3 border transition-all flex flex-col min-h-[460px] lg:min-h-[580px] ${
+              className={`snap-start shrink-0 w-[82vw] min-w-[280px] max-w-[320px] rounded-2xl p-3 border transition-all flex flex-col min-h-[460px] lg:min-h-[580px] ${
                 isOver
                   ? 'border-[#FF6600] bg-orange-50/50 shadow-lg ring-2 ring-orange-400/30'
                   : 'border-slate-200/90 bg-slate-50/90 hover:border-slate-300'
