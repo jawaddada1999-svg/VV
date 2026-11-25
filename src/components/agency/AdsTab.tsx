@@ -285,11 +285,11 @@ export const AdsTab: React.FC = () => {
         ? 'Meta & Google B2B'
         : 'Meta & Google B2B',
     conversionPct:
-      language === 'ar' ? 'نسبة التحويل' : language === 'fr' ? 'Conversion %' : 'Conversion %',
+      language === 'ar' ? 'نسبة التحويل' : language === 'fr' ? 'Taux de conversion' : 'Conversion rate',
     dropoffPct:
-      language === 'ar' ? 'نسبة التسرب' : language === 'fr' ? 'Abandon %' : 'Drop-off %',
+      language === 'ar' ? 'نسبة التسرب' : language === 'fr' ? 'Taux d’abandon' : 'Drop-off rate',
     landingTag:
-      language === 'ar' ? 'صفحة الهبوط' : language === 'fr' ? 'Page de capture' : 'Landing Page',
+      language === 'ar' ? 'صفحة الهبوط' : language === 'fr' ? 'Page de destination' : 'Landing page',
     visitorsUnit:
       language === 'ar' ? 'زائر' : language === 'fr' ? 'visiteurs' : 'visitors',
     videoPlaysTag:
@@ -416,16 +416,16 @@ export const AdsTab: React.FC = () => {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
         {[
-          { label: language === 'ar' ? 'العملاء المحتملون من الإعلانات' : 'Leads from ads', value: totalLeads },
-          { label: language === 'ar' ? 'تكلفة العميل المحتمل' : 'Cost per lead', value: totalLeads ? Math.round(totalSpend / totalLeads) + ' MAD' : '—' },
-          { label: language === 'ar' ? 'المواعيد المحجوزة' : 'Booked appointments', value: campaigns.reduce((s,c)=>s+(c.meetingsBooked||0),0) },
-          { label: language === 'ar' ? 'تكلفة الموعد' : 'Cost per appointment', value: campaigns.reduce((s,c)=>s+(c.meetingsBooked||0),0) ? Math.round(totalSpend / campaigns.reduce((s,c)=>s+(c.meetingsBooked||0),0)) + ' MAD' : '—' },
-          { label: language === 'ar' ? 'المواعيد المكتملة' : 'Completed appointments', value: totalShowedUp },
-          { label: language === 'ar' ? 'زوار صفحة الهبوط' : 'Landing page visitors', value: totalLandingVisitors },
-          { label: language === 'ar' ? 'بدأوا الفيديو' : 'Video starts', value: totalVideoStarted },
-          { label: language === 'ar' ? 'أكملوا الفيديو' : 'Video completions', value: totalVideoCompleted },
-          { label: language === 'ar' ? 'حضروا الموعد' : 'Attended', value: totalShowedUp },
-          { label: language === 'ar' ? 'لم يحضروا' : 'No-show', value: totalNoShow },
+          { label: language === 'ar' ? 'العملاء المحتملون من الإعلانات' : language === 'fr' ? 'Prospects issus des campagnes' : 'Leads from ads', value: totalLeads },
+          { label: language === 'ar' ? 'تكلفة العميل المحتمل' : language === 'fr' ? 'Coût par prospect' : 'Cost per lead', value: totalLeads ? Math.round(totalSpend / totalLeads) + ' MAD' : '—' },
+          { label: language === 'ar' ? 'المواعيد المحجوزة' : language === 'fr' ? 'Rendez-vous réservés' : 'Booked appointments', value: campaigns.reduce((s,c)=>s+(c.meetingsBooked||0),0) },
+          { label: language === 'ar' ? 'تكلفة الموعد' : language === 'fr' ? 'Coût par rendez-vous' : 'Cost per appointment', value: campaigns.reduce((s,c)=>s+(c.meetingsBooked||0),0) ? Math.round(totalSpend / campaigns.reduce((s,c)=>s+(c.meetingsBooked||0),0)) + ' MAD' : '—' },
+          { label: language === 'ar' ? 'المواعيد المكتملة' : language === 'fr' ? 'Rendez-vous effectués' : 'Completed appointments', value: totalShowedUp },
+          { label: language === 'ar' ? 'زوار صفحة الهبوط' : language === 'fr' ? 'Visiteurs de la page de destination' : 'Landing page visitors', value: totalLandingVisitors },
+          { label: language === 'ar' ? 'بدأوا الفيديو' : language === 'fr' ? 'Démarrages de la vidéo' : 'Video starts', value: totalVideoStarted },
+          { label: language === 'ar' ? 'أكملوا الفيديو' : language === 'fr' ? 'Vues complètes de la vidéo' : 'Video completions', value: totalVideoCompleted },
+          { label: language === 'ar' ? 'حضروا الموعد' : language === 'fr' ? 'Présence au rendez-vous' : 'Attended', value: totalShowedUp },
+          { label: language === 'ar' ? 'لم يحضروا' : language === 'fr' ? 'Absences aux rendez-vous' : 'No-show', value: totalNoShow },
         ].map((item,index) => { const tone=[{"card":"from-sky-50 to-white border-sky-200","label":"text-sky-700","bar":"bg-sky-400"},{"card":"from-emerald-50 to-white border-emerald-200","label":"text-emerald-700","bar":"bg-emerald-400"},{"card":"from-violet-50 to-white border-violet-200","label":"text-violet-700","bar":"bg-violet-400"},{"card":"from-amber-50 to-white border-amber-200","label":"text-amber-700","bar":"bg-amber-400"},{"card":"from-rose-50 to-white border-rose-200","label":"text-rose-700","bar":"bg-rose-400"},{"card":"from-cyan-50 to-white border-cyan-200","label":"text-cyan-700","bar":"bg-cyan-400"}][index % 6]; return <div key={item.label} className={`relative overflow-hidden bg-gradient-to-br ${tone.card} rounded-2xl border p-4 shadow-sm hover:shadow-md transition-shadow`}><span className={`absolute inset-x-0 top-0 h-1 ${tone.bar}`} /><div className={`text-[10px] sm:text-xs font-extrabold ${tone.label}`}>{item.label}</div><div className="mt-2 text-xl font-extrabold text-slate-900 tabular-nums">{typeof item.value === 'number' ? item.value.toLocaleString() : item.value}</div></div> })}
       </div>
 
