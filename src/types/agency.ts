@@ -4,6 +4,7 @@ export type ClientStage =
   | 'ad_lead'                 // ليد جديد قادم من الإعلانات
   | 'meeting_scheduled'        // تم حجز موعد مكالمة استشارية
   | 'meeting_completed'        // تمت المكالمة وبانتظار الموافقة
+  | 'meeting_no_show'           // لم يحضر الموعد
   | 'trial_7_days'             // مرحلة التجربة المجانية 7 أيام
   | 'deal_won'                 // تم قبول العقد وبدء دفع الإعداد
   | 'delivery_in_progress'     // مشروع الأوتوميشن قيد البرمجة والتسليم
