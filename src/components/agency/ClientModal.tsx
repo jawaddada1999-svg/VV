@@ -39,7 +39,7 @@ export const ClientModal: React.FC = () => {
     });
     setAdSource((prev) => {
       if (prev === 'إعلانات ميتا' || prev === 'Meta Ads') {
-        return language === 'ar' ? 'إعلانات ميتا' : 'Meta Ads';
+        return language === 'ar' ? 'إعلانات ميتا' : language === 'fr' ? 'Publicités Meta' : 'Meta Ads';
       }
       return prev;
     });
@@ -299,7 +299,6 @@ export const ClientModal: React.FC = () => {
                 <option value="negotiation_follow_up">{t.colFollowUpTitle}</option>
                 <option value="deal_won">{t.colRetainerTitle}</option>
                 <option value="lost">{t.colLostTitle}</option>
-                <option value="active_retainer">{t.colRetainerTitle}</option>
               </select>
             </div>
           </div>
