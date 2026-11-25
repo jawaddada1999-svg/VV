@@ -34,6 +34,8 @@ export const ClientsDirectoryTab: React.FC = () => {
   const t = translations[language];
 
   const [search, setSearch] = useState('');
+  const [editingClientId, setEditingClientId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<any>({});
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [tierFilter, setTierFilter] = useState<string>('all');
@@ -56,7 +58,7 @@ export const ClientsDirectoryTab: React.FC = () => {
         c.city.toLowerCase().includes(search.toLowerCase()) ||
         c.phone.includes(search);
       const matchCity = cityFilter === 'all' || c.city.toLowerCase().includes(cityFilter.toLowerCase());
-      const matchStage = stageFilter === 'all' || c.stage === stageFilter;
+      const matchStage = stageFilter === 'all' || (stageFilter === 'rejected' && c.stage === 'lost') || (stageFilter === 'free_trial' && c.stage === 'trial_7_days') || (stageFilter === 'rejected_after_trial' && c.stage === 'lost' && (!!c.trialStartDate || c.trialAccepted === false)) || (stageFilter === 'subscribed' && c.stage === 'active_retainer') || c.stage === stageFilter;
       const matchTier = tierFilter === 'all' || c.packageTier === tierFilter;
       return matchSearch && matchCity && matchStage && matchTier;
     });
@@ -159,6 +161,16 @@ export const ClientsDirectoryTab: React.FC = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+        {[
+          {label:language==='ar'?'جميع الوكالات':'All clients',value:clients.length},
+          {label:language==='ar'?'مرفوضة':'Rejected',value:clients.filter(c=>c.stage==='lost').length},
+          {label:language==='ar'?'تجربة مجانية':'Free trial',value:clients.filter(c=>c.stage==='trial_7_days').length},
+          {label:language==='ar'?'مرفوضة بعد التجربة':'Rejected after trial',value:clients.filter(c=>c.stage==='lost' && (!!c.trialStartDate || c.trialAccepted===false)).length},
+          {label:language==='ar'?'عملاء مشتركين':'Subscribed clients',value:clients.filter(c=>c.stage==='active_retainer').length}
+        ].map(x=><div key={x.label} className="bg-white rounded-2xl border border-slate-200 p-4"><div className="text-[11px] font-bold text-slate-500">{x.label}</div><div className="text-2xl font-extrabold mt-2">{x.value}</div></div>)}
+      </div>
+
       {/* 2. Advanced Multi-Filter Toolbar */}
       <div className="bg-white p-4 rounded-2xl border-2 border-slate-200 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
         <div className="relative w-full md:w-80">
@@ -197,6 +209,10 @@ export const ClientsDirectoryTab: React.FC = () => {
             className="bg-slate-50 border border-slate-200 rounded-xl px-3 min-h-[40px] font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer"
           >
             <option value="all">{t.filterByStatus} {t.all}</option>
+            <option value="rejected">{language==='ar'?'مرفوض':'Rejected'}</option>
+            <option value="free_trial">{language==='ar'?'تجربة مجانية':'Free trial'}</option>
+            <option value="rejected_after_trial">{language==='ar'?'مرفوض بعد التجربة':'Rejected after trial'}</option>
+            <option value="subscribed">{language==='ar'?'عملاء مشتركين':'Subscribed clients'}</option>
             <option value="trial_7_days">7 {t.days}</option>
             <option value="delivery_in_progress">{t.cardInBuildTitle}</option>
             <option value="active_retainer">{t.active}</option>
@@ -266,9 +282,7 @@ export const ClientsDirectoryTab: React.FC = () => {
 
                       <td className="p-3.5">
                         <span className="font-bold text-slate-900 block">{client.contactPerson}</span>
-                        <span className="text-[11px] text-slate-500 font-mono" dir="ltr">
-                          {client.phone}
-                        </span>
+                        <span className="text-[11px] text-slate-500 font-mono block" dir="ltr">{client.phone}</span><span className="text-[10px] text-slate-400 block">{client.email}</span>
                       </td>
 
                       <td className="p-3.5">
@@ -293,28 +307,11 @@ export const ClientsDirectoryTab: React.FC = () => {
                         {getStageBadge(client.stage)}
                       </td>
 
-                      <td className="p-3.5 text-center bg-orange-50/30 border-x border-orange-100">
-                        <button
-                          onClick={() => updateClient(client.id, { isReferralPartner: !isPartner })}
-                          className={`px-3 py-1 rounded-full text-[10px] font-extrabold cursor-pointer transition-all inline-flex items-center gap-1.5 shadow-2xs ${
-                            isPartner
-                              ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border border-orange-400'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
-                          }`}
-                          title="Toggle referral partner"
-                        >
-                          <Award className="w-3.5 h-3.5" />
-                          <span>{isPartner ? t.badgeReferralPartner : (language === 'ar' ? '+ شريك' : language === 'fr' ? '+ Partenaire' : '+ Partner')}</span>
-                        </button>
-                      </td>
-
                       <td className="p-3.5 text-center">
-                        <button
-                          onClick={() => setSelectedClientId(client.id)}
-                          className="px-3 py-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-800 hover:text-white text-slate-800 rounded-xl transition-all cursor-pointer shadow-2xs"
-                        >
-                          {t.viewDeal}
-                        </button>
+                        <div className="flex items-center gap-2 justify-center">
+                          <button onClick={() => { setEditingClientId(client.id); setEditDraft({agencyName:client.agencyName,contactPerson:client.contactPerson,phone:client.phone,email:client.email,agencyManager:client.agencyManager||'',teamSize:client.teamSize??'',dailyInquiries:client.dailyInquiries??'',contactRole:client.contactRole||''}); }} className="px-3 py-1.5 text-xs font-bold bg-orange-50 text-orange-700 hover:bg-orange-100 rounded-xl">{language==='ar'?'تعديل':'Edit'}</button>
+                          <button onClick={() => setSelectedClientId(client.id)} className="px-3 py-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-800 hover:text-white text-slate-800 rounded-xl">{t.viewDeal}</button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -324,6 +321,26 @@ export const ClientsDirectoryTab: React.FC = () => {
           </table>
         </div>
       </div>
+      {editingClientId && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/60 flex items-center justify-center p-4" onClick={()=>setEditingClientId(null)}>
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl p-5 shadow-2xl" onClick={e=>e.stopPropagation()}>
+            <h3 className="font-extrabold text-lg mb-4">{language==='ar'?'تعديل بيانات الوكالة':'Edit agency details'}</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                ['agencyName',language==='ar'?'اسم الوكالة':'Agency name'],
+                ['contactPerson',language==='ar'?'اسم جهة الاتصال':'Contact person'],
+                ['phone',language==='ar'?'الهاتف':'Phone'],
+                ['email',language==='ar'?'البريد الإلكتروني':'Email'],
+                ['agencyManager',language==='ar'?'مسؤول عن الوكالة':'Agency manager'],
+                ['contactRole',language==='ar'?'الدور (مدير/تجاري)':'Role (manager/commercial)'],
+                ['teamSize',language==='ar'?'عدد الموظفين':'Team size'],
+                ['dailyInquiries',language==='ar'?'الطلبات اليومية':'Daily inquiries']
+              ].map(([key,label])=><label key={key} className="text-xs font-bold text-slate-600">{label}<input value={editDraft[key] ?? ''} onChange={e=>setEditDraft((old:any)=>({...old,[key]:e.target.value}))} className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-orange-500"/></label>)}
+            </div>
+            <div className="flex justify-end gap-2 mt-5"><button onClick={()=>setEditingClientId(null)} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold">{language==='ar'?'إلغاء':'Cancel'}</button><button onClick={()=>{if(editingClientId){updateClient(editingClientId,{...editDraft,teamSize:editDraft.teamSize===''?undefined:Number(editDraft.teamSize),dailyInquiries:editDraft.dailyInquiries===''?undefined:Number(editDraft.dailyInquiries)});setEditingClientId(null)}}} className="px-4 py-2 rounded-xl bg-orange-600 text-white text-sm font-bold">{language==='ar'?'حفظ التغييرات':'Save changes'}</button></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
