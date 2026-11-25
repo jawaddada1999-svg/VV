@@ -438,8 +438,12 @@ export const ClientDetailDrawer: React.FC = () => {
                 >
                   <option value="ad_lead">{t.colAdLeadsTitle}</option>
                   <option value="meeting_scheduled">{t.colMeetingsTitle}</option>
+                  <option value="meeting_completed">{t.colAttendedTitle}</option>
+                  <option value="meeting_no_show">{t.colNoShowTitle}</option>
                   <option value="trial_7_days">{t.colTrialTitle}</option>
                   <option value="delivery_in_progress">{t.colDeliveryTitle}</option>
+                  <option value="negotiation_follow_up">{t.colFollowUpTitle}</option>
+                  <option value="deal_won">{t.colRetainerTitle}</option>
                   <option value="active_retainer">{t.colRetainerTitle}</option>
                   <option value="lost">{t.colLostTitle}</option>
                 </select>
