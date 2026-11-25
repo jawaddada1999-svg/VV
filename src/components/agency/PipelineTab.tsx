@@ -29,8 +29,9 @@ import { translations } from '../../translations';
 
 interface ColumnDef {
   id: ClientStage;
-  titleKey: 'colAdLeadsTitle' | 'colMeetingsTitle' | 'colTrialTitle' | 'colDeliveryTitle' | 'colRetainerTitle' | 'colLostTitle';
-  subKey: 'colAdLeadsSub' | 'colMeetingsSub' | 'colTrialSub' | 'colDeliverySub' | 'colRetainerSub' | 'colLostSub';
+  titleKey: 'colAdLeadsTitle' | 'colMeetingsTitle' | 'colAttendedTitle' | 'colNoShowTitle' | 'colTrialTitle' | 'colDeliveryTitle' | 'colFollowUpTitle' | 'colRetainerTitle' | 'colLostTitle';
+  subKey: 'colAdLeadsSub' | 'colMeetingsSub' | 'colAttendedSub' | 'colNoShowSub' | 'colTrialSub' | 'colDeliverySub' | 'colFollowUpSub' | 'colRetainerSub' | 'colLostSub';
+  stageIds: ClientStage[];
   colorBorder: string;
   headerBg: string;
   badgeBg: string;
@@ -41,6 +42,7 @@ interface ColumnDef {
 export const PipelineTab: React.FC = () => {
   const {
     clients,
+    meetings,
     moveClientStage,
     start7DayTrial,
     acceptTrialAndCloseDeal,
@@ -62,66 +64,15 @@ export const PipelineTab: React.FC = () => {
 
   // 6 Pipeline Columns with localized keys and separated title/badge structure
   const columns: ColumnDef[] = [
-    {
-      id: 'ad_lead',
-      titleKey: 'colAdLeadsTitle',
-      subKey: 'colAdLeadsSub',
-      colorBorder: 'border-blue-500',
-      headerBg: 'bg-blue-50/90 text-blue-950',
-      badgeBg: 'bg-blue-600',
-      badgeTextColor: 'text-white',
-      accentBar: 'bg-blue-500',
-    },
-    {
-      id: 'meeting_scheduled',
-      titleKey: 'colMeetingsTitle',
-      subKey: 'colMeetingsSub',
-      colorBorder: 'border-indigo-500',
-      headerBg: 'bg-indigo-50/90 text-indigo-950',
-      badgeBg: 'bg-indigo-600',
-      badgeTextColor: 'text-white',
-      accentBar: 'bg-indigo-500',
-    },
-    {
-      id: 'trial_7_days',
-      titleKey: 'colTrialTitle',
-      subKey: 'colTrialSub',
-      colorBorder: 'border-amber-500',
-      headerBg: 'bg-amber-50/90 text-amber-950',
-      badgeBg: 'bg-amber-600',
-      badgeTextColor: 'text-white',
-      accentBar: 'bg-amber-500',
-    },
-    {
-      id: 'delivery_in_progress',
-      titleKey: 'colDeliveryTitle',
-      subKey: 'colDeliverySub',
-      colorBorder: 'border-purple-500',
-      headerBg: 'bg-purple-50/90 text-purple-950',
-      badgeBg: 'bg-purple-600',
-      badgeTextColor: 'text-white',
-      accentBar: 'bg-purple-500',
-    },
-    {
-      id: 'active_retainer',
-      titleKey: 'colRetainerTitle',
-      subKey: 'colRetainerSub',
-      colorBorder: 'border-emerald-500',
-      headerBg: 'bg-emerald-50/90 text-emerald-950',
-      badgeBg: 'bg-emerald-600',
-      badgeTextColor: 'text-white',
-      accentBar: 'bg-emerald-500',
-    },
-    {
-      id: 'lost',
-      titleKey: 'colLostTitle',
-      subKey: 'colLostSub',
-      colorBorder: 'border-rose-500',
-      headerBg: 'bg-rose-50/90 text-rose-950',
-      badgeBg: 'bg-rose-600',
-      badgeTextColor: 'text-white',
-      accentBar: 'bg-rose-500',
-    },
+    { id: 'ad_lead', stageIds: ['ad_lead'], titleKey: 'colAdLeadsTitle', subKey: 'colAdLeadsSub', colorBorder: 'border-blue-500', headerBg: 'bg-blue-50/90 text-blue-950', badgeBg: 'bg-blue-600', badgeTextColor: 'text-white', accentBar: 'bg-blue-500' },
+    { id: 'meeting_scheduled', stageIds: ['meeting_scheduled'], titleKey: 'colMeetingsTitle', subKey: 'colMeetingsSub', colorBorder: 'border-indigo-500', headerBg: 'bg-indigo-50/90 text-indigo-950', badgeBg: 'bg-indigo-600', badgeTextColor: 'text-white', accentBar: 'bg-indigo-500' },
+    { id: 'meeting_completed', stageIds: ['meeting_completed'], titleKey: 'colAttendedTitle', subKey: 'colAttendedSub', colorBorder: 'border-emerald-500', headerBg: 'bg-emerald-50/90 text-emerald-950', badgeBg: 'bg-emerald-600', badgeTextColor: 'text-white', accentBar: 'bg-emerald-500' },
+    { id: 'meeting_no_show', stageIds: ['meeting_no_show'], titleKey: 'colNoShowTitle', subKey: 'colNoShowSub', colorBorder: 'border-rose-500', headerBg: 'bg-rose-50/90 text-rose-950', badgeBg: 'bg-rose-600', badgeTextColor: 'text-white', accentBar: 'bg-rose-500' },
+    { id: 'trial_7_days', stageIds: ['trial_7_days'], titleKey: 'colTrialTitle', subKey: 'colTrialSub', colorBorder: 'border-amber-500', headerBg: 'bg-amber-50/90 text-amber-950', badgeBg: 'bg-amber-600', badgeTextColor: 'text-white', accentBar: 'bg-amber-500' },
+    { id: 'delivery_in_progress', stageIds: ['delivery_in_progress'], titleKey: 'colDeliveryTitle', subKey: 'colDeliverySub', colorBorder: 'border-purple-500', headerBg: 'bg-purple-50/90 text-purple-950', badgeBg: 'bg-purple-600', badgeTextColor: 'text-white', accentBar: 'bg-purple-500' },
+    { id: 'paused', stageIds: ['paused'], titleKey: 'colFollowUpTitle', subKey: 'colFollowUpSub', colorBorder: 'border-cyan-500', headerBg: 'bg-cyan-50/90 text-cyan-950', badgeBg: 'bg-cyan-600', badgeTextColor: 'text-white', accentBar: 'bg-cyan-500' },
+    { id: 'deal_won', stageIds: ['deal_won', 'active_retainer'], titleKey: 'colRetainerTitle', subKey: 'colRetainerSub', colorBorder: 'border-teal-500', headerBg: 'bg-teal-50/90 text-teal-950', badgeBg: 'bg-teal-600', badgeTextColor: 'text-white', accentBar: 'bg-teal-500' },
+    { id: 'lost', stageIds: ['lost'], titleKey: 'colLostTitle', subKey: 'colLostSub', colorBorder: 'border-slate-500', headerBg: 'bg-slate-100/90 text-slate-950', badgeBg: 'bg-slate-700', badgeTextColor: 'text-white', accentBar: 'bg-slate-500' },
   ];
 
   const filteredClients = useMemo(() => {
@@ -203,6 +154,22 @@ export const PipelineTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Commercial performance KPIs */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div className="rounded-2xl border-2 border-sky-200 bg-gradient-to-br from-sky-50 to-white p-4 shadow-2xs">
+          <div className="text-xs font-bold text-sky-900">{t.kpiDealCloseRate}</div>
+          <div className="mt-1 text-2xl font-extrabold font-mono text-slate-900">
+            {clients.length ? Math.round((clients.filter((c) => c.stage === 'deal_won' || c.stage === 'active_retainer').length / clients.length) * 100) : 0}%
+          </div>
+        </div>
+        <div className="rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-2xs">
+          <div className="text-xs font-bold text-emerald-900">{t.kpiAppointmentAttendance}</div>
+          <div className="mt-1 text-2xl font-extrabold font-mono text-slate-900">
+            {(() => { const attended = meetings.filter((m) => m.status === 'completed').length; const noShow = meetings.filter((m) => m.status === 'no_show').length; return attended + noShow ? Math.round(attended / (attended + noShow) * 100) : 0; })()}%
+          </div>
+        </div>
+      </div>
+
       {/* 2. Filter Toolbar */}
       <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
         <div className="relative w-full sm:w-80">
@@ -232,9 +199,9 @@ export const PipelineTab: React.FC = () => {
       </div>
 
       {/* 3. Drag & Drop Kanban Columns (Snappy horizontal swipe on mobile, 6-col board on desktop) */}
-      <div className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-4 lg:grid lg:grid-cols-6 items-start no-scrollbar">
+      <div className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-4 lg:grid lg:grid-cols-9 items-start no-scrollbar">
         {columns.map((col) => {
-          const columnClients = filteredClients.filter((c) => c.stage === col.id);
+          const columnClients = filteredClients.filter((c) => col.stageIds.includes(c.stage));
           const isOver = dragOverColId === col.id;
           const title = t[col.titleKey];
           const subtitle = t[col.subKey];
@@ -339,7 +306,7 @@ export const PipelineTab: React.FC = () => {
                         {/* Financial Snapshot */}
                         <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono font-bold">
                           <span className="text-slate-500 text-[10px]">
-                            {language === 'ar' ? 'الإعداد: ' : language === 'fr' ? 'Installation : ' : 'Setup: '}
+                            {language === 'ar' ? 'الإعداد: ' : language === 'fr' ? 'Frais de mise en place : ' : 'Setup fee: '}
                             {client.setupFee.toLocaleString()} {t.mad}
                           </span>
                           <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
@@ -348,7 +315,7 @@ export const PipelineTab: React.FC = () => {
                         </div>
 
                         {/* Rejected Reason Display for Lost Column */}
-                        {client.stage === 'lost' && client.rejectionReason && (
+                        {(client.stage === 'lost' || client.stage === 'meeting_no_show') && client.rejectionReason && (
                           <div className="mt-2 p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 text-[10px] leading-snug">
                             <span className="font-bold block mb-0.5">{t.rejectionReasonLabel}</span>
                             <span>{client.rejectionReason}</span>
@@ -364,7 +331,7 @@ export const PipelineTab: React.FC = () => {
                                 {t.trialExpiresIn}:
                               </span>
                               <span className="font-mono px-1.5 py-0.2 bg-amber-200 rounded">
-                                {trialRemainingDays !== null ? `${trialRemainingDays} ${t.days}` : '7 days'}
+                                {trialRemainingDays !== null ? `${trialRemainingDays} ${t.days}` : `7 ${t.days}`}
                               </span>
                             </div>
                             {isTrialUrgent && (
@@ -462,11 +429,11 @@ export const PipelineTab: React.FC = () => {
                                     setActiveStageDropdownId(null);
                                   }}
                                   className={`w-full px-3 py-1.5 text-[11px] font-semibold hover:bg-slate-100 flex items-center justify-between cursor-pointer ${
-                                    client.stage === target.id ? 'text-orange-600 bg-orange-50 font-bold' : 'text-slate-700'
+                                    target.stageIds.includes(client.stage) ? 'text-orange-600 bg-orange-50 font-bold' : 'text-slate-700'
                                   } ${direction === 'rtl' ? 'text-right' : 'text-left'}`}
                                 >
                                   <span>{t[target.titleKey]}</span>
-                                  {client.stage === target.id && <Check className="w-3.5 h-3.5 text-orange-600" />}
+                                  {target.stageIds.includes(client.stage) && <Check className="w-3.5 h-3.5 text-orange-600" />}
                                 </button>
                               ))}
                             </div>
