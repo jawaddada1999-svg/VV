@@ -49,6 +49,7 @@ export const PipelineTab: React.FC = () => {
     activateMonthlyRetainer,
     setSelectedClientId,
     setShowAddClientModal,
+    setNewClientInitialStage,
     packages,
     language,
     direction,
@@ -444,6 +445,19 @@ export const PipelineTab: React.FC = () => {
                   })
                 )}
               </div>
+
+              {/* Add a client directly to this pipeline stage */}
+              <button
+                type="button"
+                onClick={() => {
+                  setNewClientInitialStage(col.id);
+                  setShowAddClientModal(true);
+                }}
+                className="mt-3 w-full min-h-[42px] flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-white/80 px-3 py-2 text-xs font-extrabold text-slate-600 hover:border-[#FF6600] hover:bg-orange-50 hover:text-[#E65500] transition-colors cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>{t.addClientBtn}</span>
+              </button>
             </div>
           );
         })}
