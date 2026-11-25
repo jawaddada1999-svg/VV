@@ -152,8 +152,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           mobileOpen
             ? 'flex translate-x-0'
             : direction === 'rtl'
-            ? 'hidden lg:flex lg:translate-x-0 lg:top-16'
-            : 'hidden lg:flex lg:translate-x-0 lg:top-16'
+            ? 'hidden lg:flex lg:translate-x-0 lg:top-16 sm:lg:top-20'
+            : 'hidden lg:flex lg:translate-x-0 lg:top-16 sm:lg:top-20'
         }`}
       >
         <div className="p-3.5 flex flex-col flex-1 overflow-y-auto">
