@@ -150,3 +150,58 @@ html, body { background: var(--vv-canvas); color: var(--vv-ink); }
 @media (prefers-reduced-motion: reduce) {
   .vv-modern-content { animation: none; }
 }
+
+
+/* VV workspace refresh: V1-inspired composition with original petrol/orange identity */
+.vv-app-shell { min-height: 100vh; }
+.vv-workspace-column { background: var(--vv-canvas); }
+.vv-workspace-surface {
+  background: var(--vv-canvas);
+  border-top-left-radius: 26px;
+  box-shadow: inset 0 2px 12px rgba(4,24,27,.035);
+}
+[dir="rtl"] .vv-workspace-surface { border-top-left-radius: 0; border-top-right-radius: 26px; }
+.vv-top-header { min-height: 64px; }
+.vv-top-header > div:first-child { min-height: 64px; }
+.vv-top-header button { border-radius: 12px; }
+.vv-top-header button:focus-visible { outline-color: rgba(255,102,0,.55); }
+.vv-modern-content { padding-bottom: 8px; }
+.vv-modern-content > * { min-width: 0; }
+.vv-modern-content [class*="rounded-2xl"][class*="border"] {
+  border-radius: 18px;
+}
+.vv-modern-content [class*="rounded-xl"][class*="border"] {
+  border-radius: 12px;
+}
+.vv-modern-content .card-surface,
+.vv-modern-content [class*="shadow-sm"] {
+  box-shadow: var(--vv-shadow);
+}
+.vv-modern-content button:not([aria-label="Close"]):not(.no-style) {
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.vv-modern-content button:active { transform: translateY(1px); }
+.vv-modern-content table thead th { letter-spacing: .01em; }
+.vv-modern-content [role="dialog"] {
+  border-color: var(--vv-line);
+}
+.vv-modern-content .recharts-cartesian-grid line { stroke: #E1EAEC; }
+.vv-modern-content .recharts-text { fill: #64777C; }
+@media (min-width: 1024px) {
+  .vv-app-shell { align-items: stretch; }
+  .vv-workspace-column { min-width: 0; }
+  .vv-workspace-surface { min-height: calc(100vh - 64px); }
+  .vv-main-frame { padding: 24px 28px 32px; }
+}
+@media (max-width: 1023px) {
+  .vv-workspace-surface { border-radius: 0; }
+  .vv-main-frame { padding-bottom: 88px; }
+}
+@media (max-width: 639px) {
+  .vv-top-header > div:first-child { min-height: 64px; }
+  .vv-main-frame { padding-inline: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vv-modern-content,
+  .vv-modern-content * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
