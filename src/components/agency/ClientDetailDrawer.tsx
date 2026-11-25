@@ -801,7 +801,7 @@ export const ClientDetailDrawer: React.FC = () => {
               <div className="pt-2 border-t border-amber-200/80 flex items-center justify-between flex-wrap gap-2">
                 <div className="text-[11px] text-slate-600 font-mono">
                   {language === 'ar' ? 'بدأت:' : language === 'fr' ? 'Début :' : 'Started:'}{' '}
-                  {selectedClient.trialStartDate ? new Date(selectedClient.trialStartDate).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR') : '-'} •{' '}
+                  {selectedClient.trialStartDate ? new Date(selectedClient.trialStartDate).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US') : '-'} •{' '}
                   {language === 'ar' ? 'تنتهي:' : language === 'fr' ? 'Fin :' : 'Ends:'}{' '}
                   {selectedClient.trialEndDate ? new Date(selectedClient.trialEndDate).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR') : '-'}
                 </div>
@@ -1086,7 +1086,7 @@ export const ClientDetailDrawer: React.FC = () => {
                             )}{' '}
                             •{' '}
                             {new Date(entry.createdAt).toLocaleTimeString(
-                              language === 'ar' ? 'ar-MA' : 'fr-FR',
+                              language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US',
                               { hour: '2-digit', minute: '2-digit' }
                             )}
                           </span>
