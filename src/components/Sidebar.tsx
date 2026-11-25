@@ -102,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'finance',
-          label: language === 'ar' ? 'الأداء المالي' : 'Financial Performance',
+          label: language === 'ar' ? 'الأداء المالي' : language === 'fr' ? 'Performance financière' : 'Financial performance',
           icon: Wallet,
           badge: `${metrics.netRetainerProfit.toLocaleString()}`,
           badgeColor: 'bg-emerald-500 text-white font-bold',
