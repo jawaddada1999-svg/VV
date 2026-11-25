@@ -252,7 +252,7 @@ export const PipelineTab: React.FC = () => {
               }`}
             >
               {/* Column Header: Distinct Title on top line, and Lead count pill on separate clear line (العنوان بوحدو والعدد بوحدو ما مخلطينش) */}
-              <div className={`p-3 rounded-xl mb-3 border-r-4 rtl:border-r-4 rtl:border-l-0 ltr:border-l-4 ltr:border-r-0 ${col.colorBorder} ${col.headerBg} shadow-2xs`}>
+              <div className={`sticky top-0 z-20 p-3 rounded-xl mb-3 border-r-4 rtl:border-r-4 rtl:border-l-0 ltr:border-l-4 ltr:border-r-0 ${col.colorBorder} ${col.headerBg} shadow-2xs`}>
                 {/* 1. Title on its own independent line */}
                 <h3 className="text-xs font-black text-slate-900 tracking-tight block leading-snug break-words">
                   {title}
