@@ -268,7 +268,7 @@ export const translations: Record<Language, Translations> = {
     navLeadershipGroup: 'القيادة والمسار التجاري',
     navExecutionGroup: 'التنفيذ وعقود الصيانة',
     navOverview: 'نظرة عامة والمؤشرات القيادية',
-    navPipeline: 'مسار الصفقات والتجربة (7 أيام)',
+    navPipeline: 'مسار الصفقات',
     navMeetings: 'المواعيد ومكالمات الاستشارة',
     navAds: 'حملات الإعلانات والتسويق',
     navDelivery: 'مشاريع تسليم الأوتوميشن',
@@ -438,7 +438,7 @@ export const translations: Record<Language, Translations> = {
     stepClosed: 'إغلاق الصفقة وتفعيل الصيانة الشهرية',
 
     deliveryHeaderTag: 'مشاريع تسليم أنظمة الأتمتة',
-    deliveryHeaderTitle: 'متابعة مراحل تسليم أنظمة الأتمتة ونسب التقدم',
+    deliveryHeaderTitle: 'تسليم المشاريع ومتابعة تقدمها',
     deliveryHeaderDesc: 'تحديد وتحديث نسبة تقدم المشروع بسهولة (اختيار النسبة المئوية %)، متابعة الوقت المتبقي للتسليم، وتفعيل الاشتراك الشهري فور اكتمال الإعداد.',
     cardInBuildTitle: 'قيد البرمجة والتجهيز',
     cardInBuildSub: 'مشاريع قيد الربط والتطوير',
@@ -479,8 +479,8 @@ export const translations: Record<Language, Translations> = {
     subtabTickets: 'تذاكر الدعم والصيانة',
 
     clientsHeaderTag: 'دليل الوكالات والعملاء العقاريين',
-    clientsHeaderTitle: 'سجل الوكالات العقارية والشركاء مع التصدير والتصفية',
-    clientsHeaderDesc: 'بحث وتصفية الوكالات حسب المدينة، الباقة، الحالة، وبرنامج شركاء الإحالة.',
+    clientsHeaderTitle: 'دليل الوكالات والعملاء',
+    clientsHeaderDesc: 'إدارة بيانات الوكالات والعملاء المحتملين وتصنيفهم حسب الحالة والباقة.',
     btnExportCsv: 'تصدير القائمة كملف جدول',
     badgeReferralPartner: 'شريك إحالة معتمد',
     badgeStandardClient: 'عميل وكالة',
