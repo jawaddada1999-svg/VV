@@ -9,6 +9,7 @@ export type ClientStage =
   | 'deal_won'                 // تم قبول العقد وبدء دفع الإعداد
   | 'delivery_in_progress'     // مشروع الأوتوميشن قيد البرمجة والتسليم
   | 'active_retainer'          // تم التسليم واشتراك الصيانة الشهري نشط
+  | 'negotiation_follow_up'    // قيد التفاوض والمتابعة
   | 'paused'                   // متوقف مؤقتاً
   | 'lost';                    // لم يتم الاتفاق
 
