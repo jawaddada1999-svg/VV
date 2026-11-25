@@ -327,3 +327,28 @@ h1, h2, h3, h4, h5, h6, .font-display {
   .vv-kpi-card { min-height: 138px; padding: 14px !important; border-radius: 18px !important; }
   .vv-kpi-card > div:first-child > div.flex.items-baseline > span:first-child { font-size: 22px !important; }
 }
+
+
+/* Quick readability polish: increase weight and contrast for small text */
+.vv-modern-content { color: #142D32; }
+.vv-modern-content p,
+.vv-modern-content label,
+.vv-modern-content td,
+.vv-modern-content th,
+.vv-modern-content button,
+.vv-modern-content input,
+.vv-modern-content select,
+.vv-modern-content textarea { font-weight: 500; }
+.vv-modern-content [class*="text-slate-400"],
+.vv-modern-content [class*="text-slate-500"],
+.vv-modern-content [class*="text-gray-400"],
+.vv-modern-content [class*="text-gray-500"] { color: #50656A !important; }
+.vv-modern-content [class*="text-xs"] {
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+  font-weight: 600 !important;
+}
+.vv-modern-content input::placeholder,
+.vv-modern-content textarea::placeholder { color: #71858A !important; opacity: 1; }
+.vv-modern-content table td,
+.vv-modern-content table th { line-height: 1.65; }
