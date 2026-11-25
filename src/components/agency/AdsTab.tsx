@@ -414,6 +414,21 @@ export const AdsTab: React.FC = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+        {[
+          { label: language === 'ar' ? 'العملاء المحتملون من الإعلانات' : 'Leads from ads', value: totalLeads },
+          { label: language === 'ar' ? 'تكلفة العميل المحتمل' : 'Cost per lead', value: totalLeads ? Math.round(totalSpend / totalLeads) + ' MAD' : '—' },
+          { label: language === 'ar' ? 'المواعيد المحجوزة' : 'Booked appointments', value: campaigns.reduce((s,c)=>s+(c.meetingsBooked||0),0) },
+          { label: language === 'ar' ? 'تكلفة الموعد' : 'Cost per appointment', value: campaigns.reduce((s,c)=>s+(c.meetingsBooked||0),0) ? Math.round(totalSpend / campaigns.reduce((s,c)=>s+(c.meetingsBooked||0),0)) + ' MAD' : '—' },
+          { label: language === 'ar' ? 'المواعيد المكتملة' : 'Completed appointments', value: totalShowedUp },
+          { label: language === 'ar' ? 'زوار صفحة الهبوط' : 'Landing page visitors', value: totalLandingVisitors },
+          { label: language === 'ar' ? 'بدأوا الفيديو' : 'Video starts', value: totalVideoStarted },
+          { label: language === 'ar' ? 'أكملوا الفيديو' : 'Video completions', value: totalVideoCompleted },
+          { label: language === 'ar' ? 'حضروا الموعد' : 'Attended', value: totalShowedUp },
+          { label: language === 'ar' ? 'لم يحضروا' : 'No-show', value: totalNoShow },
+        ].map((item) => <div key={item.label} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm"><div className="text-[10px] sm:text-xs font-bold text-slate-500">{item.label}</div><div className="mt-2 text-xl font-extrabold text-slate-900 tabular-nums">{typeof item.value === 'number' ? item.value.toLocaleString() : item.value}</div></div>)}
+      </div>
+
       {/* 1B. DEDICATED CAMPAIGN ROAS & ROI PROFITABILITY MODULE */}
       <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 space-y-5">
         {/* Header & Interactive Controls */}
