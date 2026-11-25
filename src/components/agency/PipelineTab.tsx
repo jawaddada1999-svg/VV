@@ -199,7 +199,7 @@ export const PipelineTab: React.FC = () => {
       </div>
 
       {/* 3. Drag & Drop Kanban Columns (Snappy horizontal swipe on mobile, 6-col board on desktop) */}
-      <div className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-4 lg:grid lg:grid-cols-9 items-start no-scrollbar">
+      <div className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-4  items-start no-scrollbar">
         {columns.map((col) => {
           const columnClients = filteredClients.filter((c) => col.stageIds.includes(c.stage));
           const isOver = dragOverColId === col.id;
@@ -212,7 +212,7 @@ export const PipelineTab: React.FC = () => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`snap-start shrink-0 w-[84vw] sm:w-[320px] lg:w-auto rounded-2xl p-3 border transition-all flex flex-col min-h-[460px] lg:min-h-[580px] ${
+              className={`snap-start shrink-0 w-[84vw] sm:w-[320px] lg:w-[340px] rounded-2xl p-3 border transition-all flex flex-col min-h-[460px] lg:min-h-[580px] ${
                 isOver
                   ? 'border-[#FF6600] bg-orange-50/50 shadow-lg ring-2 ring-orange-400/30'
                   : 'border-slate-200/90 bg-slate-50/90 hover:border-slate-300'
