@@ -536,7 +536,7 @@ export const OverviewTab: React.FC = () => {
                   {upcomingMeetingsSoon[0].agencyName} ({upcomingMeetingsSoon[0].clientName})
                 </h4>
                 <p className="text-xs text-blue-100">
-                  {upcomingMeetingsSoon[0].phone} • {new Date(upcomingMeetingsSoon[0].scheduledTime).toLocaleTimeString(language === 'ar' ? 'ar-MA' : 'fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  {upcomingMeetingsSoon[0].phone} • {new Date(upcomingMeetingsSoon[0].scheduledTime).toLocaleTimeString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
             </div>
