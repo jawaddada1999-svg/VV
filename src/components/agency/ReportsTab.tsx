@@ -1,0 +1,71 @@
+import React, { useMemo, useState } from 'react';
+import { useAgency } from '../../context/AgencyContext';
+import { BarChart3, Building2, CalendarDays, Megaphone, Wallet, Printer, TrendingUp, Users, Target, Clock3, CheckCircle2, XCircle, ArrowUpRight, FileText } from 'lucide-react';
+
+type ReportSection = 'overview' | 'clients' | 'meetings' | 'marketing' | 'finance' | 'operations';
+type Period = 'all' | '30' | '90' | 'year';
+const money = (n:number) => `${Math.round(Number(n)||0).toLocaleString('fr-FR')} MAD`;
+const pct = (a:number,b:number) => b ? Math.round(a/b*100) : 0;
+const dateOf = (v?:string) => { if(!v) return null; const d=new Date(v); return Number.isNaN(d.getTime())?null:d; };
+const stageNames:Record<string,string> = {ad_lead:'عميل محتمل',meeting_scheduled:'موعد مبرمج',meeting_completed:'اجتماع مكتمل',meeting_no_show:'لم يحضر',trial_7_days:'فترة تجريبية',deal_won:'صفقة رابحة',delivery_in_progress:'قيد التسليم',active_retainer:'اشتراك نشط',negotiation_follow_up:'متابعة وتفاوض',paused:'متوقف',lost:'غير محول'};
+export const ReportsTab:React.FC = () => {
+ const {clients,meetings,campaigns,invoices,tickets,tasks,metrics,language,direction}=useAgency();
+ const [section,setSection]=useState<ReportSection>('overview');
+ const [period,setPeriod]=useState<Period>('30');
+ const ar=language==='ar';
+ const cutoff=useMemo(()=>{if(period==='all')return null;const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(period==='30'?30:period==='90'?90:365));return d;},[period]);
+ const inPeriod=(value?:string)=>{const d=dateOf(value);return !!d&&(!cutoff||d>=cutoff);};
+ const filteredClients=useMemo(()=>clients.filter(c=>inPeriod(c.createdAt)),[clients,period]);
+ const filteredMeetings=useMemo(()=>meetings.filter(m=>inPeriod(m.scheduledTime)),[meetings,period]);
+ const filteredCampaigns=useMemo(()=>campaigns.filter(c=>inPeriod(c.startDate)),[campaigns,period]);
+ const active=clients.filter(c=>c.stage==='active_retainer');
+ const converted=clients.filter(c=>['deal_won','delivery_in_progress','active_retainer'].includes(c.stage));
+ const trials=clients.filter(c=>c.stage==='trial_7_days');
+ const lost=clients.filter(c=>['lost','paused'].includes(c.stage));
+ const attended=filteredMeetings.filter(m=>m.status==='completed').length;
+ const noShow=filteredMeetings.filter(m=>m.status==='no_show').length;
+ const spend=filteredCampaigns.reduce((s,c)=>s+c.spend,0);
+ const leads=filteredCampaigns.reduce((s,c)=>s+c.leadsGenerated,0);
+ const adMeetings=filteredCampaigns.reduce((s,c)=>s+c.meetingsBooked,0);
+ const adDeals=filteredCampaigns.reduce((s,c)=>s+c.dealsClosed,0);
+ const paid=invoices.filter(i=>i.status==='paid'&&inPeriod(i.paidDate||i.issuedDate)).reduce((s,i)=>s+i.amount,0);
+ const outstanding=invoices.filter(i=>i.status!=='paid').reduce((s,i)=>s+i.amount,0);
+ const stages=Object.entries(stageNames).map(([key,label])=>({key,label,count:clients.filter(c=>c.stage===key).length})).filter(x=>x.count>0).sort((a,b)=>b.count-a.count);
+ const cities=Object.entries(clients.reduce<Record<string,number>>((acc,c)=>{const k=c.city||'غير محدد';acc[k]=(acc[k]||0)+1;return acc;},{})).sort((a,b)=>b[1]-a[1]).slice(0,6);
+ const packageStats=['starter','growth','enterprise'].map(key=>({key,count:clients.filter(c=>c.packageTier===key).length,amount:clients.filter(c=>c.packageTier===key).reduce((s,c)=>s+c.monthlyRetainer,0)}));
+ const sectionItems:[ReportSection,string,any][]=[
+  ['overview','نظرة عامة',BarChart3],['clients','تقارير العملاء',Building2],['meetings','تقارير المواعيد',CalendarDays],['marketing','تقارير الإعلانات',Megaphone],['finance','التقارير المالية',Wallet],['operations','تقارير التشغيل',Target]
+ ];
+ const printReport=()=>{document.body.classList.add('vv-print-report');window.print();window.setTimeout(()=>document.body.classList.remove('vv-print-report'),800);};
+ const kpis=section==='clients'?[['إجمالي العملاء',clients.length],['عملاء جدد بالفترة',filteredClients.length],['عملاء مشتركين',active.length],['معدل التحويل',pct(converted.length,clients.length)+'%']]:section==='meetings'?[['المواعيد بالفترة',filteredMeetings.length],['مكتملة',attended],['عدم الحضور',noShow],['نسبة الحضور',pct(attended,attended+noShow)+'%']]:section==='marketing'?[['الإنفاق الإعلاني',money(spend)],['العملاء المحتملون',leads],['المواعيد المحجوزة',adMeetings],['الصفقات المحققة',adDeals]]:section==='finance'?[['الإيرادات المحصلة',money(paid)],['المداخيل الشهرية المتكررة',money(metrics.currentMRR)],['المبالغ غير المحصلة',money(outstanding)],['صافي الصيانة الشهري',money(metrics.netRetainerProfit)]]:section==='operations'?[['مشاريع قيد التسليم',metrics.buildProjectsActive],['تذاكر مفتوحة',tickets.filter(t=>t.status!=='resolved').length],['مهام غير مكتملة',tasks.filter(t=>!t.completed).length],['تجارب نشطة',trials.length]]:[['إجمالي الوكالات',clients.length],['عملاء جدد بالفترة',filteredClients.length],['مواعيد بالفترة',filteredMeetings.length],['معدل التحويل',pct(converted.length,clients.length)+'%']];
+ return <div className="vv-reports space-y-5" dir={direction}>
+  <div className="vv-report-hero rounded-3xl p-5 sm:p-7 text-white relative overflow-hidden">
+   <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div><div className="inline-flex items-center gap-2 rounded-full bg-white/12 border border-white/15 px-3 py-1 text-xs font-bold"><FileText size={14}/> مركز التقارير والتحليلات</div><h1 className="text-2xl sm:text-3xl font-extrabold mt-3">صورة واضحة عن أداء IBONDA</h1><p className="text-sm text-white/75 mt-2 max-w-2xl">مؤشرات العملاء والمبيعات والمواعيد والإعلانات والمالية والتشغيل في مكان واحد.</p></div>
+    <button onClick={printReport} className="vv-print-button inline-flex items-center justify-center gap-2 bg-white text-[#0B3A42] px-4 py-3 rounded-xl font-extrabold text-sm shadow-lg"><Printer size={17}/> تصدير التقرير PDF / طباعة</button>
+   </div>
+   <div className="absolute -left-10 -bottom-28 w-64 h-64 rounded-full border border-white/10 shadow-[0_0_0_28px_rgba(255,255,255,.035),0_0_0_58px_rgba(255,255,255,.025)]"/>
+  </div>
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+   <div className="flex gap-2 overflow-x-auto pb-1 vv-report-tabs">{sectionItems.map(([id,label,Icon])=><button key={id} onClick={()=>setSection(id)} className={`shrink-0 inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-extrabold border transition-all ${section===id?'bg-[#0B3A42] text-white border-[#0B3A42] shadow-md':'bg-white text-slate-600 border-slate-200 hover:border-orange-300'}`}><Icon size={15}/>{label}</button>)}</div>
+   <select value={period} onChange={e=>setPeriod(e.target.value as Period)} className="vv-report-period rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold min-w-[145px]"><option value="30">آخر 30 يوماً</option><option value="90">آخر 90 يوماً</option><option value="year">آخر 12 شهراً</option><option value="all">كل الفترات</option></select>
+  </div>
+  <div id="vv-report-print-area" className="space-y-5">
+   <div className="hidden vv-print-heading"><h2>تقرير IBONDA الإداري</h2><p>الفترة: {period==='all'?'كل الفترات':period==='30'?'آخر 30 يوماً':period==='90'?'آخر 90 يوماً':'آخر 12 شهراً'} · تاريخ الاستخراج: {new Date().toLocaleDateString('ar-MA')}</p></div>
+   <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">{kpis.map(([label,value],i)=><div key={String(label)} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm"><div className="text-xs font-bold text-slate-500">{label}</div><div className="text-xl sm:text-2xl font-extrabold text-[#12353B] mt-2 tabular-nums">{value}</div><div className="mt-3 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-[#0B5962] to-orange-400" style={{width:`${[82,65,48,72][i]}%`}}/></div></div>)}</div>
+   {(section==='overview'||section==='clients')&&<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="bg-white rounded-2xl border border-slate-200 p-5"><h3 className="font-extrabold text-base mb-4">توزيع العملاء حسب المرحلة</h3><div className="space-y-3">{stages.map((s,i)=><div key={s.key}><div className="flex justify-between text-xs mb-1.5"><span className="font-bold text-slate-700">{s.label}</span><b className="tabular-nums">{s.count}</b></div><div className="h-2.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full rounded-full bg-gradient-to-l from-orange-400 to-[#0B5962]" style={{width:`${pct(s.count,clients.length)}%`}}/></div></div>)}</div></div>
+    <div className="bg-white rounded-2xl border border-slate-200 p-5"><h3 className="font-extrabold text-base mb-4">توزيع العملاء حسب المدينة</h3>{cities.length?cities.map(([city,count])=><div key={city} className="flex items-center justify-between py-2.5 border-b last:border-0 border-slate-100 text-sm"><span className="font-semibold">{city}</span><span className="font-extrabold text-[#0B5962]">{count} <small className="text-slate-400">وكالة</small></span></div>):<p className="text-sm text-slate-400">لا توجد بيانات كافية</p>}</div>
+   </div>}
+   {(section==='overview'||section==='marketing')&&<div className="grid grid-cols-2 xl:grid-cols-4 gap-3">{[['الإنفاق الإعلاني',money(spend)],['العملاء المحتملون',leads],['المواعيد من الإعلانات',adMeetings],['الصفقات من الإعلانات',adDeals]].map(([l,v])=><div key={l} className="bg-gradient-to-br from-[#F0F7F7] to-white border border-[#DCE9EA] rounded-2xl p-4"><div className="text-xs text-slate-500 font-bold">{l}</div><div className="font-extrabold text-xl mt-2 text-[#0B3A42]">{v}</div></div>)}</div>}
+   {(section==='overview'||section==='finance')&&<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="bg-white rounded-2xl border border-slate-200 p-5"><h3 className="font-extrabold mb-4">ملخص الأداء المالي</h3><div className="space-y-3">{[['الإيرادات المحصلة',money(paid)],['الإيرادات الشهرية المتكررة MRR',money(metrics.currentMRR)],['صافي ربح الصيانة الشهري',money(metrics.netRetainerProfit)],['المبالغ غير المحصلة',money(outstanding)],['مصاريف اشتراكات العملاء',money(metrics.totalMonthlyClientExpenses)]].map(([l,v])=><div key={l} className="flex justify-between gap-3 border-b border-slate-100 pb-2 text-sm"><span className="text-slate-500">{l}</span><b className="text-[#12353B] tabular-nums">{v}</b></div>)}</div></div>
+    <div className="bg-white rounded-2xl border border-slate-200 p-5"><h3 className="font-extrabold mb-4">الأداء حسب الباقة</h3>{packageStats.map(p=><div key={p.key} className="flex justify-between items-center py-3 border-b border-slate-100"><div><b className="capitalize">{p.key}</b><div className="text-xs text-slate-500 mt-1">{p.count} وكالة</div></div><b className="text-[#0B5962]">{money(p.amount)} <small className="text-slate-400">/ شهر</small></b></div>)}</div>
+   </div>}
+   {(section==='overview'||section==='meetings')&&<div className="bg-white rounded-2xl border border-slate-200 p-5"><h3 className="font-extrabold mb-4">تحليل المواعيد والاجتماعات</h3><div className="grid grid-cols-2 md:grid-cols-4 gap-3">{[['المواعيد المحجوزة',filteredMeetings.length],['مكتملة',attended],['عدم الحضور',noShow],['نسبة الحضور',pct(attended,attended+noShow)+'%']].map(([l,v])=><div key={String(l)} className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">{l}</div><div className="font-extrabold text-xl mt-1">{v}</div></div>)}</div></div>}
+   {(section==='overview'||section==='operations')&&<div className="grid grid-cols-1 lg:grid-cols-2 gap-4"><div className="bg-white rounded-2xl border border-slate-200 p-5"><h3 className="font-extrabold mb-3">حالة التشغيل والتسليم</h3><div className="space-y-3">{[['تجارب 7 أيام',trials.length],['مشاريع قيد التسليم',metrics.buildProjectsActive],['اشتراكات صيانة نشطة',active.length],['عملاء غير محولين',lost.length]].map(([l,v])=><div key={String(l)} className="flex justify-between py-2 border-b border-slate-100 text-sm"><span>{l}</span><b>{v}</b></div>)}</div></div><div className="bg-white rounded-2xl border border-slate-200 p-5"><h3 className="font-extrabold mb-3">المهام والدعم</h3><div className="grid grid-cols-2 gap-3"><div className="bg-amber-50 rounded-xl p-3"><Clock3 className="text-amber-600"/><b className="block text-2xl mt-2">{tasks.filter(t=>!t.completed).length}</b><span className="text-xs">مهام غير مكتملة</span></div><div className="bg-rose-50 rounded-xl p-3"><Target className="text-rose-600"/><b className="block text-2xl mt-2">{tickets.filter(t=>t.status!=='resolved').length}</b><span className="text-xs">تذاكر مفتوحة</span></div></div></div></div>}
+   {(section==='clients'||section==='overview')&&<div className="bg-white rounded-2xl border border-slate-200 overflow-hidden"><div className="p-4 border-b border-slate-100 font-extrabold">أحدث العملاء ضمن الفترة</div><div className="overflow-x-auto"><table className="w-full text-sm text-right"><thead><tr><th className="p-3">الوكالة</th><th className="p-3">المدينة</th><th className="p-3">الباقة</th><th className="p-3">المرحلة</th><th className="p-3">تاريخ التسجيل</th></tr></thead><tbody>{filteredClients.slice().sort((a,b)=>(dateOf(b.createdAt)?.getTime()||0)-(dateOf(a.createdAt)?.getTime()||0)).slice(0,12).map(c=><tr key={c.id}><td className="p-3 font-bold">{c.agencyName}</td><td className="p-3">{c.city}</td><td className="p-3">{c.packageTier}</td><td className="p-3">{stageNames[c.stage]||c.stage}</td><td className="p-3">{dateOf(c.createdAt)?.toLocaleDateString('ar-MA')||'—'}</td></tr>)}</tbody></table></div></div>}
+   <div className="text-[11px] text-slate-400">التقارير مبنية على البيانات المتوفرة حالياً في لوحة IBONDA. بعض المؤشرات تُحسب من بيانات الإعلانات والفواتير المسجلة، وقد تختلف عن النتائج الفعلية عند عدم اكتمال الإدخال.</div>
+  </div>
+ </div>;
+};
