@@ -8,7 +8,7 @@ export const FinanceTab: React.FC = () => {
   const paid = invoices.filter((i) => i.status === 'paid').reduce((s, i) => s + i.amount, 0);
   const pending = invoices.filter((i) => i.status !== 'paid').reduce((s, i) => s + i.amount, 0);
   const activeExpenses = clients.flatMap((c) => c.expenses || []).filter((e) => e.isActive);
-  const expenseTotal = activeExpenses.reduce((s, e) => s + (e.billingCycle === 'yearly' ? e.monthlyCost / 12 : e.monthlyCost), 0);
+  const expenseTotal = activeExpenses.reduce((s, e) => s + (Number(e.monthlyCost) || 0), 0);
   const cards = [
     { label: ar ? 'مداخيل الصيانة الشهرية' : 'Monthly maintenance revenue', value: metrics.currentMRR, icon: Wallet, color: 'orange' },
     { label: ar ? 'صافي الربح الشهري' : 'Net monthly profit', value: metrics.netRetainerProfit, icon: TrendingUp, color: 'emerald' },
