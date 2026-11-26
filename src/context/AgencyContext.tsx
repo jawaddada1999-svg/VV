@@ -374,14 +374,21 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const moveClientStage = (id: string, newStage: ClientStage) => {
+    // Financially meaningful stage transitions must go through their dedicated actions.
+    if (newStage === 'trial_7_days') {
+      start7DayTrial(id);
+      return;
+    }
+    if (newStage === 'delivery_in_progress') {
+      acceptTrialAndCloseDeal(id);
+      return;
+    }
+    if (newStage === 'active_retainer') {
+      activateMonthlyRetainer(id);
+      return;
+    }
     setClients((prev) =>
-      prev.map((c) => {
-        if (c.id === id) {
-          const updated: AgencyClient = { ...c, stage: newStage };
-          return updated;
-        }
-        return c;
-      })
+      prev.map((c) => c.id === id ? { ...c, stage: newStage } : c)
     );
   };
 
