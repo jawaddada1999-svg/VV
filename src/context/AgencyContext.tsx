@@ -222,18 +222,15 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [clients, setClients] = useState<AgencyClient[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}clients`);
-    if (!saved) return initialClients;
-    try {
-      const parsed: AgencyClient[] = JSON.parse(saved);
-      return parsed.map((c) => {
-        if (c.expenses !== undefined) return c;
-        const seeded = initialClients.find((init) => init.id === c.id);
-        return { ...c, expenses: seeded?.expenses || [] };
+    const parsed = readStored<unknown>('clients', initialClients);
+    if (!Array.isArray(parsed)) return initialClients;
+    return parsed
+      .filter((item): item is AgencyClient => !!item && typeof item === 'object')
+      .map((client) => {
+        if (client.expenses !== undefined) return client;
+        const seeded = initialClients.find((init) => init.id === client.id);
+        return { ...client, expenses: seeded?.expenses || [] };
       });
-    } catch {
-      return initialClients;
-    }
   });
 
   const [meetings, setMeetings] = useState<MeetingItem[]>(() => {
@@ -241,18 +238,15 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [campaigns, setCampaigns] = useState<AdCampaignMetric[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}campaigns`);
-    if (!saved) return initialCampaigns;
-    try {
-      const parsed: AdCampaignMetric[] = JSON.parse(saved);
-      return parsed.map((c) => {
-        if (c.revenueGenerated !== undefined) return c;
-        const seeded = initialCampaigns.find((init) => init.id === c.id);
-        return { ...c, revenueGenerated: seeded?.revenueGenerated ?? 0 };
+    const parsed = readStored<unknown>('campaigns', initialCampaigns);
+    if (!Array.isArray(parsed)) return initialCampaigns;
+    return parsed
+      .filter((item): item is AdCampaignMetric => !!item && typeof item === 'object')
+      .map((campaign) => {
+        if (campaign.revenueGenerated !== undefined) return campaign;
+        const seeded = initialCampaigns.find((init) => init.id === campaign.id);
+        return { ...campaign, revenueGenerated: seeded?.revenueGenerated ?? 0 };
       });
-    } catch {
-      return initialCampaigns;
-    }
   });
 
   const [invoices, setInvoices] = useState<MaintenanceInvoice[]>(() => {
@@ -268,23 +262,22 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [bookingSettings, setBookingSettings] = useState<BookingAvailabilitySettings>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}booking_settings`);
-    if (!saved) return createDefaultBookingSettings();
-    try {
-      const parsed = JSON.parse(saved);
-      const defaults = createDefaultBookingSettings();
-      return {
-        ...defaults,
-        ...parsed,
-        schedule: {
-          ...defaults.schedule,
-          ...(parsed.schedule || {}),
-        },
-        blockedDates: Array.isArray(parsed.blockedDates) ? parsed.blockedDates : [],
-      };
-    } catch {
-      return createDefaultBookingSettings();
-    }
+    const defaults = createDefaultBookingSettings();
+    const parsed = readStored<unknown>('booking_settings', defaults);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return defaults;
+    const saved = parsed as Partial<BookingAvailabilitySettings>;
+    const savedSchedule = saved.schedule && typeof saved.schedule === 'object'
+      ? saved.schedule
+      : {};
+    return {
+      ...defaults,
+      ...saved,
+      schedule: {
+        ...defaults.schedule,
+        ...savedSchedule,
+      },
+      blockedDates: Array.isArray(saved.blockedDates) ? saved.blockedDates : [],
+    };
   });
 
   // Sync to LocalStorage
