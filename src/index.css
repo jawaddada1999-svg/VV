@@ -606,3 +606,34 @@ html, body { background: var(--vv-canvas); }
 @media (prefers-reduced-motion: reduce) {
   .vv-modern-content *, .vv-top-header * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+
+/* Native-app feel for the three operational workspaces */
+.vv-mobile-tabbar { padding-left:max(8px,env(safe-area-inset-left)); padding-right:max(8px,env(safe-area-inset-right)); backdrop-filter:saturate(1.6) blur(22px); -webkit-backdrop-filter:saturate(1.6) blur(22px); }
+.vv-mobile-tabbar button { min-width:0; position:relative; }
+.vv-mobile-tabbar button[aria-current="page"] { background:linear-gradient(180deg,#FFF4EC 0%,#FFF9F5 100%); }
+.vv-mobile-tabbar button[aria-current="page"] svg { filter:drop-shadow(0 2px 3px rgba(244,106,27,.16)); }
+.vv-conversations-screen,.vv-employees-screen,.vv-settings-screen { min-width:0; }
+.vv-conversations-screen { padding-bottom:4px; }
+.vv-conversations-screen .vv-conversations-layout { min-width:0; }
+.vv-conversations-screen textarea { font-size:15px !important; }
+.vv-employees-screen > div:first-child,.vv-settings-screen > div:first-child { position:relative; overflow:hidden; isolation:isolate; }
+.vv-employees-screen > div:first-child::after,.vv-settings-screen > div:first-child::after { content:""; position:absolute; z-index:-1; width:220px; height:220px; border:1px solid rgba(255,255,255,.12); border-radius:50%; inset-inline-start:-78px; bottom:-145px; box-shadow:0 0 0 26px rgba(255,255,255,.035),0 0 0 54px rgba(255,255,255,.025); pointer-events:none; }
+@media (max-width:767px) {
+.vv-mobile-tabbar { min-height:76px; } .vv-mobile-tabbar button { min-height:58px; }
+.vv-conversations-screen > div:first-child { padding:18px !important; border-radius:22px !important; }
+.vv-conversations-screen > div:nth-child(2) { position:sticky; top:6px; z-index:12; }
+.vv-conversations-screen .vv-conversations-layout { min-height:0; }
+.vv-conversations-screen .vv-conversations-layout > aside:first-child { min-height:min(58dvh,520px); max-height:min(66dvh,580px); border-radius:22px; }
+.vv-conversations-screen .vv-conversations-layout > section { min-height:calc(100dvh - 205px); max-height:calc(100dvh - 190px); border-radius:22px; }
+.vv-conversations-screen .vv-conversations-layout > section > div:nth-child(2) { min-height:0; overscroll-behavior:contain; }
+.vv-conversations-screen .vv-conversations-layout > section > div:last-child { position:sticky; bottom:0; padding-bottom:max(12px,env(safe-area-inset-bottom)); }
+.vv-employees-screen > div:first-child,.vv-settings-screen > div:first-child { border-radius:22px !important; padding:19px !important; }
+.vv-employees-screen .grid,.vv-settings-screen .grid { min-width:0; }
+.vv-settings-screen > div:nth-child(2) > aside { position:sticky; top:4px; z-index:10; display:flex; overflow-x:auto; flex-wrap:nowrap; gap:6px; padding:7px; border-radius:16px; scrollbar-width:none; }
+.vv-settings-screen > div:nth-child(2) > aside::-webkit-scrollbar { display:none; }
+.vv-settings-screen > div:nth-child(2) > aside button { flex:0 0 auto; min-height:42px; white-space:nowrap; padding-inline:13px; }
+.vv-settings-screen > div:nth-child(2) > section { padding:17px !important; border-radius:20px !important; }
+.vv-employees-screen [role="dialog"] { width:calc(100vw - 14px) !important; }
+}
+@media (max-width:380px) { .vv-mobile-tabbar { padding-inline:4px; } .vv-mobile-tabbar button { padding-inline:2px; } .vv-mobile-tabbar button span { font-size:9px !important; } }
