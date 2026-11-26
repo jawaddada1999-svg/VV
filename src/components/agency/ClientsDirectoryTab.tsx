@@ -17,12 +17,13 @@ import {
   Award,
   Sparkles,
 } from 'lucide-react';
-import { ClientStage, PackageTier } from '../../types/agency';
+import { AgencyClient, ClientStage, PackageTier } from '../../types/agency';
 import { translations } from '../../translations';
 
 export const ClientsDirectoryTab: React.FC = () => {
   const {
     clients,
+    updateClient,
     setSelectedClientId,
     setShowAddClientModal,
     language,
@@ -54,16 +55,45 @@ export const ClientsDirectoryTab: React.FC = () => {
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [tierFilter, setTierFilter] = useState<string>('all');
+  const [editingClient, setEditingClient] = useState<AgencyClient | null>(null);
+  const [editDraft, setEditDraft] = useState<Partial<AgencyClient>>({});
 
-  // Extract unique base cities list for filter in active language
-  const uniqueCities = useMemo(() => {
-    const citiesSet = new Set(
-      clients
-        .map((c) => c.city.split('(')[0].trim())
-        .filter(Boolean)
-    );
-    return Array.from(citiesSet);
-  }, [clients]);
+  const cityOptions = [
+    'الدار البيضاء', 'الرباط', 'مراكش', 'طنجة', 'فاس', 'أكادير', 'مكناس', 'وجدة',
+    'تطوان', 'القنيطرة', 'سلا', 'المحمدية', 'الجديدة', 'آسفي', 'بني ملال', 'الناظور',
+    'العيون', 'الداخلة', 'خريبكة', 'الرشيدية', 'ورزازات', 'الحسيمة', 'الصويرة', 'تمارة',
+    'سطات', 'العرائش', 'شفشاون', 'تارودانت', 'كلميم', 'بركان', 'تازة', 'الخميسات',
+    'القصر الكبير', 'الفقيه بن صالح', 'سيدي قاسم', 'سيدي سليمان', 'تاوريرت', 'جرسيف',
+    'ميدلت', 'زاكورة', 'طانطان', 'بوجدور', 'السمارة', 'أزيلال', 'بنسليمان'
+  ];
+  const roleOptions = [
+    { value: 'owner', ar: 'مالك الوكالة', fr: 'Propriétaire de l’agence', en: 'Agency owner' },
+    { value: 'agency_manager', ar: 'مدير الوكالة', fr: 'Directeur d’agence', en: 'Agency manager' },
+    { value: 'branch_manager', ar: 'مدير الفرع', fr: 'Responsable d’agence', en: 'Branch manager' },
+    { value: 'general_manager', ar: 'المدير العام', fr: 'Directeur général', en: 'General manager' },
+    { value: 'commercial_director', ar: 'المدير التجاري', fr: 'Directeur commercial', en: 'Commercial director' },
+    { value: 'sales_manager', ar: 'مسؤول المبيعات', fr: 'Responsable des ventes', en: 'Sales manager' },
+    { value: 'sales_agent', ar: 'مستشار / تجاري', fr: 'Conseiller commercial', en: 'Sales agent' },
+    { value: 'negotiator', ar: 'مفاوض عقاري', fr: 'Négociateur immobilier', en: 'Property negotiator' },
+    { value: 'marketing_manager', ar: 'مسؤول التسويق', fr: 'Responsable marketing', en: 'Marketing manager' },
+    { value: 'operations_manager', ar: 'مسؤول العمليات', fr: 'Responsable des opérations', en: 'Operations manager' },
+    { value: 'administrator', ar: 'مسؤول إداري', fr: 'Responsable administratif', en: 'Administrator' },
+    { value: 'assistant', ar: 'مساعد إداري', fr: 'Assistant administratif', en: 'Administrative assistant' },
+    { value: 'accountant', ar: 'محاسب', fr: 'Comptable', en: 'Accountant' },
+    { value: 'other', ar: 'دور آخر', fr: 'Autre fonction', en: 'Other role' },
+  ];
+  const openEdit = (client: AgencyClient) => {
+    setEditingClient(client);
+    setEditDraft({ ...client });
+  };
+  const saveEdit = () => {
+    if (!editingClient) return;
+    updateClient(editingClient.id, editDraft);
+    setEditingClient(null);
+  };
+
+  // Keep the main Moroccan cities first, followed by the other major regional cities.
+  const uniqueCities = cityOptions;
 
   const filtered = useMemo(() => {
     return clients.filter((c) => {
@@ -276,17 +306,19 @@ export const ClientsDirectoryTab: React.FC = () => {
                 <th className="p-3.5">{t.colContact}</th>
                 <th className="p-3.5">{t.colRole}</th>
                 <th className="p-3.5">{t.colTeamSize}</th>
+                <th className="p-3.5">{t.colDailyInquiries}</th>
                 <th className="p-3.5">{t.colTier}</th>
                 <th className="p-3.5">{t.colSetupFeeCollected}</th>
                 <th className="p-3.5">{t.colMonthlyRetainer}</th>
                 <th className="p-3.5">{t.colStage}</th>
-                <th className="p-3.5">{t.colDailyInquiries}</th>
+                <th className="p-3.5">{language === 'ar' ? 'آخر تحديث' : language === 'fr' ? 'Dernière mise à jour' : 'Last updated'}</th>
+                <th className="p-3.5 text-center">{language === 'ar' ? 'تعديل' : language === 'fr' ? 'Modifier' : 'Edit'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="p-8 text-center text-slate-400 font-medium">
+                  <td colSpan={12} className="p-8 text-center text-slate-400 font-medium">
                     {t.notificationsEmpty}
                   </td>
                 </tr>
@@ -325,6 +357,11 @@ export const ClientsDirectoryTab: React.FC = () => {
                         <span className="block text-[10px] text-slate-500">{language === 'ar' ? 'فرد' : language === 'fr' ? 'personnes' : 'people'}</span>
                       </td>
 
+                      <td className="p-3.5 text-center font-mono font-bold text-slate-800">
+                        {client.dailyInquiries ?? '—'}
+                        <span className="block text-[10px] text-slate-500">{language === 'ar' ? 'استفسار / يوم' : language === 'fr' ? 'demandes / jour' : 'inquiries / day'}</span>
+                      </td>
+
                       <td className="p-3.5">
                         <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase font-mono bg-slate-100 text-slate-900 border border-slate-200">
                           {client.packageTier === 'starter'
@@ -347,8 +384,13 @@ export const ClientsDirectoryTab: React.FC = () => {
                         {getStageBadge(client.stage)}
                       </td>
 
-                      <td className="p-3.5 text-center font-mono font-bold text-slate-800">
-                        {client.dailyInquiries ?? '—'}
+                      <td className="p-3.5 text-[10px] text-slate-600 font-mono">
+                        {client.lastUpdatedAt ? new Date(client.lastUpdatedAt).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US') : '—'}
+                      </td>
+                      <td className="p-3.5 text-center">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); openEdit(client); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 font-bold">
+                          <span>{language === 'ar' ? 'تعديل الملف' : language === 'fr' ? 'Modifier' : 'Edit'}</span>
+                        </button>
                       </td>
                     </tr>
                   );
@@ -358,6 +400,89 @@ export const ClientsDirectoryTab: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {editingClient && (
+        <div className="fixed inset-0 z-[70] bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4" onClick={() => setEditingClient(null)}>
+          <div className="bg-white w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200" dir={direction} onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-3 p-4 bg-slate-900 text-white">
+              <div>
+                <h3 className="font-extrabold text-sm">{language === 'ar' ? 'تعديل بيانات الوكالة والعميل' : language === 'fr' ? 'Modifier la fiche agence' : 'Edit agency record'}</h3>
+                <p className="text-[11px] text-slate-300 mt-1">{editingClient.agencyName}</p>
+              </div>
+              <button type="button" onClick={() => setEditingClient(null)} className="text-white/80 hover:text-white px-2 py-1 rounded-lg">✕</button>
+            </div>
+            <div className="p-4 sm:p-5 space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { key: 'agencyName', label: language === 'ar' ? 'اسم الوكالة' : language === 'fr' ? 'Nom de l’agence' : 'Agency name', type: 'text' },
+                  { key: 'contactPerson', label: language === 'ar' ? 'اسم المسؤول' : language === 'fr' ? 'Nom du contact' : 'Contact person', type: 'text' },
+                  { key: 'phone', label: language === 'ar' ? 'الهاتف / واتساب' : language === 'fr' ? 'Téléphone / WhatsApp' : 'Phone / WhatsApp', type: 'tel' },
+                  { key: 'email', label: 'Email', type: 'email' },
+                ].map((field) => (
+                  <label key={field.key} className="block space-y-1.5">
+                    <span className="font-bold text-slate-700">{field.label}</span>
+                    <input type={field.type} value={String(editDraft[field.key as keyof AgencyClient] ?? '')} onChange={(e) => setEditDraft((prev) => ({ ...prev, [field.key]: e.target.value }))} className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:border-orange-500" />
+                  </label>
+                ))}
+                <label className="block space-y-1.5">
+                  <span className="font-bold text-slate-700">{language === 'ar' ? 'المدينة' : language === 'fr' ? 'Ville' : 'City'}</span>
+                  <select value={String(editDraft.city ?? '')} onChange={(e) => setEditDraft((prev) => ({ ...prev, city: e.target.value }))} className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900">
+                    <option value="">{language === 'ar' ? 'اختر المدينة' : language === 'fr' ? 'Choisir une ville' : 'Select city'}</option>
+                    {cityOptions.map((city) => <option key={city} value={city}>{city}</option>)}
+                    {editDraft.city && !cityOptions.includes(String(editDraft.city)) && <option value={String(editDraft.city)}>{String(editDraft.city)}</option>}
+                  </select>
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="font-bold text-slate-700">{t.colRole}</span>
+                  <select value={String(editDraft.contactRole ?? '')} onChange={(e) => setEditDraft((prev) => ({ ...prev, contactRole: e.target.value }))} className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900">
+                    <option value="">{language === 'ar' ? 'اختر الدور داخل الوكالة' : language === 'fr' ? 'Choisir le rôle' : 'Select agency role'}</option>
+                    {roleOptions.map((role) => <option key={role.value} value={role.value}>{role[language]}</option>)}
+                  </select>
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="font-bold text-slate-700">{t.colTeamSize}</span>
+                  <input type="number" min="1" value={Number(editDraft.teamSize ?? 1)} onChange={(e) => setEditDraft((prev) => ({ ...prev, teamSize: Number(e.target.value) }))} className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900" />
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="font-bold text-slate-700">{t.colDailyInquiries}</span>
+                  <input type="number" min="0" value={Number(editDraft.dailyInquiries ?? 0)} onChange={(e) => setEditDraft((prev) => ({ ...prev, dailyInquiries: Number(e.target.value) }))} className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900" />
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="font-bold text-slate-700">{t.colTier}</span>
+                  <select value={String(editDraft.packageTier ?? 'growth')} onChange={(e) => setEditDraft((prev) => ({ ...prev, packageTier: e.target.value as PackageTier }))} className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900">
+                    <option value="starter">{t.starterPackage}</option><option value="growth">{t.growthPackage}</option><option value="enterprise">{t.enterprisePackage}</option>
+                  </select>
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="font-bold text-slate-700">{t.colStage}</span>
+                  <select value={String(editDraft.stage ?? 'ad_lead')} onChange={(e) => setEditDraft((prev) => ({ ...prev, stage: e.target.value as ClientStage }))} className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900">
+                    <option value="ad_lead">{t.colAdLeadsTitle}</option><option value="meeting_scheduled">{t.colMeetingsTitle}</option><option value="meeting_completed">{t.colAttendedTitle}</option><option value="meeting_no_show">{t.colNoShowTitle}</option><option value="trial_7_days">{t.colTrialTitle}</option><option value="delivery_in_progress">{t.colDeliveryTitle}</option><option value="negotiation_follow_up">{t.colFollowUpTitle}</option><option value="deal_won">{t.colRetainerTitle}</option><option value="active_retainer">{t.active}</option><option value="paused">{language === 'ar' ? 'متوقف مؤقتاً' : 'Paused'}</option><option value="lost">{t.colLostTitle}</option>
+                  </select>
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="font-bold text-slate-700">{t.colSetupFeeCollected} ({t.mad})</span>
+                  <input type="number" min="0" value={Number(editDraft.setupFee ?? 0)} onChange={(e) => setEditDraft((prev) => ({ ...prev, setupFee: Number(e.target.value) }))} className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900" />
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="font-bold text-slate-700">{t.colMonthlyRetainer} ({t.mad})</span>
+                  <input type="number" min="0" value={Number(editDraft.monthlyRetainer ?? 0)} onChange={(e) => setEditDraft((prev) => ({ ...prev, monthlyRetainer: Number(e.target.value) }))} className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900" />
+                </label>
+              </div>
+              <label className="block space-y-1.5">
+                <span className="font-bold text-slate-700">{language === 'ar' ? 'ملاحظات المتابعة الداخلية' : language === 'fr' ? 'Notes internes de suivi' : 'Internal follow-up notes'}</span>
+                <textarea rows={4} value={String(editDraft.notes ?? '')} onChange={(e) => setEditDraft((prev) => ({ ...prev, notes: e.target.value }))} placeholder={language === 'ar' ? 'سجل آخر تواصل، ما الذي ينتظره العميل، والخطوة القادمة...' : language === 'fr' ? 'Dernier contact, attentes et prochaine étape...' : 'Last contact, client expectations, and next step...'} className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 resize-y" />
+              </label>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
+                <span className="text-[10px] text-slate-500">{language === 'ar' ? 'آخر تحديث' : language === 'fr' ? 'Dernière mise à jour' : 'Last updated'}: {editingClient.lastUpdatedAt ? new Date(editingClient.lastUpdatedAt).toLocaleString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US') : '—'}</span>
+                <div className="flex items-center gap-2 justify-end">
+                  <button type="button" onClick={() => setEditingClient(null)} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold">{language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}</button>
+                  <button type="button" onClick={saveEdit} className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold">{language === 'ar' ? 'حفظ التعديلات' : language === 'fr' ? 'Enregistrer' : 'Save changes'}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
