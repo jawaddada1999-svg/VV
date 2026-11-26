@@ -42,9 +42,10 @@ export const AgencyBudgetSimulator: React.FC = () => {
   const clicks = Math.ceil(visitors / 0.88);
   const requiredBudget = clicks * cpc;
 
-  const optimizedVisitors = Math.ceil(leads / 0.065);
-  const optimizedBooked = booked;
   const optimizedHeld = Math.ceil(targetClients / close);
+  const optimizedBooked = Math.ceil(optimizedHeld / 0.75);
+  const optimizedLeads = Math.ceil(optimizedBooked / booking);
+  const optimizedVisitors = Math.ceil(optimizedLeads / 0.065);
   const optimizedClicks = Math.ceil(optimizedVisitors / 0.88);
   const optimizedBudget = optimizedClicks * cpc;
   const saved = Math.max(0, requiredBudget - optimizedBudget);
@@ -102,7 +103,7 @@ export const AgencyBudgetSimulator: React.FC = () => {
             <div className="bg-white p-5 rounded-2xl border border-slate-200">
               <div className="flex items-center justify-between gap-2"><h3 className="font-bold text-sm text-slate-900">{ar ? 'المسار المطلوب لتحقيق الهدف' : fr ? 'Parcours estimé pour atteindre l’objectif' : 'Estimated funnel to reach target'}</h3><span className="text-xs font-bold text-slate-500">{targetClients} {ar ? 'صفقة' : fr ? 'contrats' : 'deals'}</span></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                {[[ar?'النقرات':fr?'Clics':'Clicks,',clicks],[ar?'العملاء المحتملون':fr?'Prospects':'Leads',leads],[ar?'المواعيد المحجوزة':fr?'RDV réservés':'Booked meetings',booked],[ar?'المواعيد المنجزة':fr?'RDV effectués':'Attended meetings',held]].map(([label,val],i)=><div key={i} className="rounded-xl bg-slate-50 p-3"><div className="text-[10px] font-semibold text-slate-500">{label}</div><div className="mt-1 text-xl font-extrabold text-slate-900">{Number(val).toLocaleString()}</div></div>)}
+                {[[ar?'النقرات':fr?'Clics':'Clicks',clicks],[ar?'العملاء المحتملون':fr?'Prospects':'Leads',leads],[ar?'المواعيد المحجوزة':fr?'RDV réservés':'Booked meetings',booked],[ar?'المواعيد المنجزة':fr?'RDV effectués':'Attended meetings',held]].map(([label,val],i)=><div key={i} className="rounded-xl bg-slate-50 p-3"><div className="text-[10px] font-semibold text-slate-500">{label}</div><div className="mt-1 text-xl font-extrabold text-slate-900">{Number(val).toLocaleString()}</div></div>)}
               </div>
               <div className="mt-4 rounded-xl bg-[#06252A] p-5 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div><div className="text-xs text-slate-300">{ar ? 'الميزانية الشهرية المطلوبة' : fr ? 'Budget mensuel requis' : 'Required monthly budget'}</div><div className="text-2xl font-extrabold text-orange-400 mt-1">{money(requiredBudget)}</div></div>
