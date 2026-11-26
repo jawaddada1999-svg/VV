@@ -99,7 +99,7 @@ interface AgencyContextType {
   deleteClientExpense: (clientId: string, expenseId: string) => void;
 
   // Meetings & Agenda
-  addMeeting: (meeting: Omit<MeetingItem, 'id'>) => void;
+  addMeeting: (meeting: Omit<MeetingItem, 'id'>) => boolean;
   updateMeeting: (id: string, updates: Partial<MeetingItem>) => void;
   updateMeetingStatus: (id: string, status: MeetingItem['status'], outcome?: MeetingItem['meetingOutcome']) => void;
   toggleMeetingReminder: (id: string) => void;
@@ -611,16 +611,16 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Meetings
   const addMeeting = (data: Omit<MeetingItem, 'id'>) => {
     const linkedClient = clients.find((client) => client.id === data.clientId);
-    if (!linkedClient) return;
+    if (!linkedClient) return false;
     const meetingDate = data.scheduledTime.slice(0, 10);
     const meetingTime = data.scheduledTime.includes('T') ? data.scheduledTime.split('T')[1].slice(0, 5) : '';
     const availableDay = generateAvailableSlotsForDate(meetingDate, bookingSettings, meetings);
-    if (!meetingTime || !availableDay.slots.some((slot) => slot.time === meetingTime && slot.status === 'available')) return;
+    if (!meetingTime || !availableDay.slots.some((slot) => slot.time === meetingTime && slot.status === 'available')) return false;
     const duplicate = meetings.some((meeting) =>
       meeting.clientId === data.clientId && meeting.scheduledTime === data.scheduledTime &&
       meeting.status === 'scheduled'
     );
-    if (duplicate) return;
+    if (duplicate) return false;
     const newMeeting: MeetingItem = {
       ...data,
       clientName: linkedClient.contactPerson,
@@ -631,6 +631,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
     setMeetings((prev) => [newMeeting, ...prev]);
     updateClient(data.clientId, { stage: 'meeting_scheduled' });
+    return true;
   };
 
   const updateMeeting = (id: string, updates: Partial<MeetingItem>) => {
