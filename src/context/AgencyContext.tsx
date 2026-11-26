@@ -577,6 +577,8 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             stage: 'delivery_in_progress',
             trialAccepted: true,
             deliveryProgressPct: 20,
+            deliveryStartDate: new Date().toISOString().slice(0, 10),
+            deliveryDelayReason: '',
             targetDeliveryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
           };
         }
