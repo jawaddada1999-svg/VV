@@ -512,7 +512,7 @@ export const OverviewTab: React.FC = () => {
             </div>
           </div>
           <div className="mt-2.5 pt-2 border-t border-blue-200/60 text-[10px] text-slate-600 flex items-center justify-between gap-1">
-            <span>{completedMeetings} / {totalMeetingsCount} {t.meetingsUnit}</span>
+            <span>{completedMeetings} / {attendanceDenominator} {t.meetingsUnit}</span>
             <button
               onClick={() => setActiveTab('meetings')}
               className="text-blue-700 font-extrabold hover:underline cursor-pointer truncate"
