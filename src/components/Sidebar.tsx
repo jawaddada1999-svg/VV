@@ -18,6 +18,9 @@ import {
   Sparkles,
   Flame,
   Zap,
+  MessageCircle,
+  Users,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { translations } from '../translations';
 import { IbondaLogo } from './IbondaLogo';
@@ -82,6 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badge: `${metrics.meetingsBookedThisMonth}`,
           badgeColor: 'bg-white/20 text-white',
         },
+        { id: 'conversations', label: language === 'ar' ? 'المحادثات والتواصل' : language === 'fr' ? 'Conversations' : 'Conversations', icon: MessageCircle, badge: null },
         {
           id: 'ads',
           label: language === 'ar' ? 'حملات إعلانية' : t.navAds,
@@ -137,6 +141,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badge: '3',
           badgeColor: 'bg-white/15 text-white',
         },
+        { id: 'employees', label: language === 'ar' ? 'الموظفون وإدارة الفريق' : language === 'fr' ? 'Équipe' : 'Team members', icon: Users, badge: null },
+        { id: 'settings', label: language === 'ar' ? 'الإعدادات' : language === 'fr' ? 'Paramètres' : 'Settings', icon: SlidersHorizontal, badge: null },
       ],
     },
   ];
