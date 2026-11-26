@@ -2,6 +2,7 @@ import React from 'react';
 import { useAgency } from '../context/AgencyContext';
 import {
   BarChart3,
+  Calculator,
   Wallet,
   Kanban,
   Calendar,
@@ -99,6 +100,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: Layers,
           badge: buildsCount > 0 ? `${buildsCount}` : null,
           badgeColor: 'bg-purple-500 text-white font-bold',
+        },
+        {
+          id: 'budget_simulator',
+          label: language === 'ar' ? 'محاكي الميزانية' : language === 'fr' ? 'Simulateur de budget' : 'Budget simulator',
+          icon: Calculator,
+          badge: null,
         },
         {
           id: 'finance',
