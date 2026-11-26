@@ -2141,8 +2141,8 @@ export const MeetingsTab: React.FC = () => {
                     <th className="p-3.5">{t.colTrialDates}</th>
                     <th className="p-3.5">{t.days}</th>
                     <th className="p-3.5 text-center">{t.metricActiveTrials}</th>
-                    <th className="p-3.5 text-center">{language === 'ar' ? 'ملف العميل' : language === 'fr' ? 'Fiche client' : 'Client file'}</th>
                     <th className="p-3.5">{t.colPackageChosen}</th>
+                    <th className="p-3.5 text-center">{language === 'ar' ? 'ملف العميل' : language === 'fr' ? 'Fiche client' : 'Client file'}</th>
                     <th className="p-3.5 text-center">{t.colPaymentRetainer}</th>
                   </tr>
                 </thead>
