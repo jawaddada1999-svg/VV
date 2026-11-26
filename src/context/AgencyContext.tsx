@@ -35,7 +35,7 @@ import {
   localizeInvoice,
   localizeTicket,
 } from '../utils/entityLocalization';
-import { DAY_ORDER } from '../utils/bookingSlots';
+import { DAY_ORDER, generateAvailableSlotsForDate } from '../utils/bookingSlots';
 
 interface AgencyContextType {
   // Navigation
@@ -612,6 +612,10 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const addMeeting = (data: Omit<MeetingItem, 'id'>) => {
     const linkedClient = clients.find((client) => client.id === data.clientId);
     if (!linkedClient) return;
+    const meetingDate = data.scheduledTime.slice(0, 10);
+    const meetingTime = data.scheduledTime.includes('T') ? data.scheduledTime.split('T')[1].slice(0, 5) : '';
+    const availableDay = generateAvailableSlotsForDate(meetingDate, bookingSettings, meetings);
+    if (!meetingTime || !availableDay.slots.some((slot) => slot.time === meetingTime && slot.status === 'available')) return;
     const duplicate = meetings.some((meeting) =>
       meeting.clientId === data.clientId && meeting.scheduledTime === data.scheduledTime &&
       meeting.status === 'scheduled'
@@ -720,11 +724,22 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Invoices
   const markInvoicePaid = (id: string) => {
-    setInvoices((prev) =>
-      prev.map((inv) =>
-        inv.id === id ? { ...inv, status: 'paid', paidDate: new Date().toISOString().slice(0, 10) } : inv
-      )
-    );
+    const invoice = invoices.find((item) => item.id === id);
+    if (!invoice || invoice.status === 'paid') return;
+    const paidDate = new Date().toISOString().slice(0, 10);
+    setInvoices((prev) => prev.map((item) =>
+      item.id === id ? { ...item, status: 'paid', paidDate } : item
+    ));
+    if (invoice.type === 'setup_fee') {
+      updateClient(invoice.clientId, { setupPaymentStatus: 'paid' });
+    } else {
+      const nextBilling = new Date();
+      nextBilling.setMonth(nextBilling.getMonth() + 1);
+      updateClient(invoice.clientId, {
+        maintenanceStatus: 'up_to_date',
+        nextBillingDate: nextBilling.toISOString().slice(0, 10),
+      });
+    }
   };
 
   const addInvoice = (data: Omit<MaintenanceInvoice, 'id'>) => {
@@ -935,9 +950,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const paidInvoices = invoices.filter((invoice) => invoice.status === 'paid');
     const totalRevenueCash = paidInvoices.reduce((sum, invoice) => sum + (Number(invoice.amount) || 0), 0);
 
-    const activeRetainerList = clients.filter((client) =>
-      client.stage === 'active_retainer' && client.maintenanceStatus !== 'payment_due'
-    );
+    const activeRetainerList = clients.filter((client) => client.stage === 'active_retainer');
     const currentMRR = activeRetainerList.reduce((sum, client) => sum + (Number(client.monthlyRetainer) || 0), 0);
     const totalMonthlyClientExpenses = activeRetainerList.reduce((sum, client) =>
       sum + (client.expenses || []).filter((expense) => expense.isActive)
