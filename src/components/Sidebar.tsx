@@ -21,6 +21,7 @@ import {
   MessageCircle,
   Users,
   SlidersHorizontal,
+  FileBarChart,
 } from 'lucide-react';
 import { translations } from '../translations';
 import { IbondaLogo } from './IbondaLogo';
@@ -64,6 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       groupTitle: language === 'ar' ? 'النمو والعملاء' : t.navLeadershipGroup,
       items: [
         { id: 'overview', label: t.navOverview, icon: BarChart3, badge: null },
+        { id: 'reports', label: language === 'ar' ? 'التقارير والتحليلات' : language === 'fr' ? 'Rapports' : 'Reports', icon: FileBarChart, badge: null },
         {
           id: 'clients',
           label: language === 'ar' ? 'دليل الوكالات والعملاء' : t.navClients,
