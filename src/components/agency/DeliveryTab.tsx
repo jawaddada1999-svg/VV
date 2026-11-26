@@ -26,6 +26,7 @@ export const DeliveryTab: React.FC = () => {
     clients,
     tasks,
     toggleTask,
+    updateTask,
     updateDeliveryProgress,
     updateClient,
     activateMonthlyRetainer,
@@ -320,7 +321,16 @@ export const DeliveryTab: React.FC = () => {
                                     onChange={() => toggleTask(task.id)}
                                     className="mt-0.5 accent-purple-600"
                                   />
-                                  <span className={task.completed ? 'line-through text-slate-400' : ''}>{task.title}</span>
+                                  <span className="flex-1 min-w-0">
+                                    <span className={task.completed ? 'line-through text-slate-400' : ''}>{task.title}</span>
+                                    <input
+                                      value={task.assignee || ''}
+                                      onChange={(e) => updateTask(task.id, { assignee: e.target.value })}
+                                      placeholder={language === 'ar' ? 'المسؤول عن المهمة' : language === 'fr' ? 'Responsable' : 'Assigned to'}
+                                      aria-label={language === 'ar' ? 'المسؤول عن المهمة' : 'Task assignee'}
+                                      className="block w-full max-w-[170px] mt-1 px-2 py-1 text-[10px] rounded-md border border-slate-200 bg-white"
+                                    />
+                                  </span>
                                 </label>
                               ))}
                             </div>
