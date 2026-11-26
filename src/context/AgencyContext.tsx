@@ -280,17 +280,40 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const parsed = readStored<unknown>('booking_settings', defaults);
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return defaults;
     const saved = parsed as Partial<BookingAvailabilitySettings>;
-    const savedSchedule = saved.schedule && typeof saved.schedule === 'object'
-      ? saved.schedule
+    const savedSchedule = saved.schedule && typeof saved.schedule === 'object' && !Array.isArray(saved.schedule)
+      ? saved.schedule as Partial<BookingAvailabilitySettings['schedule']>
       : {};
+    const schedule = { ...defaults.schedule };
+    for (const day of DAY_ORDER) {
+      const candidate = savedSchedule[day];
+      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) continue;
+      const fallback = defaults.schedule[day];
+      const value = candidate as Partial<DayScheduleConfig>;
+      const validTime = (time: unknown, defaultTime: string) =>
+        typeof time === 'string' && /^([01]\\d|2[0-3]):[0-5]\\d$/.test(time) ? time : defaultTime;
+      schedule[day] = {
+        ...fallback,
+        day,
+        enabled: typeof value.enabled === 'boolean' ? value.enabled : fallback.enabled,
+        startTime: validTime(value.startTime, fallback.startTime),
+        endTime: validTime(value.endTime, fallback.endTime),
+        hasBreak: typeof value.hasBreak === 'boolean' ? value.hasBreak : fallback.hasBreak,
+        breakStart: validTime(value.breakStart, fallback.breakStart),
+        breakEnd: validTime(value.breakEnd, fallback.breakEnd),
+      };
+    }
     return {
       ...defaults,
       ...saved,
-      schedule: {
-        ...defaults.schedule,
-        ...savedSchedule,
-      },
-      blockedDates: Array.isArray(saved.blockedDates) ? saved.blockedDates : [],
+      slotDurationMinutes: Number.isFinite(saved.slotDurationMinutes) && (saved.slotDurationMinutes ?? 0) > 0 ? saved.slotDurationMinutes! : defaults.slotDurationMinutes,
+      bufferMinutes: Number.isFinite(saved.bufferMinutes) && (saved.bufferMinutes ?? -1) >= 0 ? saved.bufferMinutes! : defaults.bufferMinutes,
+      minNoticeHours: Number.isFinite(saved.minNoticeHours) && (saved.minNoticeHours ?? -1) >= 0 ? saved.minNoticeHours! : defaults.minNoticeHours,
+      maxAdvanceDays: Number.isFinite(saved.maxAdvanceDays) && (saved.maxAdvanceDays ?? 0) > 0 ? saved.maxAdvanceDays! : defaults.maxAdvanceDays,
+      maxBookingsPerDay: Number.isFinite(saved.maxBookingsPerDay) && (saved.maxBookingsPerDay ?? 0) > 0 ? saved.maxBookingsPerDay! : defaults.maxBookingsPerDay,
+      schedule,
+      blockedDates: Array.isArray(saved.blockedDates)
+        ? saved.blockedDates.filter((entry) => !!entry && typeof entry === 'object' && !Array.isArray(entry))
+        : [],
     };
   });
 
