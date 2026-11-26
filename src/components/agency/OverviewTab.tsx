@@ -87,7 +87,7 @@ export const OverviewTab: React.FC = () => {
   const upcomingMeetingsSoon = meetings.filter((m) => {
     if (m.status !== 'scheduled') return false;
     const diffMin = (new Date(m.scheduledTime).getTime() - now) / (1000 * 60);
-    return diffMin >= -10 && diffMin <= 60;
+    return diffMin >= 0 && diffMin <= 60;
   });
 
   // 3. Weekly & Monthly Historical / Projected Retainer & Deals Data
