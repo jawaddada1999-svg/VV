@@ -561,7 +561,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             ...c,
             deliveryProgressPct: pct,
             workflowsEnabled: workflows || c.workflowsEnabled,
-            stage: pct >= 100 ? 'active_retainer' : c.stage,
+            stage: c.stage,
           };
         }
         return c;
