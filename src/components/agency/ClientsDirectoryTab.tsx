@@ -166,15 +166,6 @@ export const ClientsDirectoryTab: React.FC = () => {
 
         <div className="flex items-center gap-2.5 self-end md:self-center shrink-0">
           <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs rounded-xl transition-colors cursor-pointer border border-slate-300 shadow-2xs"
-            title="CSV Export"
-          >
-            <Download className="w-4 h-4 text-slate-600" />
-            <span>{t.btnExportCsv}</span>
-          </button>
-
-          <button
             onClick={() => setShowAddClientModal(true)}
             className="flex items-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-[#FF5500] hover:from-orange-600 hover:to-[#D93800] text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
           >
