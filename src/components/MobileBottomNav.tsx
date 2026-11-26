@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAgency } from '../context/AgencyContext';
-import { BarChart3, Kanban, Calendar, Menu, Building2 } from 'lucide-react';
+import { BarChart3, Kanban, Menu, Building2, MessageCircle } from 'lucide-react';
 import { translations } from '../translations';
 
 interface MobileBottomNavProps {
@@ -27,9 +27,9 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
       icon: Kanban,
     },
     {
-      id: 'meetings',
-      label: language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Agenda' : 'Meetings',
-      icon: Calendar,
+      id: 'conversations',
+      label: language === 'ar' ? 'المحادثات' : language === 'fr' ? 'Messages' : 'Messages',
+      icon: MessageCircle,
     },
   ];
   const primaryTabIds = items.map((item) => item.id);
