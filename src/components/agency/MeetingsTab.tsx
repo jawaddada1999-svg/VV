@@ -2131,14 +2131,17 @@ export const MeetingsTab: React.FC = () => {
                         <span>{t.colCommunication}</span>
                       </div>
                     </th>
-                    <th className="p-3.5 text-center">{t.reminderStatus} & {t.confirmationStatus}</th>
+                    <th className="p-3.5 text-center">{language === 'ar' ? 'إرسال التذكير' : language === 'fr' ? 'Rappel envoyé' : 'Reminder sent'}</th>
+                    <th className="p-3.5 text-center">{language === 'ar' ? 'تأكيد العميل' : language === 'fr' ? 'Confirmation client' : 'Client confirmation'}</th>
                     <th className="p-3.5 text-center">{t.metricAvgTeam}</th>
                     <th className="p-3.5 text-center">{t.metricAvgDailyLeads}</th>
                     <th className="p-3.5 min-w-[200px]">{t.colTeamLeadsProblem}</th>
-                    <th className="p-3.5 text-center">{t.colStatusAttendance}</th>
+                    <th className="p-3.5 text-center">{language === 'ar' ? 'حالة الموعد' : language === 'fr' ? 'Statut du rendez-vous' : 'Appointment status'}</th>
+                    <th className="p-3.5 text-center">{language === 'ar' ? 'نتيجة الموعد' : language === 'fr' ? 'Résultat du rendez-vous' : 'Meeting outcome'}</th>
                     <th className="p-3.5">{t.colTrialDates}</th>
                     <th className="p-3.5">{t.days}</th>
                     <th className="p-3.5 text-center">{t.metricActiveTrials}</th>
+                    <th className="p-3.5 text-center">{language === 'ar' ? 'ملف العميل' : language === 'fr' ? 'Fiche client' : 'Client file'}</th>
                     <th className="p-3.5">{t.colPackageChosen}</th>
                     <th className="p-3.5 text-center">{t.colPaymentRetainer}</th>
                   </tr>
@@ -2146,7 +2149,7 @@ export const MeetingsTab: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {filteredMeetings.length === 0 ? (
                     <tr>
-                      <td colSpan={12} className="p-8 text-center text-slate-400 font-medium">
+                      <td colSpan={15} className="p-8 text-center text-slate-400 font-medium">
                         {t.notificationsEmpty}
                       </td>
                     </tr>
@@ -2219,32 +2222,18 @@ export const MeetingsTab: React.FC = () => {
                             </div>
                           </td>
 
-                          {/* Reminder & Confirmation Badges */}
+                          {/* Reminder sent: independent field */}
                           <td className="p-3.5 text-center">
-                            <div className="flex flex-col items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => toggleMeetingReminder(meet.id)}
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded cursor-pointer border ${
-                                  meet.reminderSent
-                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                                    : 'bg-slate-100 text-slate-600 border-slate-200'
-                                }`}
-                              >
-                                {meet.reminderSent ? `✓ ${t.reminderSent}` : t.reminderNotSent}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => toggleMeetingConfirmation(meet.id)}
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded cursor-pointer border ${
-                                  meet.reminderConfirmed
-                                    ? 'bg-blue-50 text-blue-800 border-blue-300'
-                                    : 'bg-amber-50 text-amber-800 border-amber-300'
-                                }`}
-                              >
-                                {meet.reminderConfirmed ? `✓ ${t.confirmedByClient}` : t.notConfirmedYet}
-                              </button>
-                            </div>
+                            <button type="button" onClick={() => toggleMeetingReminder(meet.id)} className={`text-[10px] font-bold px-2.5 py-1 rounded-lg cursor-pointer border whitespace-nowrap ${meet.reminderSent ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                              {meet.reminderSent ? `✓ ${t.reminderSent}` : t.reminderNotSent}
+                            </button>
+                          </td>
+
+                          {/* Client confirmation: independent field */}
+                          <td className="p-3.5 text-center">
+                            <button type="button" onClick={() => toggleMeetingConfirmation(meet.id)} className={`text-[10px] font-bold px-2.5 py-1 rounded-lg cursor-pointer border whitespace-nowrap ${meet.reminderConfirmed ? 'bg-blue-50 text-blue-800 border-blue-300' : 'bg-amber-50 text-amber-800 border-amber-300'}`}>
+                              {meet.reminderConfirmed ? `✓ ${t.confirmedByClient}` : t.notConfirmedYet}
+                            </button>
                           </td>
 
                           {/* Team Size */}
@@ -2278,34 +2267,24 @@ export const MeetingsTab: React.FC = () => {
                             </div>
                           </td>
 
-                          {/* Status / Attended */}
+                          {/* Editable appointment status */}
                           <td className="p-3.5 text-center">
-                            {isUpcoming ? (
-                              <button
-                                onClick={() => {
-                                  updateMeetingStatus(meet.id, 'completed', 'accepted_trial');
-                                  updateMeeting(meet.id, {
-                                    trialStartDate: new Date().toISOString().slice(0, 10),
-                                    trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-                                    trialResult: 'accepted',
-                                    convertedToDeal: true,
-                                  });
-                                }}
-                                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] rounded-lg cursor-pointer transition-colors shadow-2xs inline-flex items-center gap-1"
-                              >
-                                <Check className="w-3.5 h-3.5" />
-                                <span>{t.btnStartTrial}</span>
-                              </button>
-                            ) : (
-                              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                meet.status === 'completed'
-                                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                  : 'bg-slate-100 text-slate-700'
-                              }`}>
-                                <CheckCircle2 className="w-3 h-3" />
-                                <span>{meet.status === 'completed' ? t.attended : t.notAttended}</span>
-                              </span>
-                            )}
+                            <select value={meet.status} onChange={(e) => updateMeetingStatus(meet.id, e.target.value as MeetingItem['status'])} className={`max-w-[150px] rounded-lg border px-2 py-1.5 text-[10px] font-bold cursor-pointer ${meet.status === 'completed' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : meet.status === 'no_show' ? 'bg-rose-50 text-rose-800 border-rose-300' : meet.status === 'rescheduled' ? 'bg-violet-50 text-violet-800 border-violet-300' : 'bg-amber-50 text-amber-800 border-amber-300'}`}>
+                              <option value="scheduled">{language === 'ar' ? 'مجدول' : language === 'fr' ? 'Programmé' : 'Scheduled'}</option>
+                              <option value="completed">{language === 'ar' ? 'تم الحضور' : language === 'fr' ? 'Effectué / Présent' : 'Attended'}</option>
+                              <option value="no_show">{language === 'ar' ? 'لم يحضر' : language === 'fr' ? 'Absent' : 'No-show'}</option>
+                              <option value="rescheduled">{language === 'ar' ? 'أعيدت برمجته' : language === 'fr' ? 'Reprogrammé' : 'Rescheduled'}</option>
+                            </select>
+                          </td>
+
+                          {/* Editable meeting outcome */}
+                          <td className="p-3.5 text-center">
+                            <select value={meet.meetingOutcome || ''} onChange={(e) => updateMeeting(meet.id, { meetingOutcome: (e.target.value || undefined) as MeetingItem['meetingOutcome'] })} className="max-w-[155px] rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[10px] font-bold text-slate-800 cursor-pointer">
+                              <option value="">{language === 'ar' ? 'غير محدد' : language === 'fr' ? 'Non défini' : 'Not set'}</option>
+                              <option value="accepted_trial">{language === 'ar' ? 'وافق على التجربة' : language === 'fr' ? 'Essai accepté' : 'Trial accepted'}</option>
+                              <option value="follow_up">{language === 'ar' ? 'متابعة / تفاوض' : language === 'fr' ? 'Suivi / Négociation' : 'Follow-up / Negotiation'}</option>
+                              <option value="rejected">{language === 'ar' ? 'رفض العرض' : language === 'fr' ? 'Offre refusée' : 'Offer rejected'}</option>
+                            </select>
                           </td>
 
                           {/* Trial Start Date */}
@@ -2361,6 +2340,13 @@ export const MeetingsTab: React.FC = () => {
                               <option value="growth">{t.growthPackage} (2,500 {t.perMonth})</option>
                               <option value="enterprise">{t.enterprisePackage} (4,500 {t.perMonth})</option>
                             </select>
+                          </td>
+
+                          {/* Open the full existing prospect profile drawer */}
+                          <td className="p-3.5 text-center">
+                            <button type="button" onClick={() => setSelectedClientId(meet.clientId)} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 font-bold text-[10px] whitespace-nowrap">
+                              <Edit2 className="w-3.5 h-3.5" /> {language === 'ar' ? 'تعديل الملف' : language === 'fr' ? 'Modifier la fiche' : 'Edit profile'}
+                            </button>
                           </td>
 
                           {/* Setup Payment Status */}
