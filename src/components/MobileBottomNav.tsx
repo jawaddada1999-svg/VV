@@ -10,9 +10,6 @@ interface MobileBottomNavProps {
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) => {
   const { activeTab, setActiveTab, language } = useAgency();
   const t = translations[language];
-  const primaryTabIds = items.map((item) => item.id);
-  const isMoreActive = !primaryTabIds.includes(activeTab);
-
   const items = [
     {
       id: 'overview',
@@ -35,6 +32,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
       icon: Calendar,
     },
   ];
+  const primaryTabIds = items.map((item) => item.id);
+  const isMoreActive = !primaryTabIds.includes(activeTab);
 
   return (
     <nav
