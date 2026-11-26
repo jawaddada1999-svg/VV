@@ -43,10 +43,11 @@ export const AdsTab: React.FC = () => {
   // New Campaign Modal Form State
   const [newCampName, setNewCampName] = useState('');
   const [newCampPlatform, setNewCampPlatform] = useState<AdCampaignMetric['platform']>('meta');
-  const [newCampSpend, setNewCampSpend] = useState('2500');
-  const [newCampRevenue, setNewCampRevenue] = useState('12500');
-  const [newCampLeads, setNewCampLeads] = useState('18');
-  const [newCampDeals, setNewCampDeals] = useState('2');
+  const [newCampBudget, setNewCampBudget] = useState('0');
+  const [newCampSpend, setNewCampSpend] = useState('0');
+  const [newCampRevenue, setNewCampRevenue] = useState('0');
+  const [newCampLeads, setNewCampLeads] = useState('0');
+  const [newCampDeals, setNewCampDeals] = useState('0');
 
   // Aggregate Funnel Metrics across campaigns
   const totalSpend = campaigns.reduce((sum, c) => sum + c.spend, 0);
@@ -249,6 +250,7 @@ export const AdsTab: React.FC = () => {
   const handleAddCampaignSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCampName.trim()) return;
+    const budgetNum = Math.max(0, Number(newCampBudget) || 0);
     const spendNum = Math.max(0, Number(newCampSpend) || 0);
     const revNum = Math.max(0, Number(newCampRevenue) || 0);
     const leadsNum = Math.max(0, Number(newCampLeads) || 0);
@@ -257,17 +259,18 @@ export const AdsTab: React.FC = () => {
     addCampaign({
       campaignName: newCampName.trim(),
       platform: newCampPlatform,
+      budget: budgetNum,
       spend: spendNum,
       revenueGenerated: revNum,
-      impressions: Math.max(leadsNum * 320, spendNum * 6),
-      clicks: Math.max(leadsNum * 12, Math.round(spendNum * 0.2)),
-      landingPageVisitors: Math.max(leadsNum * 10, Math.round(spendNum * 0.16)),
-      videoStartedCount: Math.max(leadsNum * 8, Math.round(spendNum * 0.12)),
-      videoCompletedCount: Math.max(leadsNum * 4, Math.round(spendNum * 0.07)),
+      impressions: 0,
+      clicks: 0,
+      landingPageVisitors: 0,
+      videoStartedCount: 0,
+      videoCompletedCount: 0,
       leadsGenerated: leadsNum,
-      meetingsBooked: Math.max(dealsNum * 2, Math.round(leadsNum * 0.35)),
-      meetingsShowedUp: Math.max(dealsNum, Math.round(leadsNum * 0.25)),
-      meetingsNoShow: Math.max(0, Math.round(leadsNum * 0.08)),
+      meetingsBooked: 0,
+      meetingsShowedUp: 0,
+      meetingsNoShow: 0,
       dealsClosed: dealsNum,
       startDate: new Date().toISOString().slice(0, 10),
       status: 'active',
@@ -1192,6 +1195,16 @@ export const AdsTab: React.FC = () => {
                   </select>
                 </div>
 
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">{language === 'ar' ? 'الميزانية المحددة (درهم)' : language === 'fr' ? 'Budget prévu (MAD)' : 'Planned budget (MAD)'}</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={newCampBudget}
+                    onChange={(e) => setNewCampBudget(e.target.value)}
+                    className="w-full min-h-[44px] px-3 bg-slate-50 border border-slate-200 rounded-xl font-mono tabular-nums font-bold text-slate-900"
+                  />
+                </div>
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">{roasCopy.fieldSpend}</label>
                   <input
