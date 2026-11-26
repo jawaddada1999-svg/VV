@@ -74,9 +74,10 @@ export const OverviewTab: React.FC = () => {
   // 1. Attendance Rate Calculation (نسبة حضور المواعيد)
   const completedMeetings = meetings.filter((m) => m.status === 'completed').length;
   const totalMeetingsCount = meetings.length;
-  const attendanceRate = totalMeetingsCount > 0
-    ? Math.round((completedMeetings / totalMeetingsCount) * 100)
-    : 84;
+  const attendanceDenominator = meetings.filter((m) => m.status === 'completed' || m.status === 'no_show').length;
+  const attendanceRate = attendanceDenominator > 0
+    ? Math.round((completedMeetings / attendanceDenominator) * 100)
+    : 0;
 
   // 2. Urgent Alerts:
   const activeTrials = clients.filter((c) => c.stage === 'trial_7_days');
@@ -90,87 +91,99 @@ export const OverviewTab: React.FC = () => {
   });
 
   // 3. Weekly & Monthly Historical / Projected Retainer & Deals Data
-  const monthlyData = [
-    { period: language === 'ar' ? 'يونيو' : language === 'fr' ? 'Juin' : 'June', retainerMrr: 4500, setupCash: 12500, deals: 2 },
-    { period: language === 'ar' ? 'يوليوز' : language === 'fr' ? 'Juillet' : 'July', retainerMrr: 6500, setupCash: 16500, deals: 3 },
-    { period: language === 'ar' ? 'غشت' : language === 'fr' ? 'Août' : 'August', retainerMrr: 9500, setupCash: 21000, deals: 4 },
-    { period: language === 'ar' ? 'شتنبر' : language === 'fr' ? 'Septembre' : 'September', retainerMrr: 12500, setupCash: 24500, deals: 5 },
-    { period: language === 'ar' ? 'أكتوبر' : language === 'fr' ? 'Octobre' : 'October', retainerMrr: 15500, setupCash: 29000, deals: 6 },
-    { period: language === 'ar' ? 'نونبر الحالي' : language === 'fr' ? 'Novembre (Actuel)' : 'November (Current)', retainerMrr: metrics.currentMRR, setupCash: metrics.totalRevenueCash, deals: 7 },
-  ];
+  // Historical charts must use recorded data only; no illustrative figures are presented as actual results.
+  const monthlyData = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - 5 + index);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const monthInvoices = invoices.filter((invoice) => {
+      const paidDate = invoice.paidDate ? new Date(invoice.paidDate) : null;
+      return invoice.status === 'paid' && paidDate && paidDate.getFullYear() === year && paidDate.getMonth() === month;
+    });
+    const period = date.toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', year: '2-digit' });
+    return {
+      period,
+      retainerMrr: clients.filter((client) => client.stage === 'active_retainer' && client.maintenanceStartDate && new Date(client.maintenanceStartDate) <= new Date(year, month + 1, 0)).reduce((sum, client) => sum + (client.monthlyRetainer || 0), 0),
+      setupCash: monthInvoices.reduce((sum, invoice) => sum + invoice.amount, 0),
+      deals: clients.filter((client) => client.contractDate && new Date(client.contractDate).getFullYear() === year && new Date(client.contractDate).getMonth() === month).length,
+    };
+  });
 
-  const weeklyData = [
-    { period: language === 'ar' ? 'الأسبوع 1' : language === 'fr' ? 'Semaine 1' : 'Week 1', retainerMrr: 14500, setupCash: 8000, deals: 1 },
-    { period: language === 'ar' ? 'الأسبوع 2' : language === 'fr' ? 'Semaine 2' : 'Week 2', retainerMrr: 15200, setupCash: 12500, deals: 2 },
-    { period: language === 'ar' ? 'الأسبوع 3' : language === 'fr' ? 'Semaine 3' : 'Week 3', retainerMrr: 16400, setupCash: 16000, deals: 2 },
-    { period: language === 'ar' ? 'الأسبوع 4 الحالي' : language === 'fr' ? 'Semaine 4 (Actuelle)' : 'Week 4 (Current)', retainerMrr: metrics.currentMRR, setupCash: metrics.totalRevenueCash, deals: 3 },
-  ];
+  const weeklyData = Array.from({ length: 4 }, (_, index) => {
+    const start = new Date();
+    start.setDate(start.getDate() - ((start.getDay() + 6) % 7) - (3 - index) * 7);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    const periodInvoices = invoices.filter((invoice) => {
+      const date = invoice.paidDate ? new Date(invoice.paidDate) : null;
+      return invoice.status === 'paid' && date && date >= start && date < end;
+    });
+    return {
+      period: start.toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short' }),
+      retainerMrr: clients.filter((client) => client.stage === 'active_retainer').reduce((sum, client) => sum + (client.monthlyRetainer || 0), 0),
+      setupCash: periodInvoices.reduce((sum, invoice) => sum + invoice.amount, 0),
+      deals: periodInvoices.filter((invoice) => invoice.type === 'setup_fee').length,
+    };
+  });
 
   const currentChartData = chartView === 'weekly' ? weeklyData : monthlyData;
 
   // 3B. Financial Performance Dataset (1M weekly breakdown + 3M / 6M / 12M monthly trajectory)
-  const raw12Months = [
-    { period: language === 'ar' ? 'دجنبر' : language === 'fr' ? 'Déc' : 'Dec', retainerRevenue: 1200, adSpend: 2200, toolCosts: 280 },
-    { period: language === 'ar' ? 'يناير' : language === 'fr' ? 'Jan' : 'Jan', retainerRevenue: 1800, adSpend: 2500, toolCosts: 340 },
-    { period: language === 'ar' ? 'فبراير' : language === 'fr' ? 'Fév' : 'Feb', retainerRevenue: 2500, adSpend: 2700, toolCosts: 420 },
-    { period: language === 'ar' ? 'مارس' : language === 'fr' ? 'Mar' : 'Mar', retainerRevenue: 3100, adSpend: 2900, toolCosts: 480 },
-    { period: language === 'ar' ? 'أبريل' : language === 'fr' ? 'Avr' : 'Apr', retainerRevenue: 3700, adSpend: 3100, toolCosts: 540 },
-    { period: language === 'ar' ? 'مايو' : language === 'fr' ? 'Mai' : 'May', retainerRevenue: 4100, adSpend: 3250, toolCosts: 600 },
-    { period: language === 'ar' ? 'يونيو' : language === 'fr' ? 'Juin' : 'Jun', retainerRevenue: 4500, adSpend: 3400, toolCosts: 650 },
-    { period: language === 'ar' ? 'يوليوز' : language === 'fr' ? 'Juil' : 'Jul', retainerRevenue: 6500, adSpend: 3900, toolCosts: 920 },
-    { period: language === 'ar' ? 'غشت' : language === 'fr' ? 'Août' : 'Aug', retainerRevenue: 9500, adSpend: 4250, toolCosts: 1350 },
-    { period: language === 'ar' ? 'شتنبر' : language === 'fr' ? 'Sept' : 'Sep', retainerRevenue: 12500, adSpend: 4600, toolCosts: 1720 },
-    { period: language === 'ar' ? 'أكتوبر' : language === 'fr' ? 'Oct' : 'Oct', retainerRevenue: 15500, adSpend: 4950, toolCosts: 2050 },
-    {
-      period: language === 'ar' ? 'نونبر' : language === 'fr' ? 'Nov.' : 'Nov',
-      retainerRevenue: metrics.currentMRR,
-      adSpend: metrics.totalAdSpendThisMonth,
-      toolCosts: metrics.totalMonthlyClientExpenses,
-    },
-  ];
+  const raw12Months = Array.from({ length: 12 }, (_, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - 11 + index);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const monthInvoices = invoices.filter((invoice) => {
+      const paidDate = invoice.paidDate ? new Date(invoice.paidDate) : null;
+      return invoice.status === 'paid' && paidDate && paidDate.getFullYear() === year && paidDate.getMonth() === month;
+    });
+    const monthCampaigns = campaigns.filter((campaign) => {
+      const campaignDate = new Date(campaign.startDate);
+      return campaignDate.getFullYear() === year && campaignDate.getMonth() === month;
+    });
+    const monthExpenses = clients.flatMap((client) => client.expenses || []).filter((expense) => {
+      const created = new Date(expense.createdAt);
+      return expense.isActive && created.getFullYear() === year && created.getMonth() === month;
+    });
+    return {
+      period: date.toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', year: '2-digit' }),
+      retainerRevenue: monthInvoices.filter((invoice) => invoice.type === 'monthly_retainer').reduce((sum, invoice) => sum + invoice.amount, 0),
+      adSpend: monthCampaigns.reduce((sum, campaign) => sum + (Number(campaign.spend) || 0), 0),
+      toolCosts: monthExpenses.reduce((sum, expense) => sum + (Number(expense.monthlyCost) || 0), 0),
+    };
+  });
 
-  // Current month split cleanly across 4 weeks so "1 Month" shows clear weekly cashflow
-  const w1Retainer = Math.round(metrics.currentMRR * 0.21);
-  const w2Retainer = Math.round(metrics.currentMRR * 0.24);
-  const w3Retainer = Math.round(metrics.currentMRR * 0.26);
-  const w4Retainer = Math.max(0, metrics.currentMRR - (w1Retainer + w2Retainer + w3Retainer));
-
-  const w1Ad = Math.round(metrics.totalAdSpendThisMonth * 0.24);
-  const w2Ad = Math.round(metrics.totalAdSpendThisMonth * 0.26);
-  const w3Ad = Math.round(metrics.totalAdSpendThisMonth * 0.25);
-  const w4Ad = Math.max(0, metrics.totalAdSpendThisMonth - (w1Ad + w2Ad + w3Ad));
-
-  const w1Tool = Math.round(metrics.totalMonthlyClientExpenses * 0.25);
-  const w2Tool = Math.round(metrics.totalMonthlyClientExpenses * 0.25);
-  const w3Tool = Math.round(metrics.totalMonthlyClientExpenses * 0.25);
-  const w4Tool = Math.max(0, metrics.totalMonthlyClientExpenses - (w1Tool + w2Tool + w3Tool));
-
-  const rawCurrentMonthWeeks = [
-    {
-      period: language === 'ar' ? 'الأسبوع 1' : language === 'fr' ? 'Semaine 1' : 'Week 1',
-      retainerRevenue: w1Retainer,
-      adSpend: w1Ad,
-      toolCosts: w1Tool,
-    },
-    {
-      period: language === 'ar' ? 'الأسبوع 2' : language === 'fr' ? 'Semaine 2' : 'Week 2',
-      retainerRevenue: w2Retainer,
-      adSpend: w2Ad,
-      toolCosts: w2Tool,
-    },
-    {
-      period: language === 'ar' ? 'الأسبوع 3' : language === 'fr' ? 'Semaine 3' : 'Week 3',
-      retainerRevenue: w3Retainer,
-      adSpend: w3Ad,
-      toolCosts: w3Tool,
-    },
-    {
-      period: language === 'ar' ? 'الأسبوع 4' : language === 'fr' ? 'Semaine 4' : 'Week 4',
-      retainerRevenue: w4Retainer,
-      adSpend: w4Ad,
-      toolCosts: w4Tool,
-    },
-  ];
+  const currentMonthKey = new Date().toISOString().slice(0, 7);
+  const rawCurrentMonthWeeks = Array.from({ length: 4 }, (_, index) => {
+    const start = new Date();
+    start.setDate(1 + index * 7);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    const monthInvoices = invoices.filter((invoice) => {
+      const paidDate = invoice.paidDate ? new Date(invoice.paidDate) : null;
+      return invoice.status === 'paid' && invoice.type === 'monthly_retainer' && paidDate && paidDate >= start && paidDate < end;
+    });
+    const monthCampaigns = campaigns.filter((campaign) => {
+      const date = new Date(campaign.startDate);
+      return date >= start && date < end;
+    });
+    const weekExpenses = clients.flatMap((client) => client.expenses || []).filter((expense) => {
+      const date = new Date(expense.createdAt);
+      return expense.isActive && date >= start && date < end;
+    });
+    return {
+      period: language === 'ar' ? `الأسبوع ${index + 1}` : language === 'fr' ? `Semaine ${index + 1}` : `Week ${index + 1}`,
+      retainerRevenue: monthInvoices.reduce((sum, invoice) => sum + invoice.amount, 0),
+      adSpend: monthCampaigns.reduce((sum, campaign) => sum + (Number(campaign.spend) || 0), 0),
+      toolCosts: weekExpenses.reduce((sum, expense) => sum + (Number(expense.monthlyCost) || 0), 0),
+    };
+  });
 
   const selectedRawFinancial =
     financialRange === '1m'
