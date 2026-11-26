@@ -104,11 +104,11 @@ export const ClientsDirectoryTab: React.FC = () => {
   const filtered = useMemo(() => {
     return clients.filter((c) => {
       const matchSearch =
-        c.agencyName.toLowerCase().includes(search.toLowerCase()) ||
-        c.contactPerson.toLowerCase().includes(search.toLowerCase()) ||
-        c.city.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone.includes(search);
-      const matchCity = cityFilter === 'all' || c.city.toLowerCase().includes(cityFilter.toLowerCase());
+        String(c.agencyName || '').toLowerCase().includes(search.toLowerCase()) ||
+        String(c.contactPerson || '').toLowerCase().includes(search.toLowerCase()) ||
+        String(c.city || '').toLowerCase().includes(search.toLowerCase()) ||
+        String(c.phone || '').includes(search);
+      const matchCity = cityFilter === 'all' || String(c.city || '').toLowerCase().includes(cityFilter.toLowerCase());
       const matchStage = stageFilter === 'all' || (stageFilter === 'rejected' && c.stage === 'lost') || (stageFilter === 'free_trial' && c.stage === 'trial_7_days') || (stageFilter === 'rejected_after_trial' && c.stage === 'lost' && (!!c.trialStartDate || c.trialAccepted === false)) || (stageFilter === 'subscribed' && c.stage === 'active_retainer') || c.stage === stageFilter;
       const matchTier = tierFilter === 'all' || c.packageTier === tierFilter;
       return matchSearch && matchCity && matchStage && matchTier;
