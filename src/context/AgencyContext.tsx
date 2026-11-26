@@ -232,11 +232,18 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const parsed = readStored<unknown>('clients', initialClients);
     if (!Array.isArray(parsed)) return initialClients;
     return parsed
-      .filter((item): item is AgencyClient => !!item && typeof item === 'object')
+      .filter((item): item is AgencyClient => !!item && typeof item === 'object' && !Array.isArray(item))
       .map((client) => {
-        if (client.expenses !== undefined) return client;
         const seeded = initialClients.find((init) => init.id === client.id);
-        return { ...client, expenses: seeded?.expenses || [] };
+        // Older browser data may contain malformed nested collections. Keep the
+        // saved client fields, but normalize collections before localization/UI use.
+        const noteHistory = Array.isArray(client.noteHistory)
+          ? client.noteHistory.filter((entry) => !!entry && typeof entry === 'object' && !Array.isArray(entry))
+          : [];
+        const expenses = Array.isArray(client.expenses)
+          ? client.expenses.filter((entry) => !!entry && typeof entry === 'object' && !Array.isArray(entry))
+          : (seeded?.expenses || []);
+        return { ...client, noteHistory, expenses };
       });
   });
 
