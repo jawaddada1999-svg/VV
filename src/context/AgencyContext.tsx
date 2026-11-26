@@ -405,13 +405,14 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const updateClient = (id: string, updates: Partial<AgencyClient>) => {
+    const timestampedUpdates = { ...updates, lastUpdatedAt: new Date().toISOString() };
     setClients((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
+      prev.map((c) => (c.id === id ? { ...c, ...timestampedUpdates } : c))
     );
-    if (updates.agencyName) {
-      setInvoices((prev) => prev.map((item) => item.clientId === id ? { ...item, agencyName: updates.agencyName! } : item));
-      setMeetings((prev) => prev.map((item) => item.clientId === id ? { ...item, agencyName: updates.agencyName! } : item));
-      setTickets((prev) => prev.map((item) => item.clientId === id ? { ...item, agencyName: updates.agencyName! } : item));
+    if (timestampedUpdates.agencyName) {
+      setInvoices((prev) => prev.map((item) => item.clientId === id ? { ...item, agencyName: timestampedUpdates.agencyName! } : item));
+      setMeetings((prev) => prev.map((item) => item.clientId === id ? { ...item, agencyName: timestampedUpdates.agencyName! } : item));
+      setTickets((prev) => prev.map((item) => item.clientId === id ? { ...item, agencyName: timestampedUpdates.agencyName! } : item));
     }
   };
 
@@ -737,8 +738,10 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         moveClientStage(linkedMeeting.clientId, 'meeting_completed');
       } else if (status === 'no_show') {
         moveClientStage(linkedMeeting.clientId, 'meeting_no_show');
-      } else if (status === 'scheduled') {
+      } else if (status === 'scheduled' || status === 'pending_confirmation' || status === 'confirmed' || status === 'rescheduled') {
         moveClientStage(linkedMeeting.clientId, 'meeting_scheduled');
+      } else if (status === 'cancelled') {
+        moveClientStage(linkedMeeting.clientId, 'negotiation_follow_up');
       }
     }
 
