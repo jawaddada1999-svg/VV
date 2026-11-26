@@ -13,6 +13,7 @@ import {
   Plus,
   Award,
   X,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -39,6 +40,7 @@ export const AdsTab: React.FC = () => {
   const [platformScope, setPlatformScope] = useState<'all' | 'meta'>('all');
   const [roasSortBy, setRoasSortBy] = useState<'roas' | 'profit'>('roas');
   const [showAddCampaignModal, setShowAddCampaignModal] = useState(false);
+  const [funnelView, setFunnelView] = useState<'board' | 'table'>('board');
 
   // New Campaign Modal Form State
   const [newCampName, setNewCampName] = useState('');
@@ -74,6 +76,13 @@ export const AdsTab: React.FC = () => {
     totalShowedUp + totalNoShow > 0
       ? Math.round((totalShowedUp / (totalShowedUp + totalNoShow)) * 100)
       : 0;
+
+  // Planned budget protection: compare only campaigns with an explicitly saved budget.
+  const campaignsWithBudget = campaigns.filter((campaign) => Number(campaign.budget) > 0);
+  const totalPlannedBudget = campaignsWithBudget.reduce((sum, campaign) => sum + Number(campaign.budget || 0), 0);
+  const totalActualSpendForBudget = campaignsWithBudget.reduce((sum, campaign) => sum + Math.max(0, Number(campaign.spend || 0)), 0);
+  const remainingPlannedBudget = totalPlannedBudget - totalActualSpendForBudget;
+  const overBudgetCampaigns = campaignsWithBudget.filter((campaign) => Number(campaign.spend || 0) > Number(campaign.budget || 0));
 
   // ROAS & ROI Profitability Calculations per Campaign
   const roasRows = useMemo(() => {
@@ -854,6 +863,39 @@ export const AdsTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Budget protection summary above the conversion funnel */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <span className="rounded-xl bg-emerald-50 p-2 text-emerald-700"><ShieldCheck className="h-5 w-5" /></span>
+          <div>
+            <h3 className="text-sm sm:text-base font-extrabold text-slate-900">{language === 'ar' ? 'حماية الميزانية الإعلانية' : language === 'fr' ? 'Protection du budget publicitaire' : 'Ad budget protection'}</h3>
+            <p className="text-xs text-slate-500 mt-0.5">{language === 'ar' ? 'مقارنة الميزانية المحددة بالإنفاق الفعلي لكل حملة' : language === 'fr' ? 'Compare le budget prévu aux dépenses réelles de chaque campagne' : 'Compare planned budget with actual spend for each campaign'}</p>
+          </div>
+        </div>
+        {campaignsWithBudget.length === 0 ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs text-amber-900">
+            {language === 'ar' ? 'لا توجد ميزانيات محددة للحملات بعد. أضف ميزانية مخططة لكل حملة لتفعيل تنبيهات تجاوز الميزانية.' : language === 'fr' ? 'Aucun budget prévu. Ajoutez un budget à une campagne pour activer les alertes de dépassement.' : 'No planned campaign budgets yet. Add a planned budget to a campaign to enable overspend alerts.'}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="rounded-xl bg-slate-50 border border-slate-200 p-3"><div className="text-[10px] font-bold text-slate-500">{language === 'ar' ? 'إجمالي الميزانية المحددة' : language === 'fr' ? 'Budget total prévu' : 'Total planned budget'}</div><div className="mt-1 text-lg font-extrabold text-slate-900">{totalPlannedBudget.toLocaleString()} {t.mad}</div></div>
+              <div className="rounded-xl bg-slate-50 border border-slate-200 p-3"><div className="text-[10px] font-bold text-slate-500">{language === 'ar' ? 'الإنفاق الفعلي' : language === 'fr' ? 'Dépenses réelles' : 'Actual spend'}</div><div className="mt-1 text-lg font-extrabold text-slate-900">{totalActualSpendForBudget.toLocaleString()} {t.mad}</div></div>
+              <div className={`rounded-xl border p-3 ${remainingPlannedBudget < 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}><div className="text-[10px] font-bold text-slate-600">{language === 'ar' ? 'المتبقي من الميزانية' : language === 'fr' ? 'Budget restant' : 'Remaining budget'}</div><div className={`mt-1 text-lg font-extrabold ${remainingPlannedBudget < 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{remainingPlannedBudget.toLocaleString()} {t.mad}</div></div>
+            </div>
+            {overBudgetCampaigns.length > 0 ? (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3.5">
+                <div className="text-xs font-extrabold text-rose-800">{language === 'ar' ? `تنبيه: ${overBudgetCampaigns.length} حملة تجاوزت الميزانية المحددة` : language === 'fr' ? `Alerte : ${overBudgetCampaigns.length} campagne(s) au-dessus du budget` : `Alert: ${overBudgetCampaigns.length} campaign(s) over budget`}</div>
+                <div className="mt-2 flex flex-wrap gap-2">{overBudgetCampaigns.map(campaign => <span key={campaign.id} className="rounded-lg bg-white border border-rose-200 px-2.5 py-1.5 text-[11px] font-bold text-rose-800">{campaign.campaignName}: {Number(campaign.spend || 0).toLocaleString()} / {Number(campaign.budget || 0).toLocaleString()} {t.mad}</span>)}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs font-bold text-emerald-800"><CheckCircle2 className="h-4 w-4" />{language === 'ar' ? 'كل الحملات ذات الميزانية المحددة ما زالت داخل حدودها.' : language === 'fr' ? 'Toutes les campagnes budgétées restent dans leurs limites.' : 'All budgeted campaigns remain within their planned limits.'}</div>
+            )}
+          </>
+        )}
+        <p className="text-[10px] text-slate-500">{language === 'ar' ? 'هذه تنبيهات ومراقبة داخل لوحة التحكم؛ لا يتم إيقاف الإعلانات تلقائياً من هنا.' : language === 'fr' ? 'Il s’agit d’un suivi et d’alertes dans le tableau de bord ; les publicités ne sont pas mises en pause automatiquement.' : 'This is dashboard monitoring and alerting; campaigns are not automatically paused from here.'}</p>
+      </section>
+
       {/* 2. Funnel Drop-Off Visualization Section */}
       <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
@@ -869,14 +911,19 @@ export const AdsTab: React.FC = () => {
             <p className="text-xs text-slate-500 mt-1">{t.funnelSectionSub}</p>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-center">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
             <span className="text-xs font-semibold text-slate-500">{t.metricAttendedRate}:</span>
             <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-200">
               {leadToAttendancePercent}%
             </span>
+            <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1">
+              <button type="button" onClick={() => setFunnelView('board')} className={`rounded-lg px-3 py-2 text-[11px] font-bold transition-colors ${funnelView === 'board' ? 'bg-[#0B434C] text-white shadow-sm' : 'text-slate-600 hover:bg-white'}`}>{language === 'ar' ? 'عرض اللوحة' : language === 'fr' ? 'Vue tableau' : 'Board view'}</button>
+              <button type="button" onClick={() => setFunnelView('table')} className={`rounded-lg px-3 py-2 text-[11px] font-bold transition-colors ${funnelView === 'table' ? 'bg-[#0B434C] text-white shadow-sm' : 'text-slate-600 hover:bg-white'}`}>{language === 'ar' ? 'عرض الجدول التفصيلي' : language === 'fr' ? 'Vue détaillée' : 'Detailed table'}</button>
+            </div>
           </div>
         </div>
 
+        {funnelView === 'board' ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
           <div className="lg:col-span-8 h-64 sm:h-80 w-full" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
@@ -978,6 +1025,36 @@ export const AdsTab: React.FC = () => {
             ))}
           </div>
         </div>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <table className={`w-full min-w-[620px] text-xs ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+              <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
+                <tr>
+                  <th className="p-3.5">{language === 'ar' ? 'المرحلة' : language === 'fr' ? 'Étape' : 'Stage'}</th>
+                  <th className="p-3.5 text-center">{language === 'ar' ? 'العدد' : language === 'fr' ? 'Volume' : 'Volume'}</th>
+                  <th className="p-3.5 text-center">{adsText.conversionPct}</th>
+                  <th className="p-3.5 text-center">{adsText.dropoffPct}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {funnelDropoffData.map((step, idx) => (
+                  <tr key={step.name} className="hover:bg-slate-50/70">
+                    <td className="p-3.5 font-bold text-slate-800">{step.name}</td>
+                    <td className="p-3.5 text-center font-mono font-bold text-slate-900">{step.volume.toLocaleString()}</td>
+                    <td className="p-3.5 text-center font-mono font-bold text-emerald-700">{step.conversionRate.toFixed(1)}%</td>
+                    <td className="p-3.5 text-center font-mono font-bold text-rose-700">{step.dropoffRate.toFixed(1)}%</td>
+                  </tr>
+                ))}
+                <tr className="bg-slate-50">
+                  <td className="p-3.5 font-bold text-slate-800">{language === 'ar' ? 'حضور المواعيد' : language === 'fr' ? 'Présence aux rendez-vous' : 'Meeting attendance'}</td>
+                  <td className="p-3.5 text-center font-mono font-bold text-slate-900">{totalShowedUp.toLocaleString()}</td>
+                  <td className="p-3.5 text-center font-mono font-bold text-emerald-700">{attendanceRate}%</td>
+                  <td className="p-3.5 text-center font-mono font-bold text-rose-700">{(100-attendanceRate).toFixed(1)}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* 3. Funnel Cards (Uniform 2-Column Mobile Grid -> 5-Column Desktop) */}
