@@ -308,6 +308,19 @@ export const DeliveryTab: React.FC = () => {
                               </button>
                             ))}
                           </div>
+                          {project.targetDeliveryDate && project.targetDeliveryDate < new Date().toISOString().slice(0, 10) && currentPct < 100 && (
+                            <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2">
+                              <div className="text-[10px] font-bold text-rose-700">
+                                {language === 'ar' ? 'تجاوز موعد التسليم' : language === 'fr' ? 'Livraison en retard' : 'Delivery overdue'}
+                              </div>
+                              <input
+                                value={project.deliveryDelayReason || ''}
+                                onChange={(e) => updateClient(project.id, { deliveryDelayReason: e.target.value })}
+                                placeholder={language === 'ar' ? 'سبب التأخير' : language === 'fr' ? 'Raison du retard' : 'Reason for delay'}
+                                className="mt-1 w-full px-2 py-1 text-[10px] rounded-md border border-rose-200 bg-white"
+                              />
+                            </div>
+                          )}
                           {tasks.filter((task) => task.relatedClientId === project.id && task.category === 'build').length > 0 && (
                             <div className="mt-3 pt-2 border-t border-slate-100 space-y-1.5">
                               <div className="text-[10px] font-bold text-slate-600">
