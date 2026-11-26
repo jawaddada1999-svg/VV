@@ -23,6 +23,8 @@ import {
   XCircle,
   HelpCircle,
   Users,
+  LayoutGrid,
+  Table2,
 } from 'lucide-react';
 import { ClientStage, PackageTier, AgencyClient } from '../../types/agency';
 import { translations } from '../../translations';
@@ -62,6 +64,7 @@ export const PipelineTab: React.FC = () => {
   const [draggedClientId, setDraggedClientId] = useState<string | null>(null);
   const [dragOverColId, setDragOverColId] = useState<ClientStage | null>(null);
   const [activeStageDropdownId, setActiveStageDropdownId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'kanban' | 'grid'>('kanban');
 
   // 9 Pipeline Stages with localized keys and separated title/badge structure
   const columns: ColumnDef[] = [
@@ -199,7 +202,21 @@ export const PipelineTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Pipeline display mode */}
+      <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+        <span className="text-xs font-bold text-slate-700">{language === 'ar' ? 'طريقة عرض مسار الصفقات' : language === 'fr' ? 'Mode d’affichage' : 'Pipeline view'}</span>
+        <div className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
+          <button type="button" onClick={() => setViewMode('grid')} className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-bold transition-colors ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+            <Table2 className="w-4 h-4" /> {language === 'ar' ? 'الجدول الشبكي' : language === 'fr' ? 'Tableau' : 'Grid table'}
+          </button>
+          <button type="button" onClick={() => setViewMode('kanban')} className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-bold transition-colors ${viewMode === 'kanban' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+            <LayoutGrid className="w-4 h-4" /> Kanban
+          </button>
+        </div>
+      </div>
+
       {/* 3. Drag & Drop Kanban: fixed-width stages with horizontal scrolling on all screen sizes */}
+      {viewMode === 'kanban' && (
       <div className="flex w-full max-w-full overflow-x-auto overflow-y-hidden snap-x snap-proximity gap-3.5 pb-5 items-start no-scrollbar overscroll-x-contain scroll-smooth" style={{ scrollbarWidth: "thin" }}>
         {columns.map((col) => {
           const columnClients = filteredClients.filter((c) => col.stageIds.includes(c.stage));
@@ -462,6 +479,55 @@ export const PipelineTab: React.FC = () => {
           );
         })}
       </div>
+      )}
+      {viewMode === 'grid' && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className={`w-full text-xs ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+              <thead className="bg-slate-100 text-slate-700 border-b border-slate-200">
+                <tr>
+                  <th className="p-3">{language === 'ar' ? 'الوكالة / المسؤول' : language === 'fr' ? 'Agence / Contact' : 'Agency / Contact'}</th>
+                  <th className="p-3">{language === 'ar' ? 'المدينة' : language === 'fr' ? 'Ville' : 'City'}</th>
+                  <th className="p-3">{language === 'ar' ? 'مرحلة الصفقة' : language === 'fr' ? 'Étape' : 'Deal stage'}</th>
+                  <th className="p-3">{language === 'ar' ? 'الباقة' : language === 'fr' ? 'Forfait' : 'Package'}</th>
+                  <th className="p-3">{language === 'ar' ? 'رسوم الإعداد' : language === 'fr' ? 'Frais initiaux' : 'Setup fee'}</th>
+                  <th className="p-3">{language === 'ar' ? 'الاشتراك الشهري' : language === 'fr' ? 'Abonnement' : 'Monthly'}</th>
+                  <th className="p-3 text-center">{language === 'ar' ? 'إجراء' : language === 'fr' ? 'Action' : 'Action'}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredClients.map((client) => (
+                  <tr key={client.id} className="hover:bg-slate-50">
+                    <td className="p-3">
+                      <button type="button" onClick={() => setSelectedClientId(client.id)} className="font-bold text-slate-900 hover:text-orange-600">{client.agencyName}</button>
+                      <div className="text-[11px] text-slate-500 mt-0.5">{client.contactPerson} · <span dir="ltr">{client.phone}</span></div>
+                    </td>
+                    <td className="p-3 text-slate-700">{client.city}</td>
+                    <td className="p-3">
+                      <select value={client.stage} onChange={(e) => {
+                        const stage = e.target.value as ClientStage;
+                        if (stage === 'trial_7_days') start7DayTrial(client.id);
+                        else if (stage === 'delivery_in_progress') acceptTrialAndCloseDeal(client.id);
+                        else if (stage === 'active_retainer') activateMonthlyRetainer(client.id);
+                        else moveClientStage(client.id, stage);
+                      }} className="max-w-[190px] rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-semibold text-slate-800">
+                        {columns.map((col) => <option key={col.id} value={col.id}>{t[col.titleKey]}</option>)}
+                        {client.stage === 'active_retainer' && <option value="active_retainer">{t.active}</option>}
+                        {client.stage === 'paused' && <option value="paused">{language === 'ar' ? 'متوقف مؤقتاً' : 'Paused'}</option>}
+                      </select>
+                    </td>
+                    <td className="p-3 text-slate-700">{client.packageTier === 'starter' ? t.starterPackage : client.packageTier === 'growth' ? t.growthPackage : t.enterprisePackage}</td>
+                    <td className="p-3 font-mono font-bold text-slate-800">{client.setupFee.toLocaleString()} {t.mad}</td>
+                    <td className="p-3 font-mono font-bold text-emerald-700">{client.monthlyRetainer.toLocaleString()} {t.perMonth}</td>
+                    <td className="p-3 text-center"><button type="button" onClick={() => setSelectedClientId(client.id)} className="px-3 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 font-bold hover:bg-orange-100">{language === 'ar' ? 'فتح الملف' : language === 'fr' ? 'Ouvrir' : 'Open file'}</button></td>
+                  </tr>
+                ))}
+                {filteredClients.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-slate-400">{t.notificationsEmpty}</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
