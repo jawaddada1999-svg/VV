@@ -43,6 +43,7 @@ export interface AgencyClient {
   stage: ClientStage;
   adSource: string;            // الحملة التي جاء منها (Meta, Google...)
   createdAt: string;
+  lastUpdatedAt?: string;       // آخر تاريخ تم فيه تعديل بيانات الوكالة
 
   // تفاصيل حجم العمل والمشكلة
   agencyManager?: string;
@@ -120,8 +121,8 @@ export interface MeetingItem {
   phone: string;
   city: string;
   scheduledTime: string;       // توقيت المكالمة
-  status: 'scheduled' | 'completed' | 'no_show' | 'rescheduled';
-  meetingOutcome?: 'accepted_trial' | 'follow_up' | 'rejected';
+  status: 'scheduled' | 'pending_confirmation' | 'confirmed' | 'completed' | 'no_show' | 'rescheduled' | 'cancelled';
+  meetingOutcome?: 'accepted_trial' | 'follow_up' | 'rejected' | 'interested' | 'not_interested' | 'call_back' | 'no_answer' | 'needs_decision';
   meetingNotes?: string;
   packageInterest: PackageTier;
 
