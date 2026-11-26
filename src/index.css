@@ -352,3 +352,93 @@ h1, h2, h3, h4, h5, h6, .font-display {
 .vv-modern-content textarea::placeholder { color: #71858A !important; opacity: 1; }
 .vv-modern-content table td,
 .vv-modern-content table th { line-height: 1.65; }
+
+
+/* IBONDA responsive experience — mobile-first ergonomics + desktop refinement */
+html { scroll-padding-top: 76px; }
+body { overscroll-behavior-x: none; }
+.vv-app-shell { min-height: 100vh; min-height: 100dvh; }
+.vv-workspace-column { min-width: 0; }
+.vv-main-frame, .vv-modern-content, .vv-modern-content > * { min-width: 0; }
+.vv-modern-content { width: 100%; }
+.vv-modern-content [role="dialog"] {
+  max-height: min(92vh, 900px);
+  max-height: min(92dvh, 900px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.vv-modern-content .recharts-responsive-container { min-width: 0; }
+.vv-modern-content .overflow-x-auto {
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.vv-modern-content table { border-collapse: separate; border-spacing: 0; }
+.vv-modern-content button, .vv-top-header button, .vv-app-shell a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.vv-modern-content input, .vv-modern-content select, .vv-modern-content textarea {
+  min-width: 0;
+}
+.vv-modern-content :focus-visible, .vv-top-header :focus-visible {
+  outline: 3px solid rgba(255,102,0,.34);
+  outline-offset: 2px;
+}
+@media (min-width: 1024px) {
+  .vv-main-frame { padding: 28px 32px 36px; }
+  .vv-modern-content { gap: 22px; }
+  .vv-modern-content [class*="rounded-2xl"][class*="border"] { border-radius: 20px; }
+  .vv-modern-content .overflow-x-auto { scrollbar-width: thin; scrollbar-color: #B7C9CC transparent; }
+  .vv-modern-content .overflow-x-auto::-webkit-scrollbar { height: 8px; }
+  .vv-modern-content .overflow-x-auto::-webkit-scrollbar-thumb { background: #B7C9CC; border-radius: 99px; }
+  .vv-modern-content .overflow-x-auto::-webkit-scrollbar-track { background: #EDF3F4; border-radius: 99px; }
+}
+@media (max-width: 767px) {
+  html, body, #root { width: 100%; max-width: 100%; }
+  .vv-app-shell, .vv-workspace-column, .vv-workspace-surface { width: 100%; max-width: 100%; }
+  .vv-main-frame {
+    padding: 14px 12px calc(104px + env(safe-area-inset-bottom));
+    overflow-x: clip;
+  }
+  .vv-modern-content { gap: 14px; padding-bottom: 8px; }
+  .vv-modern-content h1 { font-size: clamp(21px, 6vw, 27px); line-height: 1.3; }
+  .vv-modern-content h2 { font-size: clamp(17px, 4.8vw, 21px); line-height: 1.35; }
+  .vv-modern-content h3 { line-height: 1.4; }
+  .vv-modern-content [class*="rounded-2xl"][class*="border"] { border-radius: 16px; }
+  .vv-modern-content [class*="shadow-"] { box-shadow: 0 5px 18px rgba(4,24,27,.055); }
+  .vv-modern-content input:not([type="checkbox"]):not([type="radio"]),
+  .vv-modern-content select,
+  .vv-modern-content textarea {
+    min-height: 44px;
+    font-size: 16px !important;
+    line-height: 1.35;
+  }
+  .vv-modern-content textarea { min-height: 88px; }
+  .vv-modern-content button { line-height: 1.35; }
+  .vv-modern-content table { min-width: 620px; font-size: 11px; }
+  .vv-modern-content table th, .vv-modern-content table td { padding: 9px 10px; white-space: nowrap; }
+  .vv-modern-content .overflow-x-auto { border-radius: 12px; }
+  .vv-modern-content .recharts-wrapper, .vv-modern-content .recharts-surface { max-width: 100%; }
+  .vv-modern-content .recharts-cartesian-axis-tick-value { font-size: 10px; }
+  .vv-modern-content [role="dialog"] {
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 20px);
+    margin: 10px auto;
+    border-radius: 20px;
+  }
+  .vv-modern-content .snap-start { scroll-margin-inline: 12px; }
+  .vv-modern-content .snap-start > * { min-width: 0; }
+}
+@media (max-width: 380px) {
+  .vv-main-frame { padding-inline: 9px; }
+  .vv-top-header > div:first-child { padding-inline: 8px; gap: 6px; }
+  .vv-kpi-card { padding: 11px !important; }
+  .vv-kpi-card > div:first-child > div.flex.items-baseline > span:first-child { font-size: 20px !important; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vv-modern-content [class*="rounded-2xl"][class*="border"]:hover {
+    transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease;
+  }
+}
