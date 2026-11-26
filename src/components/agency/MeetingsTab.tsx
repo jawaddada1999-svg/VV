@@ -1064,9 +1064,13 @@ export const MeetingsTab: React.FC = () => {
                                     onChange={(e) => updateMeetingStatus(meet.id, e.target.value as MeetingItem['status'])}
                                     className="bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-[10px] font-bold text-slate-800 focus:outline-none focus:border-orange-500 cursor-pointer flex-1"
                                   >
-                                    <option value="scheduled">{t.statusScheduled}</option>
-                                    <option value="completed">{t.statusCompleted}</option>
-                                    <option value="no_show">{t.statusNoShow}</option>
+                                    <option value="scheduled">مجدول</option>
+                                    <option value="pending_confirmation">في انتظار التأكيد</option>
+                                    <option value="confirmed">مؤكد</option>
+                                    <option value="completed">تم الحضور</option>
+                                    <option value="no_show">لم يحضر</option>
+                                    <option value="rescheduled">أعيدت برمجته</option>
+                                    <option value="cancelled">ملغى</option>
                                   </select>
 
                                   {/* Deal Conversion Toggle */}
@@ -2284,9 +2288,12 @@ export const MeetingsTab: React.FC = () => {
                           <td className="p-3.5 text-center">
                             <select value={meet.status} onChange={(e) => updateMeetingStatus(meet.id, e.target.value as MeetingItem['status'])} className={`max-w-[150px] rounded-lg border px-2 py-1.5 text-[10px] font-bold cursor-pointer ${meet.status === 'completed' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : meet.status === 'no_show' ? 'bg-rose-50 text-rose-800 border-rose-300' : meet.status === 'rescheduled' ? 'bg-violet-50 text-violet-800 border-violet-300' : 'bg-amber-50 text-amber-800 border-amber-300'}`}>
                               <option value="scheduled">{language === 'ar' ? 'مجدول' : language === 'fr' ? 'Programmé' : 'Scheduled'}</option>
+                              <option value="pending_confirmation">{language === 'ar' ? 'في انتظار التأكيد' : language === 'fr' ? 'En attente de confirmation' : 'Pending confirmation'}</option>
+                              <option value="confirmed">{language === 'ar' ? 'مؤكد' : language === 'fr' ? 'Confirmé' : 'Confirmed'}</option>
                               <option value="completed">{language === 'ar' ? 'تم الحضور' : language === 'fr' ? 'Effectué / Présent' : 'Attended'}</option>
                               <option value="no_show">{language === 'ar' ? 'لم يحضر' : language === 'fr' ? 'Absent' : 'No-show'}</option>
                               <option value="rescheduled">{language === 'ar' ? 'أعيدت برمجته' : language === 'fr' ? 'Reprogrammé' : 'Rescheduled'}</option>
+                              <option value="cancelled">{language === 'ar' ? 'ملغى' : language === 'fr' ? 'Annulé' : 'Cancelled'}</option>
                             </select>
                           </td>
 
@@ -2294,9 +2301,14 @@ export const MeetingsTab: React.FC = () => {
                           <td className="p-3.5 text-center">
                             <select value={meet.meetingOutcome || ''} onChange={(e) => updateMeeting(meet.id, { meetingOutcome: (e.target.value || undefined) as MeetingItem['meetingOutcome'] })} className="max-w-[155px] rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[10px] font-bold text-slate-800 cursor-pointer">
                               <option value="">{language === 'ar' ? 'غير محدد' : language === 'fr' ? 'Non défini' : 'Not set'}</option>
-                              <option value="accepted_trial">{language === 'ar' ? 'وافق على التجربة' : language === 'fr' ? 'Essai accepté' : 'Trial accepted'}</option>
-                              <option value="follow_up">{language === 'ar' ? 'متابعة / تفاوض' : language === 'fr' ? 'Suivi / Négociation' : 'Follow-up / Negotiation'}</option>
-                              <option value="rejected">{language === 'ar' ? 'رفض العرض' : language === 'fr' ? 'Offre refusée' : 'Offer rejected'}</option>
+                              <option value="accepted_trial">وافق على التجربة</option>
+                              <option value="interested">مهتم بالعرض</option>
+                              <option value="follow_up">متابعة / تفاوض</option>
+                              <option value="call_back">طلب معاودة الاتصال</option>
+                              <option value="needs_decision">في انتظار القرار</option>
+                              <option value="no_answer">لم يتم التوصل لجواب</option>
+                              <option value="not_interested">غير مهتم</option>
+                              <option value="rejected">رفض العرض</option>
                             </select>
                           </td>
 
