@@ -340,10 +340,18 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Client CRUD
   const addClient = (data: Omit<AgencyClient, 'id' | 'createdAt'>): AgencyClient => {
-    const newId = `cli-${Date.now()}`;
+    const normalizedPhone = (data.phone || '').replace(/\\D/g, '');
+    const normalizedEmail = (data.email || '').trim().toLowerCase();
+    const duplicate = clients.find((client) => {
+      const phone = (client.phone || '').replace(/\\D/g, '');
+      const email = (client.email || '').trim().toLowerCase();
+      return (normalizedPhone.length >= 8 && phone === normalizedPhone) ||
+        (normalizedEmail && email && email === normalizedEmail);
+    });
+    if (duplicate) return duplicate;
     const newClient: AgencyClient = {
       ...data,
-      id: newId,
+      id: `cli-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       createdAt: new Date().toISOString(),
     };
     setClients((prev) => [newClient, ...prev]);
@@ -354,6 +362,11 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setClients((prev) =>
       prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
     );
+    if (updates.agencyName) {
+      setInvoices((prev) => prev.map((item) => item.clientId === id ? { ...item, agencyName: updates.agencyName! } : item));
+      setMeetings((prev) => prev.map((item) => item.clientId === id ? { ...item, agencyName: updates.agencyName! } : item));
+      setTickets((prev) => prev.map((item) => item.clientId === id ? { ...item, agencyName: updates.agencyName! } : item));
+    }
   };
 
   const replaceClientsFromSheet = (newClients: AgencyClient[]) => {
@@ -506,10 +519,13 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Accept Trial and Close Deal
   const acceptTrialAndCloseDeal = (id: string) => {
+    const targetClient = clients.find((client) => client.id === id);
+    if (!targetClient || targetClient.stage === 'delivery_in_progress' || targetClient.stage === 'active_retainer' ||
+        invoices.some((invoice) => invoice.clientId === id && invoice.type === 'setup_fee')) return;
     setClients((prev) =>
       prev.map((c) => {
         if (c.id === id) {
-          // Create setup invoice
+          // Create setup invoice once only
           const setupInv: MaintenanceInvoice = {
             id: `inv-${Date.now()}`,
             invoiceNumber: `INV-SET-${Math.floor(100 + Math.random() * 900)}`,
@@ -555,6 +571,9 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Activate Monthly Retainer
   const activateMonthlyRetainer = (id: string) => {
+    const targetClient = clients.find((client) => client.id === id);
+    if (!targetClient || targetClient.stage === 'active_retainer' ||
+        invoices.some((invoice) => invoice.clientId === id && invoice.type === 'monthly_retainer' && invoice.status !== 'paid')) return;
     const today = new Date();
     const nextMonth = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
 
@@ -591,16 +610,23 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Meetings
   const addMeeting = (data: Omit<MeetingItem, 'id'>) => {
+    const linkedClient = clients.find((client) => client.id === data.clientId);
+    if (!linkedClient) return;
+    const duplicate = meetings.some((meeting) =>
+      meeting.clientId === data.clientId && meeting.scheduledTime === data.scheduledTime &&
+      meeting.status === 'scheduled'
+    );
+    if (duplicate) return;
     const newMeeting: MeetingItem = {
       ...data,
-      id: `meet-${Date.now()}`,
+      clientName: linkedClient.contactPerson,
+      agencyName: linkedClient.agencyName,
+      phone: linkedClient.phone,
+      city: linkedClient.city,
+      id: `meet-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     };
     setMeetings((prev) => [newMeeting, ...prev]);
-
-    // Also update or link client stage to meeting_scheduled if exists
-    if (data.clientId) {
-      updateClient(data.clientId, { stage: 'meeting_scheduled' });
-    }
+    updateClient(data.clientId, { stage: 'meeting_scheduled' });
   };
 
   const updateMeeting = (id: string, updates: Partial<MeetingItem>) => {
@@ -903,30 +929,35 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Computed Agency Metrics
   const metrics: AgencyMetricsSummary = useMemo(() => {
-    const paidInvoices = invoices.filter((i) => i.status === 'paid');
-    const totalRevenueCash = paidInvoices.reduce((sum, i) => sum + i.amount, 0);
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+    const paidInvoices = invoices.filter((invoice) => invoice.status === 'paid');
+    const totalRevenueCash = paidInvoices.reduce((sum, invoice) => sum + (Number(invoice.amount) || 0), 0);
 
-    const activeRetainerList = clients.filter((c) => c.stage === 'active_retainer');
-    const currentMRR = activeRetainerList.reduce((sum, c) => sum + (c.monthlyRetainer || 0), 0);
-    const totalMonthlyClientExpenses = activeRetainerList.reduce(
-      (sum, c) =>
-        sum +
-        (c.expenses || [])
-          .filter((e) => e.isActive)
-          .reduce((expSum, e) => expSum + (e.monthlyCost || 0), 0),
-      0
+    const activeRetainerList = clients.filter((client) =>
+      client.stage === 'active_retainer' && client.maintenanceStatus !== 'payment_due'
     );
+    const currentMRR = activeRetainerList.reduce((sum, client) => sum + (Number(client.monthlyRetainer) || 0), 0);
+    const totalMonthlyClientExpenses = activeRetainerList.reduce((sum, client) =>
+      sum + (client.expenses || []).filter((expense) => expense.isActive)
+        .reduce((expenseSum, expense) => expenseSum + (Number(expense.monthlyCost) || 0), 0), 0);
     const netRetainerProfit = currentMRR - totalMonthlyClientExpenses;
 
-    const trialsInProgress = clients.filter((c) => c.stage === 'trial_7_days').length;
-    const buildProjectsActive = clients.filter((c) => c.stage === 'delivery_in_progress').length;
-
-    const totalAdSpend = campaigns.reduce((sum, c) => sum + c.spend, 0);
-    const totalDealsClosed = clients.filter(
-      (c) => c.stage === 'deal_won' || c.stage === 'delivery_in_progress' || c.stage === 'active_retainer'
+    const trialsInProgress = clients.filter((client) => client.stage === 'trial_7_days').length;
+    const buildProjectsActive = clients.filter((client) => client.stage === 'delivery_in_progress').length;
+    const totalAdSpend = campaigns.reduce((sum, campaign) => {
+      const start = new Date(campaign.startDate).getTime();
+      return start >= monthStart && start < nextMonthStart ? sum + (Number(campaign.spend) || 0) : sum;
+    }, 0);
+    const totalDealsClosed = clients.filter((client) =>
+      ['deal_won', 'delivery_in_progress', 'active_retainer'].includes(client.stage)
     ).length;
-
     const averageCAC = totalDealsClosed > 0 ? Math.round(totalAdSpend / totalDealsClosed) : 0;
+    const meetingsBookedThisMonth = meetings.filter((meeting) => {
+      const date = new Date(meeting.scheduledTime).getTime();
+      return Number.isFinite(date) && date >= monthStart && date < nextMonthStart;
+    }).length;
 
     return {
       totalRevenueCash,
@@ -934,7 +965,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       activeRetainerClients: activeRetainerList.length,
       trialsInProgress,
       buildProjectsActive,
-      meetingsBookedThisMonth: meetings.length,
+      meetingsBookedThisMonth,
       totalAdSpendThisMonth: totalAdSpend,
       averageCAC,
       totalMonthlyClientExpenses,
