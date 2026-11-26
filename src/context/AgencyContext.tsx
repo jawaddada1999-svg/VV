@@ -109,6 +109,7 @@ interface AgencyContextType {
   // Agency Tasks / To-Do List
   addTask: (task: Omit<AgencyTask, 'id' | 'createdAt'>) => void;
   toggleTask: (id: string) => void;
+  updateTask: (id: string, updates: Partial<AgencyTask>) => void;
   deleteTask: (id: string) => void;
 
   // Invoices & Retainers
@@ -547,6 +548,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           completed: false,
           relatedAgencyName: targetClient.agencyName,
           relatedClientId: id,
+          assignee: targetClient.agencyManager || 'فريق التنفيذ',
           category: 'build' as const,
           createdAt: new Date().toISOString(),
         })),
@@ -748,6 +750,10 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setTasks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
     );
+  };
+
+  const updateTask = (id: string, updates: Partial<AgencyTask>) => {
+    setTasks((prev) => prev.map((task) => task.id === id ? { ...task, ...updates } : task));
   };
 
   const deleteTask = (id: string) => {
@@ -1071,6 +1077,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toggleMeetingConverted,
         addTask,
         toggleTask,
+        updateTask,
         deleteTask,
         markInvoicePaid,
         addInvoice,
