@@ -38,7 +38,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
   return (
     <nav
       aria-label={language === 'ar' ? 'التنقل السريع' : language === 'fr' ? 'Navigation rapide' : 'Quick navigation'}
-      className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 shadow-[0_-8px_28px_rgba(8,46,53,0.10)] px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+      className="vv-mobile-tabbar lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/90 shadow-[0_-10px_34px_rgba(8,46,53,0.13)] px-2 pt-2 pb-[max(0.55rem,env(safe-area-inset-bottom))]"
     >
       <div className="grid grid-cols-5 gap-1 max-w-xl mx-auto">
         {items.map((item) => {
@@ -50,7 +50,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
               type="button"
               onClick={() => setActiveTab(item.id)}
               aria-current={isActive ? "page" : undefined}
-              className={`min-h-[58px] flex flex-col items-center justify-center gap-1 rounded-xl px-1.5 transition-all cursor-pointer relative ${
+              className={`min-h-[58px] flex flex-col items-center justify-center gap-1 rounded-2xl px-1.5 transition-all cursor-pointer relative ${
                 isActive
                   ? 'text-[#FF6600] bg-orange-50/90 font-extrabold'
                   : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50 font-semibold'
@@ -70,7 +70,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
           onClick={onOpenMenu}
           title={t.navLeadershipGroup}
           aria-current={isMoreActive ? "page" : undefined}
-          className={`min-h-[58px] flex flex-col items-center justify-center gap-1 rounded-xl px-1.5 font-semibold transition-all cursor-pointer ${isMoreActive ? "text-[#FF6600] bg-orange-50/90" : "text-slate-600 hover:text-[#082E35] hover:bg-slate-50"}`}
+          className={`min-h-[58px] flex flex-col items-center justify-center gap-1 rounded-2xl px-1.5 font-semibold transition-all cursor-pointer ${isMoreActive ? "text-[#FF6600] bg-orange-50/90" : "text-slate-600 hover:text-[#082E35] hover:bg-slate-50"}`}
         >
           <Menu className="w-5 h-5 stroke-[2.2]" />
           <span className="text-[10px] sm:text-[11px] leading-tight font-bold truncate max-w-full">
