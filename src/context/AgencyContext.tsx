@@ -522,6 +522,30 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const targetClient = clients.find((client) => client.id === id);
     if (!targetClient || targetClient.stage === 'delivery_in_progress' || targetClient.stage === 'active_retainer' ||
         invoices.some((invoice) => invoice.clientId === id && invoice.type === 'setup_fee')) return;
+    if (!tasks.some((task) => task.relatedClientId === id && task.category === 'build')) {
+      const checklistTitles = [
+        'تأكيد بيانات الوكالة ومتطلبات الربط',
+        'إعداد استقبال العملاء من الإعلانات',
+        'إعداد رسائل واتساب والتأهيل',
+        'إعداد التقويم وحجز المواعيد',
+        'اختبار شامل وتسليم النظام',
+      ];
+      const dueDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      setTasks((prev) => [
+        ...checklistTitles.map((title, index) => ({
+          id: `build-${id}-${index + 1}`,
+          title,
+          priority: index === 4 ? 'high' as const : 'medium' as const,
+          dueDate,
+          completed: false,
+          relatedAgencyName: targetClient.agencyName,
+          relatedClientId: id,
+          category: 'build' as const,
+          createdAt: new Date().toISOString(),
+        })),
+        ...prev,
+      ]);
+    }
     setClients((prev) =>
       prev.map((c) => {
         if (c.id === id) {
