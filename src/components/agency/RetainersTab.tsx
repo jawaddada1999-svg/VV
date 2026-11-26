@@ -525,6 +525,14 @@ export const RetainersTab: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {retainerClients.map((client) => {
                   const stats = calcClientExpenseStats(client);
+                  const today = new Date().toISOString().slice(0, 10);
+                  const overdueInvoice = invoices.some((invoice) =>
+                    invoice.clientId === client.id && invoice.type === 'monthly_retainer' &&
+                    invoice.status !== 'paid' && invoice.dueDate < today
+                  );
+                  const renewalDueSoon = !!client.nextBillingDate &&
+                    client.nextBillingDate >= today &&
+                    client.nextBillingDate <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
                   return (
                     <tr key={client.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="p-3.5">
@@ -588,15 +596,16 @@ export const RetainersTab: React.FC = () => {
                       <td className="p-3.5">
                         <span
                           className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            client.maintenanceStatus === 'support_needed'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-emerald-100 text-emerald-800'
+                            overdueInvoice ? 'bg-rose-100 text-rose-800' :
+                            client.maintenanceStatus === 'support_needed' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                           }`}
                         >
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <CheckCircle2 className="w-3 h-3" />
                           <span>
-                            {client.maintenanceStatus === 'support_needed' ? t.pending : t.statusRunningLive}
+                            {overdueInvoice ? (language === 'ar' ? 'متأخر الأداء' : language === 'fr' ? 'En retard' : 'Overdue') :
+                              client.maintenanceStatus === 'support_needed' ? t.pending : t.statusRunningLive}
                           </span>
+                          {renewalDueSoon && !overdueInvoice && <span className="ms-1 text-[9px]">{language === 'ar' ? 'تجديد قريب' : language === 'fr' ? 'Bientôt dû' : 'Due soon'}</span>}
                         </span>
                       </td>
                       <td className="p-3.5 text-center">
