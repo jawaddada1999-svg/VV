@@ -97,6 +97,19 @@ export const MeetingsTab: React.FC = () => {
   // Modals state
   const [showAddMeetingModal, setShowAddMeetingModal] = useState(false);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [editingMeeting, setEditingMeeting] = useState<MeetingItem | null>(null);
+  const [meetingDraft, setMeetingDraft] = useState<Partial<MeetingItem>>({});
+  const openMeetingEditor = (meeting: MeetingItem) => { setEditingMeeting(meeting); setMeetingDraft({ ...meeting }); };
+  const saveMeetingEditor = () => {
+    if (!editingMeeting) return;
+    const nextStatus = (meetingDraft.status || editingMeeting.status) as MeetingItem['status'];
+    updateMeetingStatus(editingMeeting.id, nextStatus, meetingDraft.meetingOutcome);
+    updateMeeting(editingMeeting.id, {
+      ...meetingDraft,
+      scheduledTime: meetingDraft.scheduledTime ? (meetingDraft.scheduledTime.length === 16 ? meetingDraft.scheduledTime + ':00' : meetingDraft.scheduledTime) : editingMeeting.scheduledTime,
+    });
+    setEditingMeeting(null);
+  };
 
   // Add Meeting Form State
   const [selectedClientForMeeting, setSelectedClientForMeeting] = useState(clients[0]?.id || '');
@@ -2342,9 +2355,9 @@ export const MeetingsTab: React.FC = () => {
                             </select>
                           </td>
 
-                          {/* Open the full existing prospect profile drawer */}
+                          {/* Dedicated appointment edit card */}
                           <td className="p-3.5 text-center">
-                            <button type="button" onClick={() => setSelectedClientId(meet.clientId)} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 font-bold text-[10px] whitespace-nowrap">
+                            <button type="button" onClick={() => openMeetingEditor(meet)} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 font-bold text-[10px] whitespace-nowrap">
                               <Edit2 className="w-3.5 h-3.5" /> {language === 'ar' ? 'تعديل الملف' : language === 'fr' ? 'Modifier la fiche' : 'Edit profile'}
                             </button>
                           </td>
@@ -2386,6 +2399,44 @@ export const MeetingsTab: React.FC = () => {
       {activeSubTab === 'booking_hours' && (
         <div className="animate-fade-in">
           <BookingSettingsTab compact />
+        </div>
+      )}
+
+
+      {editingMeeting && (
+        <div className="fixed inset-0 z-[80] bg-slate-950/65 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4" onClick={() => setEditingMeeting(null)}>
+          <div className="bg-white w-full max-w-3xl max-h-[94vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200" dir={direction} onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 z-10 p-4 bg-slate-900 text-white flex items-center justify-between">
+              <div><h3 className="text-sm font-extrabold">{language === 'ar' ? 'بطاقة تعديل الموعد' : 'Edit appointment record'}</h3><p className="text-[11px] text-slate-300 mt-1">{editingMeeting.agencyName} · {editingMeeting.clientName}</p></div>
+              <button type="button" onClick={() => setEditingMeeting(null)} className="px-2 py-1 rounded-lg">✕</button>
+            </div>
+            <div className="p-4 sm:p-5 space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="space-y-1"><span className="font-bold">اسم الوكالة</span><input value={String(meetingDraft.agencyName ?? '')} onChange={(e) => setMeetingDraft(p => ({...p, agencyName:e.target.value}))} className="w-full p-2.5 border rounded-xl" /></label>
+                <label className="space-y-1"><span className="font-bold">اسم المسؤول</span><input value={String(meetingDraft.clientName ?? '')} onChange={(e) => setMeetingDraft(p => ({...p, clientName:e.target.value}))} className="w-full p-2.5 border rounded-xl" /></label>
+                <label className="space-y-1"><span className="font-bold">الهاتف</span><input value={String(meetingDraft.phone ?? '')} onChange={(e) => setMeetingDraft(p => ({...p, phone:e.target.value}))} className="w-full p-2.5 border rounded-xl" /></label>
+                <label className="space-y-1"><span className="font-bold">المدينة</span><input value={String(meetingDraft.city ?? '')} onChange={(e) => setMeetingDraft(p => ({...p, city:e.target.value}))} className="w-full p-2.5 border rounded-xl" /></label>
+                <label className="space-y-1"><span className="font-bold">تاريخ ووقت الموعد</span><input type="datetime-local" value={String(meetingDraft.scheduledTime ?? editingMeeting.scheduledTime).slice(0,16)} onChange={(e) => setMeetingDraft(p => ({...p, scheduledTime:e.target.value}))} className="w-full p-2.5 border rounded-xl" /></label>
+                <label className="space-y-1"><span className="font-bold">حالة الموعد</span><select value={String(meetingDraft.status ?? editingMeeting.status)} onChange={(e) => setMeetingDraft(p => ({...p, status:e.target.value as MeetingItem['status']}))} className="w-full p-2.5 border rounded-xl"><option value="scheduled">مجدول</option><option value="pending_confirmation">في انتظار التأكيد</option><option value="confirmed">مؤكد</option><option value="completed">تم الحضور</option><option value="no_show">لم يحضر</option><option value="rescheduled">أعيدت برمجته</option><option value="cancelled">ملغى</option></select></label>
+                <label className="space-y-1"><span className="font-bold">نتيجة الموعد</span><select value={String(meetingDraft.meetingOutcome ?? '')} onChange={(e) => setMeetingDraft(p => ({...p, meetingOutcome:(e.target.value || undefined) as MeetingItem['meetingOutcome']}))} className="w-full p-2.5 border rounded-xl"><option value="">غير محدد</option><option value="accepted_trial">وافق على التجربة</option><option value="interested">مهتم بالعرض</option><option value="follow_up">متابعة / تفاوض</option><option value="call_back">طلب معاودة الاتصال</option><option value="needs_decision">في انتظار القرار</option><option value="no_answer">لم يتم التوصل لجواب</option><option value="not_interested">غير مهتم</option><option value="rejected">رفض العرض</option></select></label>
+                <label className="space-y-1"><span className="font-bold">حجم الفريق</span><input type="number" min="1" value={Number(meetingDraft.teamSize ?? editingMeeting.teamSize)} onChange={(e) => setMeetingDraft(p => ({...p, teamSize:Number(e.target.value)}))} className="w-full p-2.5 border rounded-xl" /></label>
+                <label className="space-y-1"><span className="font-bold">الاستفسارات اليومية</span><input type="number" min="0" value={Number(meetingDraft.dailyInquiries ?? editingMeeting.dailyInquiries)} onChange={(e) => setMeetingDraft(p => ({...p, dailyInquiries:Number(e.target.value)}))} className="w-full p-2.5 border rounded-xl" /></label>
+                <label className="space-y-1"><span className="font-bold">الباقة المختارة</span><select value={String(meetingDraft.packageSelected ?? editingMeeting.packageSelected ?? editingMeeting.packageInterest)} onChange={(e) => setMeetingDraft(p => ({...p, packageSelected:e.target.value as PackageTier}))} className="w-full p-2.5 border rounded-xl"><option value="starter">{t.starterPackage}</option><option value="growth">{t.growthPackage}</option><option value="enterprise">{t.enterprisePackage}</option></select></label>
+                <label className="space-y-1"><span className="font-bold">نتيجة التجربة</span><select value={String(meetingDraft.trialResult ?? 'pending')} onChange={(e) => setMeetingDraft(p => ({...p, trialResult:e.target.value as MeetingItem['trialResult']}))} className="w-full p-2.5 border rounded-xl"><option value="pending">في الانتظار</option><option value="accepted">مقبولة</option><option value="rejected">مرفوضة</option></select></label>
+                <label className="space-y-1"><span className="font-bold">بداية التجربة</span><input type="date" value={String(meetingDraft.trialStartDate ?? '')} onChange={(e) => setMeetingDraft(p => ({...p, trialStartDate:e.target.value || undefined}))} className="w-full p-2.5 border rounded-xl" /></label>
+                <label className="space-y-1"><span className="font-bold">نهاية التجربة</span><input type="date" value={String(meetingDraft.trialEndDate ?? '')} onChange={(e) => setMeetingDraft(p => ({...p, trialEndDate:e.target.value || undefined}))} className="w-full p-2.5 border rounded-xl" /></label>
+                <label className="space-y-1"><span className="font-bold">حالة أداء رسوم الإعداد</span><select value={String(meetingDraft.setupPaymentStatus ?? 'pending')} onChange={(e) => setMeetingDraft(p => ({...p, setupPaymentStatus:e.target.value as MeetingItem['setupPaymentStatus']}))} className="w-full p-2.5 border rounded-xl"><option value="pending">{t.pending}</option><option value="paid">{t.paid}</option><option value="overdue">{t.overdue}</option></select></label>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <label className="flex gap-2 p-3 rounded-xl bg-slate-50 border"><input type="checkbox" checked={Boolean(meetingDraft.reminderSent)} onChange={e => setMeetingDraft(p => ({...p, reminderSent:e.target.checked}))} />تم إرسال التذكير</label>
+                <label className="flex gap-2 p-3 rounded-xl bg-slate-50 border"><input type="checkbox" checked={Boolean(meetingDraft.reminderConfirmed)} onChange={e => setMeetingDraft(p => ({...p, reminderConfirmed:e.target.checked}))} />أكد العميل الحضور</label>
+                <label className="flex gap-2 p-3 rounded-xl bg-slate-50 border"><input type="checkbox" checked={Boolean(meetingDraft.convertedToDeal)} onChange={e => setMeetingDraft(p => ({...p, convertedToDeal:e.target.checked}))} />تحول إلى صفقة</label>
+              </div>
+              <label className="block space-y-1"><span className="font-bold">المشكل الرئيسي</span><textarea rows={2} value={String(meetingDraft.mainProblem ?? '')} onChange={e => setMeetingDraft(p => ({...p, mainProblem:e.target.value}))} className="w-full p-3 border rounded-xl" /></label>
+              <label className="block space-y-1"><span className="font-bold">ملاحظات الموعد</span><textarea rows={3} value={String(meetingDraft.meetingNotes ?? '')} onChange={e => setMeetingDraft(p => ({...p, meetingNotes:e.target.value}))} className="w-full p-3 border rounded-xl" /></label>
+              <div className="flex justify-end gap-2 pt-3 border-t"><button type="button" onClick={() => setEditingMeeting(null)} className="px-4 py-2 rounded-xl bg-slate-100 font-bold">إلغاء</button><button type="button" onClick={saveMeetingEditor} className="px-4 py-2 rounded-xl bg-orange-600 text-white font-extrabold">حفظ التعديلات</button></div>
+            </div>
+          </div>
         </div>
       )}
 
