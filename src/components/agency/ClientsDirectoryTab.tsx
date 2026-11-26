@@ -38,6 +38,7 @@ export const ClientsDirectoryTab: React.FC = () => {
       owner: { ar: 'مالك الوكالة', fr: 'Propriétaire de l’agence', en: 'Agency owner' },
       agency_manager: { ar: 'مدير الوكالة', fr: 'Directeur d’agence', en: 'Agency manager' },
       branch_manager: { ar: 'مدير الفرع', fr: 'Responsable d’agence', en: 'Branch manager' },
+      general_manager: { ar: 'المدير العام', fr: 'Directeur général', en: 'General manager' },
       commercial_director: { ar: 'المدير التجاري', fr: 'Directeur commercial', en: 'Commercial director' },
       sales_manager: { ar: 'مسؤول المبيعات', fr: 'Responsable des ventes', en: 'Sales manager' },
       sales_agent: { ar: 'مستشار / تجاري', fr: 'Conseiller commercial', en: 'Sales agent' },
@@ -46,6 +47,7 @@ export const ClientsDirectoryTab: React.FC = () => {
       operations_manager: { ar: 'مسؤول العمليات', fr: 'Responsable des opérations', en: 'Operations manager' },
       administrator: { ar: 'مسؤول إداري', fr: 'Responsable administratif', en: 'Administrator' },
       assistant: { ar: 'مساعد إداري', fr: 'Assistant administratif', en: 'Administrative assistant' },
+      accountant: { ar: 'محاسب', fr: 'Comptable', en: 'Accountant' },
       other: { ar: 'دور آخر', fr: 'Autre fonction', en: 'Other role' },
     };
     return roles[role]?.[language] || role;
@@ -64,7 +66,12 @@ export const ClientsDirectoryTab: React.FC = () => {
     'العيون', 'الداخلة', 'خريبكة', 'الرشيدية', 'ورزازات', 'الحسيمة', 'الصويرة', 'تمارة',
     'سطات', 'العرائش', 'شفشاون', 'تارودانت', 'كلميم', 'بركان', 'تازة', 'الخميسات',
     'القصر الكبير', 'الفقيه بن صالح', 'سيدي قاسم', 'سيدي سليمان', 'تاوريرت', 'جرسيف',
-    'ميدلت', 'زاكورة', 'طانطان', 'بوجدور', 'السمارة', 'أزيلال', 'بنسليمان'
+    'ميدلت', 'زاكورة', 'طانطان', 'بوجدور', 'السمارة', 'أزيلال', 'بنسليمان',
+    'Casablanca', 'Rabat', 'Marrakech', 'Tangier', 'Fes', 'Agadir', 'Meknes', 'Oujda',
+    'Tetouan', 'Kenitra', 'Sale', 'Mohammedia', 'El Jadida', 'Safi', 'Beni Mellal',
+    'Nador', 'Laayoune', 'Dakhla', 'Khouribga', 'Errachidia', 'Ouarzazate', 'Al Hoceima',
+    'Essaouira', 'Temara', 'Settat', 'Larache', 'Chefchaouen', 'Taroudant', 'Guelmim',
+    'Berkane', 'Taza', 'Khemisset', 'Ksar El Kebir', 'Sidi Kacem', 'Sidi Slimane'
   ];
   const roleOptions = [
     { value: 'owner', ar: 'مالك الوكالة', fr: 'Propriétaire de l’agence', en: 'Agency owner' },
