@@ -24,6 +24,8 @@ import { translations } from '../../translations';
 export const DeliveryTab: React.FC = () => {
   const {
     clients,
+    tasks,
+    toggleTask,
     updateDeliveryProgress,
     updateClient,
     activateMonthlyRetainer,
@@ -305,6 +307,24 @@ export const DeliveryTab: React.FC = () => {
                               </button>
                             ))}
                           </div>
+                          {tasks.filter((task) => task.relatedClientId === project.id && task.category === 'build').length > 0 && (
+                            <div className="mt-3 pt-2 border-t border-slate-100 space-y-1.5">
+                              <div className="text-[10px] font-bold text-slate-600">
+                                {language === 'ar' ? 'قائمة التحقق من التسليم' : language === 'fr' ? 'Checklist de livraison' : 'Delivery checklist'}
+                              </div>
+                              {tasks.filter((task) => task.relatedClientId === project.id && task.category === 'build').map((task) => (
+                                <label key={task.id} className="flex items-start gap-2 text-[10px] text-slate-600 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={task.completed}
+                                    onChange={() => toggleTask(task.id)}
+                                    className="mt-0.5 accent-purple-600"
+                                  />
+                                  <span className={task.completed ? 'line-through text-slate-400' : ''}>{task.title}</span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </td>
 
