@@ -252,7 +252,7 @@ export const MeetingsTab: React.FC = () => {
     const conducted = weekMeetings.filter((m) => m.status === 'completed').length;
     const converted = weekMeetings.filter((m) => m.convertedToDeal || m.trialResult === 'accepted').length;
     const noShow = weekMeetings.filter((m) => m.status === 'no_show').length;
-    const pendingUpcoming = weekMeetings.filter((m) => m.status === 'scheduled').length;
+    const pendingUpcoming = weekMeetings.filter((m) => m.status === 'scheduled' && new Date(m.scheduledTime).getTime() >= nowMs).length;
     const conversionRate = conducted > 0 ? Math.round((converted / conducted) * 100) : 0;
     const attendanceRate = totalScheduled > 0 ? Math.round((conducted / (conducted + noShow || 1)) * 100) : 0;
 
