@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AgencyProvider, useAgency } from './context/AgencyContext';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -12,6 +12,9 @@ import { AdsTab } from './components/agency/AdsTab';
 import { AgencyBudgetSimulator } from './components/agency/AgencyBudgetSimulator';
 import { ClientsDirectoryTab } from './components/agency/ClientsDirectoryTab';
 import { PackagesSettingsTab } from './components/agency/PackagesSettingsTab';
+import { EmployeesTab } from './components/agency/EmployeesTab';
+import { SettingsTab } from './components/agency/SettingsTab';
+import { ConversationsTab } from './components/agency/ConversationsTab';
 import { BookingSettingsTab } from './components/agency/BookingSettingsTab';
 import { ClientModal } from './components/agency/ClientModal';
 import { ClientDetailDrawer } from './components/agency/ClientDetailDrawer';
@@ -22,6 +25,12 @@ import { translations } from './translations';
 const DashboardContent: React.FC = () => {
   const { activeTab, clients, setActiveTab, setSelectedClientId, language, direction } = useAgency();
   const t = translations[language];
+
+  useEffect(() => {
+    const openEmployees = () => setActiveTab('employees');
+    window.addEventListener('ibonda-open-employees', openEmployees);
+    return () => window.removeEventListener('ibonda-open-employees', openEmployees);
+  }, [setActiveTab]);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -78,6 +87,9 @@ const DashboardContent: React.FC = () => {
             {/* TAB CONTENT */}
             {activeTab === 'overview' && <OverviewTab />}
             {activeTab === 'clients' && <ClientsDirectoryTab />}
+            {activeTab === 'conversations' && <ConversationsTab />}
+            {activeTab === 'employees' && <EmployeesTab />}
+            {activeTab === 'settings' && <SettingsTab />}
             {activeTab === 'pipeline' && <PipelineTab />}
             {activeTab === 'meetings' && <MeetingsTab />}
             {activeTab === 'ads' && <AdsTab />}
