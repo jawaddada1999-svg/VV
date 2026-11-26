@@ -637,3 +637,30 @@ html, body { background: var(--vv-canvas); }
 .vv-employees-screen [role="dialog"] { width:calc(100vw - 14px) !important; }
 }
 @media (max-width:380px) { .vv-mobile-tabbar { padding-inline:4px; } .vv-mobile-tabbar button { padding-inline:2px; } .vv-mobile-tabbar button span { font-size:9px !important; } }
+
+
+/* Executive reports workspace + clean PDF print output */
+.vv-report-hero { background: radial-gradient(circle at 12% 18%,rgba(255,255,255,.13),transparent 30%),linear-gradient(115deg,#06272D 0%,#0B4A53 58%,#12343A 100%); box-shadow:0 16px 36px rgba(6,39,45,.16); }
+.vv-reports { min-width:0; }
+.vv-report-tabs { scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+.vv-report-tabs::-webkit-scrollbar { display:none; }
+.vv-reports table th { background:#0B3A42;color:white;text-align:right;font-size:11px; }
+.vv-reports table tbody tr:nth-child(even) { background:#F7FAFB; }
+.vv-reports .vv-print-heading { display:none; }
+@media(max-width:767px) { .vv-report-hero { border-radius:22px; padding:20px; } .vv-report-period { width:100%; } }
+@media print {
+ body.vv-print-report * { visibility:hidden !important; }
+ body.vv-print-report #vv-report-print-area,
+ body.vv-print-report #vv-report-print-area * { visibility:visible !important; }
+ body.vv-print-report #vv-report-print-area { position:absolute; inset:0; width:100%; padding:12mm; background:white; }
+ body.vv-print-report .vv-print-heading { display:block !important; margin-bottom:18px; }
+ body.vv-print-report .vv-print-heading h2 { font-size:22px;font-weight:800;color:#0B3A42; }
+ body.vv-print-report .vv-print-heading p { font-size:11px;color:#64748b;margin-top:5px; }
+ body.vv-print-report .vv-reports button,
+ body.vv-print-report .vv-report-period { display:none !important; }
+ body.vv-print-report .vv-reports .overflow-x-auto { overflow:visible !important; }
+ body.vv-print-report .vv-reports table { min-width:0 !important;width:100% !important;font-size:9px !important; }
+ body.vv-print-report .vv-reports th,body.vv-print-report .vv-reports td { padding:6px !important;white-space:normal !important; }
+ body.vv-print-report .vv-reports .bg-white { break-inside:avoid;box-shadow:none !important;border:1px solid #dce5e8 !important; }
+ @page { size:A4 portrait; margin:10mm; }
+}
