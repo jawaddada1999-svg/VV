@@ -146,6 +146,26 @@ interface AgencyContextType {
 
 const STORAGE_PREFIX = 'ibonda_agency_ops_v1_';
 
+// Browser storage can contain stale or malformed JSON (or be unavailable in
+// privacy-restricted browsers). Never let that prevent the dashboard mounting.
+const readStored = <T,>(key: string, fallback: T): T => {
+  try {
+    const raw = window.localStorage.getItem(`${STORAGE_PREFIX}${key}`);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+};
+
+const writeStored = (key: string, value: unknown) => {
+  try {
+    window.localStorage.setItem(`${STORAGE_PREFIX}${key}`, JSON.stringify(value));
+  } catch {
+    // Keep the in-memory dashboard usable when browser storage is unavailable.
+  }
+};
+
 const createDefaultBookingSettings = (): BookingAvailabilitySettings => ({
   isBookingOpen: true,
   timezone: 'Africa/Casablanca',
@@ -173,14 +193,14 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Language & i18n
   const [language, setLanguage] = useState<'ar' | 'fr' | 'en'>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}lang`);
-    return (saved as 'ar' | 'fr' | 'en') || 'ar';
+    const saved = readStored<string>('lang', 'ar');
+    return (['ar', 'fr', 'en'].includes(saved) ? saved : 'ar') as 'ar' | 'fr' | 'en';
   });
 
   const direction = language === 'ar' ? 'rtl' : 'ltr';
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_PREFIX}lang`, language);
+    writeStored('lang', language);
     document.documentElement.dir = direction;
     document.documentElement.lang = language;
   }, [language, direction]);
@@ -198,8 +218,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // State with LocalStorage
   const [packages, setPackages] = useState<PackageConfig[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}packages`);
-    return saved ? JSON.parse(saved) : initialPackages;
+    return readStored<PackageConfig[]>('packages', initialPackages);
   });
 
   const [clients, setClients] = useState<AgencyClient[]>(() => {
@@ -218,8 +237,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [meetings, setMeetings] = useState<MeetingItem[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}meetings`);
-    return saved ? JSON.parse(saved) : initialMeetings;
+    return readStored<MeetingItem[]>('meetings', initialMeetings);
   });
 
   const [campaigns, setCampaigns] = useState<AdCampaignMetric[]>(() => {
@@ -238,18 +256,15 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [invoices, setInvoices] = useState<MaintenanceInvoice[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}invoices`);
-    return saved ? JSON.parse(saved) : initialInvoices;
+    return readStored<MaintenanceInvoice[]>('invoices', initialInvoices);
   });
 
   const [tickets, setTickets] = useState<MaintenanceTicket[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}tickets`);
-    return saved ? JSON.parse(saved) : initialTickets;
+    return readStored<MaintenanceTicket[]>('tickets', initialTickets);
   });
 
   const [tasks, setTasks] = useState<AgencyTask[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_PREFIX}tasks`);
-    return saved ? JSON.parse(saved) : initialTasks;
+    return readStored<AgencyTask[]>('tasks', initialTasks);
   });
 
   const [bookingSettings, setBookingSettings] = useState<BookingAvailabilitySettings>(() => {
@@ -274,35 +289,35 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Sync to LocalStorage
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_PREFIX}packages`, JSON.stringify(packages));
+    writeStored('packages', packages);
   }, [packages]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_PREFIX}clients`, JSON.stringify(clients));
+    writeStored('clients', clients);
   }, [clients]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_PREFIX}meetings`, JSON.stringify(meetings));
+    writeStored('meetings', meetings);
   }, [meetings]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_PREFIX}campaigns`, JSON.stringify(campaigns));
+    writeStored('campaigns', campaigns);
   }, [campaigns]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_PREFIX}invoices`, JSON.stringify(invoices));
+    writeStored('invoices', invoices);
   }, [invoices]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_PREFIX}tickets`, JSON.stringify(tickets));
+    writeStored('tickets', tickets);
   }, [tickets]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_PREFIX}tasks`, JSON.stringify(tasks));
+    writeStored('tasks', tasks);
   }, [tasks]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_PREFIX}booking_settings`, JSON.stringify(bookingSettings));
+    writeStored('booking_settings', bookingSettings);
   }, [bookingSettings]);
 
   const localizedPackages = useMemo(() => {
