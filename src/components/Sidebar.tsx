@@ -61,7 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const navigationGroups: NavigationGroup[] = [
     {
-      groupTitle: t.navLeadershipGroup,
+      groupTitle: language === 'ar' ? 'إدارة النشاط والعملاء' : t.navLeadershipGroup,
       items: [
         { id: 'overview', label: t.navOverview, icon: BarChart3, badge: null },
         {
@@ -96,7 +96,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ],
     },
     {
-      groupTitle: t.navExecutionGroup,
+      groupTitle: language === 'ar' ? 'التشغيل والموارد' : t.navExecutionGroup,
       items: [
         {
           id: 'delivery',
@@ -141,6 +141,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badge: '3',
           badgeColor: 'bg-white/15 text-white',
         },
+      ],
+    },
+    {
+      groupTitle: language === 'ar' ? 'الفريق وإعدادات النظام' : language === 'fr' ? 'Équipe et paramètres' : 'Team & settings',
+      items: [
         { id: 'employees', label: language === 'ar' ? 'الموظفون وإدارة الفريق' : language === 'fr' ? 'Équipe' : 'Team members', icon: Users, badge: null },
         { id: 'settings', label: language === 'ar' ? 'الإعدادات' : language === 'fr' ? 'Paramètres' : 'Settings', icon: SlidersHorizontal, badge: null },
       ],
