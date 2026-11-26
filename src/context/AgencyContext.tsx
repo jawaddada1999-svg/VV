@@ -158,6 +158,13 @@ const readStored = <T,>(key: string, fallback: T): T => {
   }
 };
 
+const readStoredArray = <T,>(key: string, fallback: T[]): T[] => {
+  const parsed = readStored<unknown>(key, fallback);
+  return Array.isArray(parsed)
+    ? parsed.filter((item): item is T => !!item && typeof item === 'object' && !Array.isArray(item))
+    : fallback;
+};
+
 const writeStored = (key: string, value: unknown) => {
   try {
     window.localStorage.setItem(`${STORAGE_PREFIX}${key}`, JSON.stringify(value));
@@ -218,7 +225,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // State with LocalStorage
   const [packages, setPackages] = useState<PackageConfig[]>(() => {
-    return readStored<PackageConfig[]>('packages', initialPackages);
+    return readStoredArray<PackageConfig>('packages', initialPackages);
   });
 
   const [clients, setClients] = useState<AgencyClient[]>(() => {
@@ -234,7 +241,7 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [meetings, setMeetings] = useState<MeetingItem[]>(() => {
-    return readStored<MeetingItem[]>('meetings', initialMeetings);
+    return readStoredArray<MeetingItem>('meetings', initialMeetings);
   });
 
   const [campaigns, setCampaigns] = useState<AdCampaignMetric[]>(() => {
@@ -250,15 +257,15 @@ export const AgencyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [invoices, setInvoices] = useState<MaintenanceInvoice[]>(() => {
-    return readStored<MaintenanceInvoice[]>('invoices', initialInvoices);
+    return readStoredArray<MaintenanceInvoice>('invoices', initialInvoices);
   });
 
   const [tickets, setTickets] = useState<MaintenanceTicket[]>(() => {
-    return readStored<MaintenanceTicket[]>('tickets', initialTickets);
+    return readStoredArray<MaintenanceTicket>('tickets', initialTickets);
   });
 
   const [tasks, setTasks] = useState<AgencyTask[]>(() => {
-    return readStored<AgencyTask[]>('tasks', initialTasks);
+    return readStoredArray<AgencyTask>('tasks', initialTasks);
   });
 
   const [bookingSettings, setBookingSettings] = useState<BookingAvailabilitySettings>(() => {
