@@ -713,7 +713,8 @@ export const AdsTab: React.FC = () => {
               <thead className="bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
                 <tr>
                   <th className="p-3">{roasCopy.colCampaign}</th>
-                  <th className="p-3">{roasCopy.colSpendInput}</th>
+                  <th className="p-3">{language === 'ar' ? 'الميزانية المحددة' : language === 'fr' ? 'Budget prévu' : 'Planned budget'}</th>
+                  <th className="p-3">{language === 'ar' ? 'الإنفاق الفعلي' : language === 'fr' ? 'Dépense réelle' : 'Actual spend'}</th>
                   <th className="p-3">{roasCopy.colRevenueInput}</th>
                   <th className="p-3">{roasCopy.colNetProfit}</th>
                   <th className="p-3">{roasCopy.colRoas}</th>
@@ -753,6 +754,22 @@ export const AdsTab: React.FC = () => {
                         <span className="font-bold text-slate-900 block truncate mt-0.5" title={row.campaignName}>
                           {row.campaignName}
                         </span>
+                      </td>
+
+                      <td className="p-3">
+                        <input
+                          type="number"
+                          min={0}
+                          step={100}
+                          value={row.budget || 0}
+                          onChange={(e) =>
+                            updateCampaign(row.id, {
+                              budget: Math.max(0, Number(e.target.value) || 0),
+                            })
+                          }
+                          aria-label={`${language === 'ar' ? 'الميزانية المحددة' : language === 'fr' ? 'Budget prévu' : 'Planned budget'} - ${row.campaignName}`}
+                          className="w-28 min-h-[40px] px-2.5 bg-slate-50 border border-slate-300 focus:border-[#FF6600] focus:bg-white rounded-xl font-mono tabular-nums font-bold text-slate-900 focus:outline-none"
+                        />
                       </td>
 
                       <td className="p-3">
