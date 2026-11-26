@@ -15,6 +15,7 @@ import { PackagesSettingsTab } from './components/agency/PackagesSettingsTab';
 import { EmployeesTab } from './components/agency/EmployeesTab';
 import { SettingsTab } from './components/agency/SettingsTab';
 import { ConversationsTab } from './components/agency/ConversationsTab';
+import { ReportsTab } from './components/agency/ReportsTab';
 import { BookingSettingsTab } from './components/agency/BookingSettingsTab';
 import { ClientModal } from './components/agency/ClientModal';
 import { ClientDetailDrawer } from './components/agency/ClientDetailDrawer';
@@ -87,6 +88,7 @@ const DashboardContent: React.FC = () => {
             {/* TAB CONTENT */}
             {activeTab === 'overview' && <OverviewTab />}
             {activeTab === 'clients' && <ClientsDirectoryTab />}
+            {activeTab === 'reports' && <ReportsTab />}
             {activeTab === 'conversations' && <ConversationsTab />}
             {activeTab === 'employees' && <EmployeesTab />}
             {activeTab === 'settings' && <SettingsTab />}
