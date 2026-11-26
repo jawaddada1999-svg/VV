@@ -11,7 +11,6 @@ import {
   MapPin,
   Clock,
   CheckCircle2,
-  Download,
   Share2,
   Users,
   Award,
@@ -142,43 +141,6 @@ export const ClientsDirectoryTab: React.FC = () => {
       default:
         return null;
     }
-  };
-
-  // Export CSV functionality
-  const handleExportCSV = () => {
-    const headers = [
-      'ID',
-      'Agency Name',
-      'City',
-      'Contact Person',
-      'Phone',
-      'Package',
-      'Setup Fee (MAD)',
-      'Monthly Retainer (MAD)',
-      'Stage',
-      'Rejection Reason'
-    ];
-    const rows = filtered.map((c) => [
-      `"${c.id}"`,
-      `"${c.agencyName}"`,
-      `"${c.city}"`,
-      `"${c.contactPerson}"`,
-      `"${c.phone}"`,
-      `"${c.packageTier}"`,
-      c.setupFee,
-      c.monthlyRetainer,
-      `"${c.stage}"`,
-      `"${c.rejectionReason || '-'}"`,
-    ]);
-
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `ibonda_agencies_directory_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (
