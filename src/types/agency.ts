@@ -149,6 +149,8 @@ export interface AgencyTask {
   dueDate: string;
   completed: boolean;
   relatedAgencyName?: string;
+  relatedClientId?: string;
+  assignee?: string;
   category: 'meeting' | 'reminder' | 'build' | 'payment' | 'general';
   createdAt: string;
 }
