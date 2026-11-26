@@ -439,13 +439,13 @@ export const MeetingsTab: React.FC = () => {
     const client = clients.find((c) => c.id === selectedClientForMeeting);
     if (!client) return;
 
-    addMeeting({
+    const created = addMeeting({
       clientId: client.id,
       clientName: client.contactPerson,
       agencyName: client.agencyName,
       phone: client.phone,
       city: client.city,
-      scheduledTime: `${scheduledDate}T${scheduledTime}:00Z`,
+      scheduledTime: `${scheduledDate}T${scheduledTime}:00`,
       status: 'scheduled',
       reminderSent: false,
       reminderConfirmed: false,
@@ -463,6 +463,19 @@ export const MeetingsTab: React.FC = () => {
       setupPaymentStatus: 'pending',
       meetingNotes,
     });
+
+    if (!created) {
+      setLastActionTriggered({
+        id: 'booking-validation',
+        type: 'reminder',
+        message: language === 'ar'
+          ? 'هذا التوقيت غير متاح أو يوجد موعد آخر متداخل. اختر توقيتاً متاحاً.'
+          : language === 'fr'
+          ? 'Ce créneau est indisponible ou chevauche un autre rendez-vous.'
+          : 'This time slot is unavailable or conflicts with another appointment.',
+      });
+      return;
+    }
 
     setShowAddMeetingModal(false);
     setMeetingNotes('');
