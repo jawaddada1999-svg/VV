@@ -51,6 +51,7 @@ export const OverviewTab: React.FC = () => {
     clients,
     meetings,
     invoices,
+    campaigns,
     packages,
     setActiveTab,
     setSelectedClientId,
@@ -73,7 +74,6 @@ export const OverviewTab: React.FC = () => {
 
   // 1. Attendance Rate Calculation (نسبة حضور المواعيد)
   const completedMeetings = meetings.filter((m) => m.status === 'completed').length;
-  const totalMeetingsCount = meetings.length;
   const attendanceDenominator = meetings.filter((m) => m.status === 'completed' || m.status === 'no_show').length;
   const attendanceRate = attendanceDenominator > 0
     ? Math.round((completedMeetings / attendanceDenominator) * 100)
@@ -158,7 +158,6 @@ export const OverviewTab: React.FC = () => {
     };
   });
 
-  const currentMonthKey = new Date().toISOString().slice(0, 7);
   const rawCurrentMonthWeeks = Array.from({ length: 4 }, (_, index) => {
     const start = new Date();
     start.setDate(1 + index * 7);
