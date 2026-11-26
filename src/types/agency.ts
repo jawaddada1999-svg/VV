@@ -157,7 +157,8 @@ export interface AdCampaignMetric {
   id: string;
   campaignName: string;
   platform: 'meta' | 'google' | 'linkedin' | 'referral';
-  spend: number;               // الميزانية المصروفة (MAD)
+  budget?: number;             // الميزانية المحددة للحملة (MAD)
+  spend: number;               // الإنفاق الفعلي المصروف (MAD)
   revenueGenerated?: number;   // إجمالي الإيرادات المحققة من الحملة (MAD)
   impressions: number;
   clicks: number;
