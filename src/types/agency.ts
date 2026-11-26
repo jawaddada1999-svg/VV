@@ -59,6 +59,8 @@ export interface AgencyClient {
 
   // مرحلة تسليم الأوتوميشن
   deliveryProgressPct?: number;// نسبة إنجاز الأوتوميشن (0 - 100%)
+  deliveryStartDate?: string;
+  deliveryDelayReason?: string;
   targetDeliveryDate?: string; // موعد التسليم المتفق عليه
   workflowsEnabled?: AutomationWorkflowType[];
 
