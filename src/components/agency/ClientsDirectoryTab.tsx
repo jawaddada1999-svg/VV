@@ -33,7 +33,7 @@ export const ClientsDirectoryTab: React.FC = () => {
   const t = translations[language];
 
   const getRoleLabel = (role?: string) => {
-    if (!role) return '—';
+    if (!role) return language === 'ar' ? 'غير محدد' : language === 'fr' ? 'Non renseigné' : 'Not specified';
     const roles: Record<string, { ar: string; fr: string; en: string }> = {
       owner: { ar: 'مالك الوكالة', fr: 'Propriétaire de l’agence', en: 'Agency owner' },
       agency_manager: { ar: 'مدير الوكالة', fr: 'Directeur d’agence', en: 'Agency manager' },
@@ -392,7 +392,7 @@ export const ClientsDirectoryTab: React.FC = () => {
                       </td>
 
                       <td className="p-3.5 text-[10px] text-slate-600 font-mono">
-                        {client.lastUpdatedAt ? new Date(client.lastUpdatedAt).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US') : '—'}
+                        {new Date(client.lastUpdatedAt || client.createdAt).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US')}
                       </td>
                       <td className="p-3.5 text-center">
                         <button type="button" onClick={(e) => { e.stopPropagation(); openEdit(client); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 font-bold">
@@ -480,7 +480,7 @@ export const ClientsDirectoryTab: React.FC = () => {
                 <textarea rows={4} value={String(editDraft.notes ?? '')} onChange={(e) => setEditDraft((prev) => ({ ...prev, notes: e.target.value }))} placeholder={language === 'ar' ? 'سجل آخر تواصل، ما الذي ينتظره العميل، والخطوة القادمة...' : language === 'fr' ? 'Dernier contact, attentes et prochaine étape...' : 'Last contact, client expectations, and next step...'} className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 resize-y" />
               </label>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
-                <span className="text-[10px] text-slate-500">{language === 'ar' ? 'آخر تحديث' : language === 'fr' ? 'Dernière mise à jour' : 'Last updated'}: {editingClient.lastUpdatedAt ? new Date(editingClient.lastUpdatedAt).toLocaleString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US') : '—'}</span>
+                <span className="text-[10px] text-slate-500">{language === 'ar' ? 'آخر تحديث' : language === 'fr' ? 'Dernière mise à jour' : 'Last updated'}: {new Date(editingClient.lastUpdatedAt || editingClient.createdAt).toLocaleString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-US')}</span>
                 <div className="flex items-center gap-2 justify-end">
                   <button type="button" onClick={() => setEditingClient(null)} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold">{language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}</button>
                   <button type="button" onClick={saveEdit} className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold">{language === 'ar' ? 'حفظ التعديلات' : language === 'fr' ? 'Enregistrer' : 'Save changes'}</button>
